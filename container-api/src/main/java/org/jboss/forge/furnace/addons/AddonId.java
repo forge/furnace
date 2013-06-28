@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.forge.furnace.util.Assert;
+import org.jboss.forge.furnace.versions.EmptyVersion;
 import org.jboss.forge.furnace.versions.SingleVersion;
 import org.jboss.forge.furnace.versions.Version;
 
@@ -74,7 +75,7 @@ public class AddonId implements Comparable<AddonId>
       id.name = name;
       id.version = new SingleVersion(version);
       if (apiVersion == null || apiVersion.trim().isEmpty())
-         id.apiVersion = null;
+         id.apiVersion = EmptyVersion.getInstance();
       else
          id.apiVersion = new SingleVersion(apiVersion);
 
@@ -129,12 +130,20 @@ public class AddonId implements Comparable<AddonId>
    }
 
    @Override
-   public int compareTo(AddonId o)
+   public int compareTo(AddonId other)
    {
-      if (o == null)
-      {
-         return -1;
-      }
-      return toCoordinates().compareTo(o.toCoordinates());
+      if (other == null)
+         throw new IllegalArgumentException("Cannot compare against null.");
+
+      int result = getName().compareTo(other.getName());
+
+      if (result == 0)
+         result = getVersion().compareTo(other.getVersion());
+
+      if (result == 0)
+         result = getApiVersion().compareTo(other.getApiVersion());
+
+      return result;
    }
+
 }

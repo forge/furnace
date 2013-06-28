@@ -61,8 +61,9 @@ public class MultipleRepositoryTest
       AddonRepository right = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir2);
       furnace.startAsync();
 
-      AddonManager manager = new AddonManagerImpl(furnace, new MavenDependencyResolver(new FileResourceFactory(),
-               new MavenContainer()));
+      MavenDependencyResolver resolver = new MavenDependencyResolver(new FileResourceFactory(),
+               new MavenContainer());
+      AddonManager manager = new AddonManagerImpl(furnace, resolver, resolver);
 
       AddonId facets = AddonId.from("org.jboss.forge.addon:facets", "2.0.0-SNAPSHOT");
       AddonId convert = AddonId.from("org.jboss.forge.addon:convert", "2.0.0-SNAPSHOT");
@@ -94,12 +95,13 @@ public class MultipleRepositoryTest
    @Test
    public void testAddonsDontFailIfDuplicatedInOtherRepositories() throws IOException, Exception
    {
-      Furnace forge = ForgeFactory.getInstance(Furnace.class.getClassLoader());
-      AddonRepository left = forge.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
-      AddonRepository right = forge.addRepository(AddonRepositoryMode.MUTABLE, repodir2);
+      Furnace furnace = ForgeFactory.getInstance(Furnace.class.getClassLoader());
+      AddonRepository left = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
+      AddonRepository right = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir2);
 
-      AddonManager manager = new AddonManagerImpl(forge, new MavenDependencyResolver(new FileResourceFactory(),
-               new MavenContainer()));
+      MavenDependencyResolver resolver = new MavenDependencyResolver(new FileResourceFactory(),
+               new MavenContainer());
+      AddonManager manager = new AddonManagerImpl(furnace, resolver, resolver);
 
       AddonId facets = AddonId.from("org.jboss.forge.addon:facets", "2.0.0-SNAPSHOT");
       AddonId convert = AddonId.from("org.jboss.forge.addon:convert", "2.0.0-SNAPSHOT");
@@ -124,22 +126,22 @@ public class MultipleRepositoryTest
       Assert.assertTrue(left.isDeployed(resources));
       Assert.assertTrue(right.isDeployed(resources));
 
-      forge.startAsync();
+      furnace.startAsync();
 
-      Addons.waitUntilStarted(forge.getAddonRegistry().getAddon(resources), 10, TimeUnit.SECONDS);
-      Addons.waitUntilStarted(forge.getAddonRegistry().getAddon(facets), 10, TimeUnit.SECONDS);
-      Addons.waitUntilStarted(forge.getAddonRegistry().getAddon(convert), 10, TimeUnit.SECONDS);
+      Addons.waitUntilStarted(furnace.getAddonRegistry().getAddon(resources), 10, TimeUnit.SECONDS);
+      Addons.waitUntilStarted(furnace.getAddonRegistry().getAddon(facets), 10, TimeUnit.SECONDS);
+      Addons.waitUntilStarted(furnace.getAddonRegistry().getAddon(convert), 10, TimeUnit.SECONDS);
 
       System.out.println("Getting instances.");
-      ExportedInstance<ConverterFactory> instance = forge.getAddonRegistry()
+      ExportedInstance<ConverterFactory> instance = furnace.getAddonRegistry()
                .getExportedInstance(ConverterFactory.class);
       ConverterFactory factory = instance.get();
 
       factory.getConverter(File.class,
-               forge.getAddonRegistry().getAddon(resources).getClassLoader()
+               furnace.getAddonRegistry().getAddon(resources).getClassLoader()
                         .loadClass(DirectoryResource.class.getName()));
 
-      forge.stop();
+      furnace.stop();
    }
 
    @Test(expected = IllegalArgumentException.class)

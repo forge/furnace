@@ -43,7 +43,7 @@ public class SidewaysProxyAnonymousCollisionTest
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
                .addClasses(Action1.class)
                .addAsAddonDependencies(
-                        AddonDependencyEntry.create(AddonId.from("D", "1"))
+                        AddonDependencyEntry.create("D", "1")
                );
 
       return archive;
@@ -55,7 +55,7 @@ public class SidewaysProxyAnonymousCollisionTest
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
                .addClasses(Payload.class, Payload1.class)
                .addAsAddonDependencies(
-                        AddonDependencyEntry.create(AddonId.from("E", "1"))
+                        AddonDependencyEntry.create("E", "1")
                );
 
       return archive;

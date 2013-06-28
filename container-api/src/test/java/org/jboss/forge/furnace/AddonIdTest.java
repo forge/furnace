@@ -1,6 +1,7 @@
 package org.jboss.forge.furnace;
 
 import org.jboss.forge.furnace.addons.AddonId;
+import org.jboss.forge.furnace.versions.EmptyVersion;
 import org.jboss.forge.furnace.versions.SingleVersion;
 import org.junit.Assert;
 import org.junit.Test;
@@ -11,7 +12,7 @@ public class AddonIdTest
    public void testFromCoordinatesMissingAPIVersion() throws Exception
    {
       AddonId addon = AddonId.fromCoordinates("org.jboss.forge.addon:resources,2.0.0-SNAPSHOT");
-      Assert.assertNull(addon.getApiVersion());
+      Assert.assertEquals(EmptyVersion.getInstance(), addon.getApiVersion());
       Assert.assertEquals("org.jboss.forge.addon:resources", addon.getName());
       Assert.assertEquals(new SingleVersion("2.0.0-SNAPSHOT"), addon.getVersion());
    }
@@ -83,5 +84,77 @@ public class AddonIdTest
    {
       AddonId.from("name", "1.0.0-SNAPSHOT", null);
       AddonId.from("name", "1.0.0-SNAPSHOT");
+   }
+
+   @Test
+   public void testCompareToEquals() throws Exception
+   {
+      AddonId left = AddonId.from("name", "1.0.0-SNAPSHOT");
+      AddonId right = AddonId.from("name", "1.0.0-SNAPSHOT");
+
+      Assert.assertEquals(0, left.compareTo(right));
+   }
+
+   @Test
+   public void testCompareToNameLt() throws Exception
+   {
+      AddonId left = AddonId.from("abc", "1.0.0-SNAPSHOT");
+      AddonId right = AddonId.from("def", "1.0.0-SNAPSHOT");
+
+      Assert.assertTrue(left.compareTo(right) < 0);
+   }
+
+   @Test
+   public void testCompareToNameGt() throws Exception
+   {
+      AddonId left = AddonId.from("def", "1.0.0-SNAPSHOT");
+      AddonId right = AddonId.from("abc", "1.0.0-SNAPSHOT");
+
+      Assert.assertTrue(left.compareTo(right) < 1);
+   }
+
+   @Test
+   public void testCompareToVersionLt() throws Exception
+   {
+      AddonId left = AddonId.from("name", "1.0.0-SNAPSHOT");
+      AddonId right = AddonId.from("name", "2.0.0-SNAPSHOT");
+
+      Assert.assertTrue(left.compareTo(right) < 0);
+   }
+
+   @Test
+   public void testCompareToVersionGt() throws Exception
+   {
+      AddonId left = AddonId.from("name", "2.0.0-SNAPSHOT");
+      AddonId right = AddonId.from("name", "1.0.0-SNAPSHOT");
+
+      Assert.assertTrue(left.compareTo(right) < 1);
+   }
+
+   @Test
+   public void testCompareToEqualsWithApiVersion() throws Exception
+   {
+      AddonId left = AddonId.from("name", "1.0.0-SNAPSHOT", "0");
+      AddonId right = AddonId.from("name", "1.0.0-SNAPSHOT", "0");
+
+      Assert.assertEquals(0, left.compareTo(right));
+   }
+
+   @Test
+   public void testCompareToEqualsWithMismatchedApiVersionLt() throws Exception
+   {
+      AddonId left = AddonId.from("name", "1.0.0-SNAPSHOT", "0");
+      AddonId right = AddonId.from("name", "1.0.0-SNAPSHOT", "1");
+
+      Assert.assertTrue(left.compareTo(right) < 0);
+   }
+
+   @Test
+   public void testCompareToEqualsWithMismatchedApiVersionGt() throws Exception
+   {
+      AddonId left = AddonId.from("name", "1.0.0-SNAPSHOT", "2");
+      AddonId right = AddonId.from("name", "1.0.0-SNAPSHOT", "1");
+
+      Assert.assertTrue(left.compareTo(right) > 0);
    }
 }

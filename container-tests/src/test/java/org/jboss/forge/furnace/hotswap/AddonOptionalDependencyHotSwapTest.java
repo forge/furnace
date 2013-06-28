@@ -40,7 +40,7 @@ public class AddonOptionalDependencyHotSwapTest
       ForgeArchive archive = ShrinkWrap
                .create(ForgeArchive.class)
                .addBeansXML()
-               .addAsAddonDependencies(AddonDependencyEntry.create(AddonId.from("dep", "2"), false, true));
+               .addAsAddonDependencies(AddonDependencyEntry.create("dep", "2", false, true));
 
       return archive;
    }

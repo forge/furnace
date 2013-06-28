@@ -19,8 +19,8 @@ public class SingleVersionRange implements VersionRange
    public SingleVersionRange(Version version)
    {
       Assert.notNull(version, "Version must not be null.");
-      Assert.notNull(version.getVersionString(), "Version must not be null.");
-      if (version.getVersionString().isEmpty())
+      Assert.notNull(version.toString(), "Version must not be null.");
+      if (version.toString().isEmpty())
          throw new IllegalArgumentException("Version must not be empty.");
 
       this.version = version;
@@ -53,7 +53,7 @@ public class SingleVersionRange implements VersionRange
    @Override
    public boolean includes(Version version)
    {
-      return version != null && this.version.getVersionString().equals(version);
+      return version != null && this.version.equals(version);
    }
 
    @Override
@@ -65,6 +65,24 @@ public class SingleVersionRange implements VersionRange
             return this;
       }
       return new EmptyVersionRange();
+   }
+
+   @Override
+   public boolean isMaxInclusive()
+   {
+      return true;
+   }
+
+   @Override
+   public boolean isMinInclusive()
+   {
+      return true;
+   }
+
+   @Override
+   public String toString()
+   {
+      return version.toString();
    }
 
 }

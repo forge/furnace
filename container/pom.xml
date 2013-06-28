@@ -17,7 +17,6 @@
       <relativePath>../pom.xml</relativePath>
    </parent>
 
-   <groupId>org.jboss.forge.furnace</groupId>
    <artifactId>furnace</artifactId>
 
    <name>Furnace - Addon Container</name>
@@ -31,15 +30,17 @@
          <groupId>org.jboss.forge</groupId>
          <artifactId>xml-parser</artifactId>
       </dependency>
-
       <dependency>
          <groupId>org.jboss.forge</groupId>
          <artifactId>forge-jboss-modules</artifactId>
       </dependency>
-
       <dependency>
          <groupId>org.jboss.forge.furnace</groupId>
          <artifactId>furnace-proxy</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>net.sf.jgrapht</groupId>
+         <artifactId>jgrapht</artifactId>
       </dependency>
 
       <dependency>

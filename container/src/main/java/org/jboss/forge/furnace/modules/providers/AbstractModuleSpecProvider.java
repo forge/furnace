@@ -488,6 +488,7 @@ public abstract class AbstractModuleSpecProvider implements ModuleSpecProvider
       systemPaths.add("org/jboss/forge/furnace/event");
       systemPaths.add("org/jboss/forge/furnace/exception");
       systemPaths.add("org/jboss/forge/furnace/impl");
+      systemPaths.add("org/jboss/forge/furnace/impl/graph");
       systemPaths.add("org/jboss/forge/furnace/lock");
       systemPaths.add("org/jboss/forge/furnace/repositories");
       systemPaths.add("org/jboss/forge/furnace/modules");

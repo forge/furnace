@@ -35,6 +35,7 @@ import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.util.Files;
 import org.jboss.forge.furnace.util.OperatingSystemUtils;
 import org.jboss.forge.furnace.util.Streams;
+import org.jboss.forge.furnace.versions.EmptyVersion;
 import org.jboss.forge.furnace.versions.SingleVersion;
 import org.jboss.forge.furnace.versions.Version;
 import org.jboss.forge.furnace.versions.Versions;
@@ -80,11 +81,15 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
                DEFAULT_ADDON_DIR));
    }
 
-   public static String getRuntimeAPIVersion()
+   public static Version getRuntimeAPIVersion()
    {
       String version = AddonRepository.class.getPackage()
                .getImplementationVersion();
-      return version;
+      if(version != null)
+      {
+         return new SingleVersion(version);
+      }
+      return EmptyVersion.getInstance();
    }
 
    public static boolean hasRuntimeAPIVersion()
@@ -148,7 +153,7 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
 
                for (AddonDependencyEntry dependency : dependencies)
                {
-                  String name = dependency.getId().getName();
+                  String name = dependency.getName();
                   Node dep = null;
                   for (Node node : dependenciesNode.get(DEPENDENCY_TAG_NAME))
                   {
@@ -163,7 +168,7 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
                      dep = dependenciesNode.createChild(DEPENDENCY_TAG_NAME);
                      dep.attribute(ATTR_NAME, name);
                   }
-                  dep.attribute(ATTR_VERSION, dependency.getId().getVersion());
+                  dep.attribute(ATTR_VERSION, dependency.getVersionRange());
                   dep.attribute(ATTR_EXPORT, dependency.isExported());
                   dep.attribute(ATTR_OPTIONAL, dependency.isOptional());
                }
@@ -297,8 +302,10 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
                {
                   if (child != null)
                   {
-                     result.add(AddonDependencyEntry.create(AddonId.from(child.getAttribute(ATTR_NAME),
-                              child.getAttribute(ATTR_VERSION)), Boolean.valueOf(child.getAttribute(ATTR_EXPORT)),
+                     result.add(AddonDependencyEntry.create(
+                              child.getAttribute(ATTR_NAME),
+                              Versions.parseMultipleVersionRange(child.getAttribute(ATTR_VERSION)),
+                              Boolean.valueOf(child.getAttribute(ATTR_EXPORT)),
                               Boolean.valueOf(child.getAttribute(ATTR_OPTIONAL)))
                               );
                   }
@@ -391,53 +398,6 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
       });
    }
 
-   private AddonId getEnabled(final AddonId addon)
-   {
-      return lock.performLocked(LockMode.READ, new Callable<AddonId>()
-      {
-         @Override
-         public AddonId call() throws Exception
-         {
-            if (addon == null)
-            {
-               throw new RuntimeException("Addon must not be null");
-            }
-
-            File registryFile = getRepositoryRegistryFile();
-            try
-            {
-               Node installed = getXmlRoot(registryFile);
-
-               List<Node> children = installed.get("addon@" + ATTR_NAME + "=" + addon.getName());
-               for (Node child : children)
-               {
-                  if (child != null)
-                  {
-                     if ((addon.getApiVersion() == null)
-                              || Versions.areEqual(new SingleVersion(child.getAttribute(ATTR_API_VERSION)),
-                                       addon.getApiVersion()))
-                     {
-                        if ((addon.getVersion() == null)
-                                 || Versions.areEqual(new SingleVersion(child.getAttribute(ATTR_VERSION)),
-                                          addon.getVersion()))
-                        {
-                           return AddonId.from(child.getAttribute(ATTR_NAME),
-                                    child.getAttribute(ATTR_VERSION),
-                                    child.getAttribute(ATTR_API_VERSION));
-                        }
-                     }
-                  }
-               }
-            }
-            catch (FileNotFoundException e)
-            {
-               // already removed
-            }
-            return null;
-         }
-      });
-   }
-
    @Override
    public File getRootDirectory()
    {
@@ -515,7 +475,22 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
    @Override
    public boolean isEnabled(final AddonId addon)
    {
-      return getEnabled(addon) != null;
+      return lock.performLocked(LockMode.READ, new Callable<Boolean>()
+      {
+         @Override
+         public Boolean call() throws Exception
+         {
+            List<AddonId> enabled = listEnabledCompatibleWithVersion(getRuntimeAPIVersion());
+
+            for (AddonId id : enabled)
+            {
+               if (id.equals(addon))
+                  return true;
+            }
+
+            return false;
+         }
+      });
    }
 
    @Override
@@ -559,7 +534,7 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
    }
 
    @Override
-   public List<AddonId> listEnabledCompatibleWithVersion(final String version)
+   public List<AddonId> listEnabledCompatibleWithVersion(final Version version)
    {
       return lock.performLocked(LockMode.READ, new Callable<List<AddonId>>()
       {
@@ -573,7 +548,7 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
             for (AddonId entry : list)
             {
                if (version == null || entry.getApiVersion() == null
-                        || Versions.isApiCompatible(new SingleVersion(version), entry.getApiVersion()))
+                        || Versions.isApiCompatible(version, entry.getApiVersion()))
                {
                   result.add(entry);
                }

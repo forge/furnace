@@ -8,7 +8,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
 import org.jboss.forge.furnace.addons.Addon;
-import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.furnace.services.ExportedInstance;
@@ -31,8 +30,8 @@ public class AddonMultipleDependencyVersionTest
                .create(ForgeArchive.class)
                .addBeansXML()
                .addAsAddonDependencies(
-                        AddonDependencyEntry.create(AddonId.from("dep", "1")),
-                        AddonDependencyEntry.create(AddonId.from("dep", "2"))
+                        AddonDependencyEntry.create("dep", "1"),
+                        AddonDependencyEntry.create("dep", "2")
                );
 
       return archive;

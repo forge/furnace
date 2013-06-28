@@ -1,65 +1,254 @@
 /*
- * Copyright 2013 Red Hat, Inc. and/or its affiliates.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Eclipse Public License version 1.0, available at
- * http://www.eclipse.org/legal/epl-v10.html
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.jboss.forge.furnace.versions;
+
+import java.util.StringTokenizer;
 
 import org.jboss.forge.furnace.util.Assert;
 
 /**
- * A single, fixed value {@link Version}.
+ * Default implementation of artifact versioning.
  * 
+ * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
- * 
  */
 public class SingleVersion implements Version
 {
-   private String version;
+   private Integer majorVersion;
+
+   private Integer minorVersion;
+
+   private Integer incrementalVersion;
+
+   private Integer buildNumber;
+
+   private String qualifier;
+
+   private ComparableVersion comparable;
 
    public SingleVersion(String version)
    {
-      Assert.notNull(version, "Version must not be null.");
-      this.version = version;
-   }
-
-   @Override
-   public String toString()
-   {
-      return version;
-   }
-
-   @Override
-   public String getVersionString()
-   {
-      return toString();
+      parseVersion(version);
    }
 
    @Override
    public int hashCode()
    {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((version == null) ? 0 : version.hashCode());
-      return result;
+      return 11 + comparable.hashCode();
    }
 
    @Override
-   public boolean equals(Object obj)
+   public boolean equals(Object other)
    {
-      if (this == obj)
-         return true;
-      if (obj == null)
-         return false;
-      Version other = (Version) obj;
-      if (getVersionString() == null)
+      if (this == other)
       {
-         if (other.getVersionString() != null)
-            return false;
+         return true;
       }
-      else if (!getVersionString().equals(other.getVersionString()))
+
+      if (!(other instanceof Version))
+      {
          return false;
-      return true;
+      }
+
+      return compareTo((Version) other) == 0;
+   }
+
+   @Override
+   public int compareTo(Version otherVersion)
+   {
+      if (otherVersion instanceof SingleVersion)
+      {
+         return this.comparable.compareTo(((SingleVersion) otherVersion).comparable);
+      }
+      else
+      {
+         return compareTo(new SingleVersion(otherVersion.toString()));
+      }
+   }
+
+   @Override
+   public int getMajorVersion()
+   {
+      return majorVersion != null ? majorVersion : 0;
+   }
+
+   @Override
+   public int getMinorVersion()
+   {
+      return minorVersion != null ? minorVersion : 0;
+   }
+
+   @Override
+   public int getIncrementalVersion()
+   {
+      return incrementalVersion != null ? incrementalVersion : 0;
+   }
+
+   @Override
+   public int getBuildNumber()
+   {
+      return buildNumber != null ? buildNumber : 0;
+   }
+
+   @Override
+   public String getQualifier()
+   {
+      return qualifier;
+   }
+
+   public final void parseVersion(String version)
+   {
+      Assert.notNull(version, "Version must not be null.");
+      comparable = new ComparableVersion(version);
+
+      int index = version.indexOf("-");
+
+      String part1;
+      String part2 = null;
+
+      if (index < 0)
+      {
+         part1 = version;
+      }
+      else
+      {
+         part1 = version.substring(0, index);
+         part2 = version.substring(index + 1);
+      }
+
+      if (part2 != null)
+      {
+         try
+         {
+            if ((part2.length() == 1) || !part2.startsWith("0"))
+            {
+               buildNumber = Integer.valueOf(part2);
+            }
+            else
+            {
+               qualifier = part2;
+            }
+         }
+         catch (NumberFormatException e)
+         {
+            qualifier = part2;
+         }
+      }
+
+      if ((part1.indexOf(".") < 0) && !part1.startsWith("0"))
+      {
+         try
+         {
+            majorVersion = Integer.valueOf(part1);
+         }
+         catch (NumberFormatException e)
+         {
+            // qualifier is the whole version, including "-"
+            qualifier = version;
+            buildNumber = null;
+         }
+      }
+      else
+      {
+         boolean fallback = false;
+
+         StringTokenizer tok = new StringTokenizer(part1, ".");
+         try
+         {
+            majorVersion = getNextIntegerToken(tok);
+            if (tok.hasMoreTokens())
+            {
+               minorVersion = getNextIntegerToken(tok);
+            }
+            if (tok.hasMoreTokens())
+            {
+               incrementalVersion = getNextIntegerToken(tok);
+            }
+            if (tok.hasMoreTokens())
+            {
+               fallback = true;
+            }
+
+            // string tokenzier won't detect these and ignores them
+            if (part1.indexOf("..") >= 0 || part1.startsWith(".") || part1.endsWith("."))
+            {
+               fallback = true;
+            }
+         }
+         catch (NumberFormatException e)
+         {
+            fallback = true;
+         }
+
+         if (fallback)
+         {
+            // qualifier is the whole version, including "-"
+            qualifier = version;
+            majorVersion = null;
+            minorVersion = null;
+            incrementalVersion = null;
+            buildNumber = null;
+         }
+      }
+   }
+
+   private static Integer getNextIntegerToken(StringTokenizer tok)
+   {
+      String s = tok.nextToken();
+      if ((s.length() > 1) && s.startsWith("0"))
+      {
+         throw new NumberFormatException("Number part has a leading 0: '" + s + "'");
+      }
+      return Integer.valueOf(s);
+   }
+
+   @Override
+   public String toString()
+   {
+      StringBuilder buf = new StringBuilder();
+      if (majorVersion != null)
+      {
+         buf.append(majorVersion);
+      }
+      if (minorVersion != null)
+      {
+         buf.append(".");
+         buf.append(minorVersion);
+      }
+      if (incrementalVersion != null)
+      {
+         buf.append(".");
+         buf.append(incrementalVersion);
+      }
+      if (buildNumber != null)
+      {
+         buf.append("-");
+         buf.append(buildNumber);
+      }
+      else if (qualifier != null)
+      {
+         if (buf.length() > 0)
+         {
+            buf.append("-");
+         }
+         buf.append(qualifier);
+      }
+      return buf.toString();
    }
 }

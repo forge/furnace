@@ -53,7 +53,7 @@ public class LockManagerImpl implements LockManager
       }
       catch (Exception e)
       {
-         throw new ContainerException(e);
+         throw new ContainerException("Failed to execute task in LockMode [" + mode + "]", e);
       }
       finally
       {

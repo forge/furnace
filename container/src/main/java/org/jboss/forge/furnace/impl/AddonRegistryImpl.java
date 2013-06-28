@@ -29,6 +29,8 @@ import org.jboss.forge.furnace.addons.MarkDisabledLoadedAddonsDirtyVisitor;
 import org.jboss.forge.furnace.addons.StartEnabledAddonsVisitor;
 import org.jboss.forge.furnace.addons.StopAllAddonsVisitor;
 import org.jboss.forge.furnace.addons.StopDirtyAddonsVisitor;
+import org.jboss.forge.furnace.impl.graph.CompleteAddonGraph;
+import org.jboss.forge.furnace.impl.graph.OptimizedAddonGraph;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.repositories.AddonRepository;
@@ -44,7 +46,7 @@ public class AddonRegistryImpl implements AddonRegistry
 {
    private static final Logger logger = Logger.getLogger(AddonRegistryImpl.class.getName());
 
-   private final Furnace forge;
+   private final Furnace furnace;
    private final LockManager lock;
    private final AddonTree tree;
    private final AtomicInteger starting = new AtomicInteger(-1);
@@ -58,7 +60,7 @@ public class AddonRegistryImpl implements AddonRegistry
       Assert.notNull(forge, "Furnace instance must not be null.");
       Assert.notNull(forge.getLockManager(), "LockManager must not be null.");
 
-      this.forge = forge;
+      this.furnace = forge;
       this.lock = forge.getLockManager();
       this.tree = new AddonTree(lock);
       this.loader = new AddonLoader(forge, tree);
@@ -234,6 +236,13 @@ public class AddonRegistryImpl implements AddonRegistry
                starting.set(0);
 
             Set<AddonId> enabled = getAllEnabled();
+            
+            CompleteAddonGraph graph = new CompleteAddonGraph(furnace);
+            OptimizedAddonGraph optimizedGraph = new OptimizedAddonGraph(furnace, graph.getGraph());
+
+            System.out.println(" ------------ DUMPING GRAPHS ------------ ");
+            System.out.println(graph);
+            System.out.println(optimizedGraph);
 
             tree.breadthFirst(new MarkDisabledLoadedAddonsDirtyVisitor(tree, enabled));
 
@@ -251,7 +260,7 @@ public class AddonRegistryImpl implements AddonRegistry
                loader.loadAddon(addonId);
             }
 
-            tree.depthFirst(new StartEnabledAddonsVisitor(forge, tree, executor, starting, enabled));
+            tree.depthFirst(new StartEnabledAddonsVisitor(furnace, tree, executor, starting, enabled));
             return null;
          }
       });
@@ -278,7 +287,7 @@ public class AddonRegistryImpl implements AddonRegistry
    private Set<AddonId> getAllEnabled()
    {
       Set<AddonId> result = new HashSet<AddonId>();
-      for (AddonRepository repository : forge.getRepositories())
+      for (AddonRepository repository : furnace.getRepositories())
       {
          for (AddonId enabled : repository.listEnabled())
          {

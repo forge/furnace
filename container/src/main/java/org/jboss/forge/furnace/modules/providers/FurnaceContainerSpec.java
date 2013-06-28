@@ -1,4 +1,3 @@
-
 package org.jboss.forge.furnace.modules.providers;
 
 import java.util.Arrays;

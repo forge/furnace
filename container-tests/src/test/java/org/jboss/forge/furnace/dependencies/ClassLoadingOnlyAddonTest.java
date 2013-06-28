@@ -5,7 +5,6 @@ import org.example.PublisherService;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
-import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.junit.Assert;
@@ -24,7 +23,7 @@ public class ClassLoadingOnlyAddonTest
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
                .addClass(PublisherService.class)
                .addBeansXML()
-               .addAsAddonDependencies(AddonDependencyEntry.create(AddonId.from("noncdi", "1")));
+               .addAsAddonDependencies(AddonDependencyEntry.create("noncdi", "1"));
 
       return archive;
    }

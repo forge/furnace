@@ -39,7 +39,7 @@ public class ClassLoaderListParameterProxiedTest
                .addBeansXML()
                .addClasses(Result.class, MockResult.class, ClassWithListAsParameter.class)
                .addAsAddonDependencies(
-                        AddonDependencyEntry.create(AddonId.from("dep", "1"))
+                        AddonDependencyEntry.create("dep", "1")
                );
 
       return archive;

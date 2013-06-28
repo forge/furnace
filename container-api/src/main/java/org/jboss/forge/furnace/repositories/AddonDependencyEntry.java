@@ -7,8 +7,9 @@
 package org.jboss.forge.furnace.repositories;
 
 import org.jboss.forge.furnace.addons.Addon;
-import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.util.Assert;
+import org.jboss.forge.furnace.versions.VersionRange;
+import org.jboss.forge.furnace.versions.Versions;
 
 /**
  * Represents an {@link Addon} dependency as specified in its originating {@link AddonRepository}.
@@ -17,36 +18,94 @@ import org.jboss.forge.furnace.util.Assert;
  */
 public class AddonDependencyEntry
 {
-   private AddonId id;
+   private String name;
+   private VersionRange version;
    private boolean exported;
    private boolean optional;
 
-   public AddonId getId()
-   {
-      return id;
-   }
-
+   /**
+    * Return <code>true</code> if this dependency is optional.
+    */
    public boolean isOptional()
    {
       return optional;
    }
 
+   /**
+    * Return <code>true</code> if this dependency is exported.
+    */
    public boolean isExported()
    {
       return exported;
    }
 
-   public static AddonDependencyEntry create(AddonId id)
+   /**
+    * Get the dependency name.
+    */
+   public String getName()
    {
-      return create(id, false, false);
+      return name;
    }
 
-   public static AddonDependencyEntry create(AddonId id, boolean exported, boolean optional)
+   /**
+    * Get the dependency {@link VersionRange}.
+    */
+   public VersionRange getVersionRange()
    {
-      Assert.notNull(id, "AddonId must not be null.");
+      return version;
+   }
+
+   /**
+    * Create a new {@link AddonDependencyEntry} with the given attributes.
+    */
+   public static AddonDependencyEntry create(String name, String versionRange)
+   {
+      return create(name, Versions.parseMultipleVersionRange(versionRange), false, false);
+   }
+
+   /**
+    * Create a new {@link AddonDependencyEntry} with the given attributes.
+    */
+   public static AddonDependencyEntry create(String name, VersionRange range)
+   {
+      return create(name, range, false, false);
+   }
+
+   /**
+    * Create a new {@link AddonDependencyEntry} with the given attributes.
+    */
+   public static AddonDependencyEntry create(String name, String versionRange, boolean exported)
+   {
+      return create(name, Versions.parseMultipleVersionRange(versionRange), exported, false);
+   }
+
+   /**
+    * Create a new {@link AddonDependencyEntry} with the given attributes.
+    */
+   public static AddonDependencyEntry create(String name, VersionRange range, boolean exported)
+   {
+      return create(name, range, exported, false);
+   }
+
+   /**
+    * Create a new {@link AddonDependencyEntry} with the given attributes.
+    */
+   public static AddonDependencyEntry create(String name, String versionRange, boolean exported, boolean optional)
+   {
+      return create(name, Versions.parseMultipleVersionRange(versionRange), exported, optional);
+   }
+
+   /**
+    * Create a new {@link AddonDependencyEntry} with the given attributes.
+    */
+   public static AddonDependencyEntry create(String name, VersionRange range, boolean exported, boolean optional)
+   {
+      Assert.notNull(name, "Addon name must not be null.");
+      Assert.notNull(range, "Addon version must not be null.");
 
       AddonDependencyEntry entry = new AddonDependencyEntry();
-      entry.id = id;
+      entry.name = name;
+      entry.version = range;
       entry.exported = exported;
       entry.optional = optional;
       return entry;
@@ -55,36 +114,8 @@ public class AddonDependencyEntry
    @Override
    public String toString()
    {
-      return id + ": exported=" + exported + ", optional=" + optional;
-   }
-
-   @Override
-   public int hashCode()
-   {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((id == null) ? 0 : id.hashCode());
-      return result;
-   }
-
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (this == obj)
-         return true;
-      if (obj == null)
-         return false;
-      if (getClass() != obj.getClass())
-         return false;
-      AddonDependencyEntry other = (AddonDependencyEntry) obj;
-      if (id == null)
-      {
-         if (other.id != null)
-            return false;
-      }
-      else if (!id.equals(other.id))
-         return false;
-      return true;
+      return "name=" + name + ", version=" + version + ", exported=" + exported + ", optional="
+               + optional;
    }
 
 }

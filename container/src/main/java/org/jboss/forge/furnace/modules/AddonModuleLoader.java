@@ -20,6 +20,7 @@ import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.impl.AddonRepositoryImpl;
 import org.jboss.forge.furnace.modules.providers.FurnaceContainerSpec;
+import org.jboss.forge.furnace.modules.providers.JGraphTClasspathSpec;
 import org.jboss.forge.furnace.modules.providers.SystemClasspathSpec;
 import org.jboss.forge.furnace.modules.providers.WeldClasspathSpec;
 import org.jboss.forge.furnace.modules.providers.XPathJDKClasspathSpec;
@@ -43,7 +44,7 @@ public class AddonModuleLoader extends ModuleLoader
 {
    private static final Logger logger = Logger.getLogger(AddonModuleLoader.class.getName());
 
-   private Furnace forge;
+   private Furnace furnace;
    private final Iterable<ModuleSpecProvider> moduleProviders;
 
    private AddonModuleIdentifierCache moduleCache;
@@ -51,7 +52,7 @@ public class AddonModuleLoader extends ModuleLoader
 
    public AddonModuleLoader(Furnace forge)
    {
-      this.forge = forge;
+      this.furnace = forge;
       this.moduleCache = new AddonModuleIdentifierCache();
       this.moduleJarFileCache = new AddonModuleJarFileCache();
       moduleProviders = ServiceLoader.load(ModuleSpecProvider.class, forge.getRuntimeClassLoader());
@@ -122,7 +123,7 @@ public class AddonModuleLoader extends ModuleLoader
 
    public ModuleSpec findAddonModule(ModuleIdentifier id)
    {
-      for (AddonRepository repository : forge.getRepositories())
+      for (AddonRepository repository : furnace.getRepositories())
       {
          AddonId found = findInstalledModule(repository, id);
 
@@ -132,10 +133,13 @@ public class AddonModuleLoader extends ModuleLoader
 
             // Set up the ClassPath for this addon Module
 
+            // TODO Reduce visibility of Weld and JGrapht to Forge Module only.
             builder.addDependency(DependencySpec.createModuleDependencySpec(SystemClasspathSpec.ID));
             builder.addDependency(DependencySpec.createModuleDependencySpec(XPathJDKClasspathSpec.ID));
             builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(),
                      PathFilters.rejectAll(), null, FurnaceContainerSpec.ID, false));
+            builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(),
+                     PathFilters.rejectAll(), null, JGraphTClasspathSpec.ID, false));
             builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(),
                      PathFilters.rejectAll(), null, WeldClasspathSpec.ID, false));
 
@@ -199,7 +203,8 @@ public class AddonModuleLoader extends ModuleLoader
       Set<AddonDependencyEntry> addons = repository.getAddonDependencies(found);
       for (AddonDependencyEntry dependency : addons)
       {
-         ModuleIdentifier moduleId = findCompatibleInstalledModule(dependency.getId());
+         AddonId dependencyId = furnace.getAddonRegistry().resolve(dependency).getId();
+         ModuleIdentifier moduleId = moduleCache.getModuleId(dependencyId);
 
          if (moduleId == null && !dependency.isOptional())
          {
@@ -212,7 +217,7 @@ public class AddonModuleLoader extends ModuleLoader
                      PathFilters.not(PathFilters.getMetaInfFilter()),
                      dependency.isExported() ? PathFilters.acceptAll() : PathFilters.rejectAll(),
                      this,
-                     moduleCache.getModuleId(dependency.getId()),
+                     moduleId,
                      dependency.isOptional()));
          }
       }
@@ -221,7 +226,8 @@ public class AddonModuleLoader extends ModuleLoader
    private AddonId findInstalledModule(AddonRepository repository, ModuleIdentifier moduleId)
    {
       AddonId found = null;
-      for (AddonId addon : repository.listEnabledCompatibleWithVersion(AddonRepositoryImpl.getRuntimeAPIVersion()))
+      List<AddonId> enabled = repository.listEnabledCompatibleWithVersion(AddonRepositoryImpl.getRuntimeAPIVersion());
+      for (AddonId addon : enabled)
       {
          if (moduleCache.getModuleId(addon).equals(moduleId))
          {
@@ -236,7 +242,7 @@ public class AddonModuleLoader extends ModuleLoader
    {
       AddonId found = null;
 
-      for (AddonRepository repository : forge.getRepositories())
+      for (AddonRepository repository : furnace.getRepositories())
       {
          for (AddonId addon : repository.listEnabledCompatibleWithVersion(AddonRepositoryImpl.getRuntimeAPIVersion()))
          {

@@ -13,10 +13,40 @@ import org.jboss.forge.furnace.addons.Addon;
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public interface Version
+public interface Version extends Comparable<Version>
 {
    /**
-    * Get the {@link String} representation of this {@link Version} instance.
+    * Get the major version component.
+    * <p>
+    * <code>Major.minor.micro-qualifier-buildnumber</code>
     */
-   String getVersionString();
+   int getMajorVersion();
+
+   /**
+    * Get the minor version component.
+    * <p>
+    * <code>Major.minor.micro-qualifier-buildnumber</code>
+    */
+   int getMinorVersion();
+
+   /**
+    * Get the micro version component.
+    * <p>
+    * <code>Major.minor.micro-qualifier-buildnumber</code>
+    */
+   int getIncrementalVersion();
+
+   /**
+    * Get the build number version component.
+    * <p>
+    * <code>Major.minor.micro-qualifier-buildnumber</code>
+    */
+   int getBuildNumber();
+
+   /**
+    * Get the qualifier version component.
+    * <p>
+    * <code>Major.minor.micro-qualifier-buildnumber</code>
+    */
+   String getQualifier();
 }

@@ -26,7 +26,6 @@ import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 import org.jboss.forge.furnace.spi.ContainerLifecycleListener;
 import org.jboss.forge.furnace.spi.ListenerRegistration;
 import org.jboss.forge.furnace.util.Assert;
-import org.jboss.forge.furnace.versions.SingleVersion;
 import org.jboss.forge.furnace.versions.Version;
 import org.jboss.modules.Module;
 import org.jboss.modules.log.StreamModuleLogger;
@@ -247,8 +246,7 @@ public class FurnaceImpl implements Furnace
    @Override
    public Version getVersion()
    {
-      return AddonRepositoryImpl.getRuntimeAPIVersion() == null ? null : new SingleVersion(
-               AddonRepositoryImpl.getRuntimeAPIVersion());
+      return AddonRepositoryImpl.getRuntimeAPIVersion() == null ? null : AddonRepositoryImpl.getRuntimeAPIVersion();
    }
 
    @Override

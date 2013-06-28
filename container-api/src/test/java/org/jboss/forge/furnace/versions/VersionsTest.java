@@ -6,8 +6,8 @@
  */
 package org.jboss.forge.furnace.versions;
 
-import org.jboss.forge.furnace.versions.SingleVersion;
-import org.jboss.forge.furnace.versions.Versions;
+import static org.junit.Assert.*;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -21,7 +21,36 @@ public class VersionsTest
    @Test
    public void testAreEqual()
    {
-      Assert.assertTrue(Versions.areEqual(new SingleVersion("1"), new SingleVersion("1")));
+      Assert.assertEquals(new SingleVersion("1"), new SingleVersion("1"));
+      Assert.assertEquals(new SingleVersion("1.1"), new SingleVersion("1.1"));
+      Assert.assertEquals(new SingleVersion("1.1.1"), new SingleVersion("1.1.1"));
+      Assert.assertEquals(new SingleVersion("1.1.1-SNAPSHOT"), new SingleVersion("1.1.1-SNAPSHOT"));
+      Assert.assertNotEquals(new SingleVersion("1"), new SingleVersion("2"));
+      Assert.assertNotEquals(new SingleVersion("1.1"), new SingleVersion("1.1.1"));
+      Assert.assertNotEquals(new SingleVersion("1.1.1-SNAPSHOT"), new SingleVersion("1.1.1"));
+   }
+
+   @Test
+   public void testParseVersionRange() throws Exception
+   {
+      VersionRange range = Versions.parseVersionRange("[0,15]");
+      Assert.assertEquals(new SingleVersion("0"), range.getMin());
+      Assert.assertEquals(new SingleVersion("15"), range.getMax());
+      Assert.assertTrue(range.isMinInclusive());
+      Assert.assertTrue(range.isMaxInclusive());
+   }
+
+   @Test
+   public void testVersionRangeIntersection() throws Exception
+   {
+      VersionRange set = Versions.parseVersionRange("[0,15]");
+      VersionRange subset = Versions.parseVersionRange("[3,7)");
+
+      VersionRange intersection = Versions.intersection(set, subset);
+      Assert.assertEquals(new SingleVersion("3"), intersection.getMin());
+      Assert.assertEquals(new SingleVersion("7"), intersection.getMax());
+      Assert.assertTrue(intersection.isMinInclusive());
+      Assert.assertFalse(intersection.isMaxInclusive());
    }
 
 }

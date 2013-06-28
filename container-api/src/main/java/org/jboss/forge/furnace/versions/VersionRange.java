@@ -45,4 +45,14 @@ public interface VersionRange
     * <code>null</code>.)
     */
    VersionRange getIntersection(VersionRange... ranges);
+
+   /**
+    * Return <code>true</code> if {@link #getMax()} is inclusive.
+    */
+   boolean isMaxInclusive();
+
+   /**
+    * Return <code>true</code> if {@link #getMin()} is inclusive.
+    */
+   boolean isMinInclusive();
 }

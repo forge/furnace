@@ -37,8 +37,8 @@ public class ClassLoaderParameterUnwrappedTest
                .addBeansXML()
                .addClasses(IterableFactory.class, ClassWithClassAsParameter.class)
                .addAsAddonDependencies(
-                        AddonDependencyEntry.create(AddonId.from("dep", "1")),
-                        AddonDependencyEntry.create(AddonId.from("dep", "2"))
+                        AddonDependencyEntry.create("dep", "1"),
+                        AddonDependencyEntry.create("dep", "2")
                );
 
       return archive;

@@ -187,8 +187,9 @@ public class AddonLoader
       Set<AddonDependency> result = new HashSet<AddonDependency>();
       for (AddonDependencyEntry entry : entries)
       {
-         result.add(new AddonDependencyImpl(lock, addon, new SingleVersionRange(entry.getId().getVersion()),
-                  loadAddon(entry.getId()), entry.isExported(), entry.isOptional()));
+         Addon dependency = furnace.getAddonRegistry().resolve(entry);
+         result.add(new AddonDependencyImpl(lock, addon, entry.getVersionRange(), dependency, entry.isExported(), entry
+                  .isOptional()));
       }
       return result;
    }

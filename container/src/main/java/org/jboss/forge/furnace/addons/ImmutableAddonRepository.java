@@ -12,9 +12,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.furnace.repositories.AddonRepository;
+import org.jboss.forge.furnace.versions.Version;
 
 /**
  * An immutable {@link AddonRepository} implementation that delegates to a wrapped instance.
@@ -81,7 +81,7 @@ public class ImmutableAddonRepository implements AddonRepository
    }
 
    @Override
-   public List<AddonId> listEnabledCompatibleWithVersion(String version)
+   public List<AddonId> listEnabledCompatibleWithVersion(Version version)
    {
       return delegate.listEnabledCompatibleWithVersion(version);
    }

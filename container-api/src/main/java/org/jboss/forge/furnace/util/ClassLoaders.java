@@ -85,7 +85,7 @@ public class ClassLoaders
       }
       catch (ClassNotFoundException e)
       {
-         throw new ContainerException(e);
+         throw new ContainerException("Could not locate class [" + typeName + "] in Loader [" + loader + "]", e);
       }
    }
 
@@ -100,7 +100,7 @@ public class ClassLoaders
       }
       catch (ClassNotFoundException e)
       {
-         throw new ContainerException(e);
+         throw new ContainerException("Could not locate class [" + type.getName() + "] in Loader [" + loader + "]", e);
       }
    }
 }

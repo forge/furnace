@@ -34,7 +34,7 @@ public class ClassLoaderAdapterEnumCollisionsTest
                .addBeansXML()
                .addClasses(SimpleEnum.class, SimpleEnumFactory.class)
                .addAsAddonDependencies(
-                        AddonDependencyEntry.create(AddonId.from("dep", "1"))
+                        AddonDependencyEntry.create("dep", "1")
                );
 
       return archive;

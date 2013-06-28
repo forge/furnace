@@ -40,7 +40,7 @@ public class AddonDeepOptionalDependencyHotSwapTest
       ForgeArchive archive = ShrinkWrap
                .create(ForgeArchive.class)
                .addBeansXML()
-               .addAsAddonDependencies(AddonDependencyEntry.create(AddonId.from("dep", "2"), false, true));
+               .addAsAddonDependencies(AddonDependencyEntry.create("dep", "2", false, true));
 
       return archive;
    }
@@ -51,7 +51,7 @@ public class AddonDeepOptionalDependencyHotSwapTest
       ForgeArchive archive = ShrinkWrap
                .create(ForgeArchive.class)
                .addBeansXML()
-               .addAsAddonDependencies(AddonDependencyEntry.create(AddonId.from("dep", "3"), false, true));
+               .addAsAddonDependencies(AddonDependencyEntry.create("dep", "3", false, true));
 
       return archive;
    }
@@ -62,7 +62,7 @@ public class AddonDeepOptionalDependencyHotSwapTest
       ForgeArchive archive = ShrinkWrap
                .create(ForgeArchive.class)
                .addBeansXML()
-               .addAsAddonDependencies(AddonDependencyEntry.create(AddonId.from("dep", "4"), false, true));
+               .addAsAddonDependencies(AddonDependencyEntry.create("dep", "4", false, true));
 
       return archive;
    }

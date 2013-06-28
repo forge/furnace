@@ -121,7 +121,7 @@ public class AddonRepositoryImplTest
                File.createTempFile("addonDir", "test"));
 
       AddonId addon = AddonId.from("1", "2");
-      AddonDependencyEntry dependency = AddonDependencyEntry.create(AddonId.from("nm", "ver"), false, true);
+      AddonDependencyEntry dependency = AddonDependencyEntry.create("nm", "ver", false, true);
       repository.deploy(addon, Arrays.asList(dependency), new ArrayList<File>());
 
       Assert.assertEquals(1, repository.getAddonDependencies(addon).size());
@@ -135,8 +135,8 @@ public class AddonRepositoryImplTest
                File.createTempFile("addonDir", "test"));
 
       AddonId addon = AddonId.from("1", "2");
-      AddonDependencyEntry dependency0 = AddonDependencyEntry.create(AddonId.from("nm1", "ver"), true, false);
-      AddonDependencyEntry dependency1 = AddonDependencyEntry.create(AddonId.from("nm2", "ver"));
+      AddonDependencyEntry dependency0 = AddonDependencyEntry.create("nm1", "ver", true, false);
+      AddonDependencyEntry dependency1 = AddonDependencyEntry.create("nm2", "ver");
 
       repository.deploy(addon, Arrays.asList(dependency0, dependency1), new ArrayList<File>());
 

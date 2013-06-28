@@ -14,6 +14,7 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import org.jboss.forge.furnace.addons.AddonId;
+import org.jboss.forge.furnace.versions.Version;
 
 /**
  * Used to perform Addon installation/registration operations. May be obtained using CDI injection:
@@ -42,7 +43,7 @@ public interface AddonRepository
 
    public List<AddonId> listEnabled();
 
-   public List<AddonId> listEnabledCompatibleWithVersion(final String version);
+   public List<AddonId> listEnabledCompatibleWithVersion(final Version version);
 
    public Date getLastModified();
 

@@ -35,7 +35,7 @@ public class ClassLoaderAdapterPassthroughTest
                .addBeansXML()
                .addClass(MockResult.class)
                .addAsAddonDependencies(
-                        AddonDependencyEntry.create(AddonId.from("dep", "1"))
+                        AddonDependencyEntry.create("dep", "1")
                );
 
       return archive;
