@@ -1,0 +1,506 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+
+   <parent>
+      <groupId>org.jboss</groupId>
+      <artifactId>jboss-parent</artifactId>
+      <version>10</version>
+   </parent>
+
+   <groupId>org.jboss.forge.furnace</groupId>
+   <artifactId>furnace-parent</artifactId>
+   <version>2.0.0-SNAPSHOT</version>
+   <packaging>pom</packaging>
+
+   <name>Furnace - Parent</name>
+   <description>A light-weight module container.</description>
+
+   <licenses>
+      <license>
+         <name>Eclipse Public License version 1.0</name>
+         <url>http://www.eclipse.org/legal/epl-v10.html</url>
+      </license>
+   </licenses>
+
+   <developers>
+      <developer>
+         <id>lincoln</id>
+         <name>Lincoln Baxter, III</name>
+         <email>lincolnbaxter@gmail.com</email>
+      </developer>
+      <developer>
+         <id>gastaldi</id>
+         <name>George Gastaldi</name>
+         <email>gegastaldi@gmail.com</email>
+      </developer>
+   </developers>
+
+   <prerequisites>
+      <maven>3.0</maven>
+   </prerequisites>
+
+   <properties>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+      <!-- Build Info -->
+      <forge.scm.connection>scm:git:git://github.com/forge/furnace.git</forge.scm.connection>
+      <forge.developer.connection>scm:git:git@github.com:forge/furnace.git</forge.developer.connection>
+      <forge.scm.url>http://github.com/forge/furnace</forge.scm.url>
+      <forge.release.codename>Fire it Up</forge.release.codename>
+      <forge.release.version>${project.version}</forge.release.version>
+      <version.arquillian>1.0.4.Final</version.arquillian>
+      <version.arquillian.container>1.0.0.CR5</version.arquillian.container>
+      <version.cdi>1.1</version.cdi>
+      <version.javassist>1</version.javassist>
+      <version.jboss.spec>3.0.2.Final</version.jboss.spec>
+      <version.jboss.modules>3</version.jboss.modules>
+      <version.junit>4.11</version.junit>
+      <version.org.jboss.logmanager.jboss-logmanager>1.4.1.Final</version.org.jboss.logmanager.jboss-logmanager>
+      <version.slf4j>1.6.1</version.slf4j>
+      <version.weld>2.0.1.Final</version.weld>
+      <version.weld.spi>2.0.Final</version.weld.spi>
+      <version.xmlparser>1.0.0.Final</version.xmlparser>
+   </properties>
+
+   <profiles>
+      <profile>
+         <id>all</id>
+         <activation>
+            <activeByDefault>true</activeByDefault>
+         </activation>
+         <modules>
+
+            <module>container</module>
+            <module>container-api</module>
+            <module>container-tests</module>
+            <module>proxy</module>
+            <module>proxy-tests</module>
+            <module>se</module>
+
+         </modules>
+      </profile>
+   </profiles>
+
+   <dependencyManagement>
+      <dependencies>
+         <!-- Furnace Container -->
+         <dependency>
+            <groupId>org.jboss.forge.furnace</groupId>
+            <artifactId>furnace-api</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.forge.furnace</groupId>
+            <artifactId>furnace</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.forge.furnace</groupId>
+            <artifactId>furnace-proxy</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.forge.furnace</groupId>
+            <artifactId>furnace-se</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.forge</groupId>
+            <artifactId>forge-jboss-modules</artifactId>
+            <version>${version.jboss.modules}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.forge</groupId>
+            <artifactId>forge-javassist</artifactId>
+            <version>${version.javassist}</version>
+            <scope>compile</scope>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.forge</groupId>
+            <artifactId>xml-parser</artifactId>
+            <version>${version.xmlparser}</version>
+         </dependency>
+
+
+         <!-- Test Harneses Dependencies -->
+         <dependency>
+            <groupId>org.jboss.forge.test</groupId>
+            <artifactId>forge-test-harness</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.forge.test</groupId>
+            <artifactId>arquillian-forge-classpath</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.forge.test</groupId>
+            <artifactId>arquillian-forge-core</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+         </dependency>
+
+         <!-- SLF4J Logging API -->
+         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${version.slf4j}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>${version.slf4j}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-ext</artifactId>
+            <version>${version.slf4j}</version>
+         </dependency>
+
+         <!-- JBoss Logging dependencies -->
+         <dependency>
+            <groupId>org.jboss.logmanager</groupId>
+            <artifactId>jboss-logmanager</artifactId>
+            <version>${version.org.jboss.logmanager.jboss-logmanager}</version>
+         </dependency>
+
+         <!-- CDI dependencies -->
+         <dependency>
+            <groupId>org.jboss.spec</groupId>
+            <artifactId>jboss-javaee-6.0</artifactId>
+            <version>${version.jboss.spec}</version>
+            <type>pom</type>
+            <scope>import</scope>
+         </dependency>
+         <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
+            <version>${version.cdi}</version>
+         </dependency>
+
+         <!-- Test Dependencies -->
+         <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${version.junit}</version>
+            <scope>test</scope>
+         </dependency>
+
+         <!-- Weld -->
+         <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-core</artifactId>
+            <version>${version.weld}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-spi</artifactId>
+            <version>${version.weld.spi}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.weld.se</groupId>
+            <artifactId>weld-se-core</artifactId>
+            <version>${version.weld}</version>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+
+   <dependencies>
+      <dependency>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+         <scope>test</scope>
+      </dependency>
+   </dependencies>
+
+   <repositories>
+      <repository>
+         <id>jboss-snapshots-repository-group</id>
+         <url>https://repository.jboss.org/nexus/content/repositories/snapshots/</url>
+         <layout>default</layout>
+         <releases>
+            <enabled>false</enabled>
+         </releases>
+         <snapshots>
+            <enabled>true</enabled>
+         </snapshots>
+      </repository>
+      <repository>
+         <id>jboss-public-repository-group</id>
+         <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+         <layout>default</layout>
+         <releases>
+            <enabled>true</enabled>
+         </releases>
+         <snapshots>
+            <enabled>false</enabled>
+         </snapshots>
+      </repository>
+   </repositories>
+
+   <pluginRepositories>
+      <pluginRepository>
+         <id>jboss-snapshots-repository-group</id>
+         <url>https://repository.jboss.org/nexus/content/repositories/snapshots/</url>
+         <layout>default</layout>
+         <releases>
+            <enabled>false</enabled>
+         </releases>
+         <snapshots>
+            <enabled>true</enabled>
+         </snapshots>
+      </pluginRepository>
+      <pluginRepository>
+         <id>jboss-public-repository-group</id>
+         <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+         <layout>default</layout>
+         <releases>
+            <enabled>true</enabled>
+         </releases>
+         <snapshots>
+            <enabled>false</enabled>
+         </snapshots>
+      </pluginRepository>
+   </pluginRepositories>
+
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+               <source>1.6</source>
+               <target>1.6</target>
+               <encoding>UTF-8</encoding>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <inherited>true</inherited>
+            <configuration>
+               <archive>
+                  <manifest>
+                     <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                     <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                  </manifest>
+               </archive>
+               <forceCreation>true</forceCreation>
+            </configuration>
+         </plugin>
+      </plugins>
+
+
+      <pluginManagement>
+         <plugins>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-dependency-plugin</artifactId>
+               <version>2.5.1</version>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-source-plugin</artifactId>
+               <executions>
+                  <execution>
+                     <id>attach-sources</id>
+                     <goals>
+                        <goal>jar-no-fork</goal>
+                     </goals>
+                  </execution>
+               </executions>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-jar-plugin</artifactId>
+               <version>${version.jar.plugin}</version>
+               <configuration>
+                  <archive>
+                     <manifest>
+                        <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                     </manifest>
+                     <manifestEntries>
+                        <Implementation-URL>${project.url}</Implementation-URL>
+                        <Forge-Release-Version>${forge.release.version}</Forge-Release-Version>
+                        <Forge-Release-Codename>${forge.release.codename}</Forge-Release-Codename>
+                     </manifestEntries>
+                     <manifestSections>
+                        <manifestSection>
+                           <name>Build-Information</name>
+                           <manifestEntries>
+                              <Maven-Version>${maven.version}</Maven-Version>
+                              <Java-Version>${java.version}</Java-Version>
+                              <Java-Vendor>${java.vendor}</Java-Vendor>
+                              <Os-Name>${os.name}</Os-Name>
+                              <Os-Arch>${os.arch}</Os-Arch>
+                              <Os-Version>${os.version}</Os-Version>
+                              <Scm-Url>${forge.scm.url}</Scm-Url>
+                              <Scm-Connection>${forge.scm.connection}</Scm-Connection>
+                              <Build-Time>${build.timestamp}</Build-Time>
+                           </manifestEntries>
+                        </manifestSection>
+                     </manifestSections>
+                  </archive>
+               </configuration>
+            </plugin>
+
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-javadoc-plugin</artifactId>
+               <version>2.8.1</version>
+               <configuration>
+                  <!-- Default configuration for all reports -->
+                  <outputDirectory>${project.build.directory}/javadoc/${project.version}</outputDirectory>
+                  <reportOutputDirectory>${project.build.directory}/javadoc/${project.version}</reportOutputDirectory>
+                  <destDir>${project.build.directory}/javadoc/${project.version}</destDir>
+                  <failOnError>false</failOnError>
+               </configuration>
+               <executions>
+                  <execution>
+                     <id>aggregate</id>
+                     <goals>
+                        <goal>aggregate</goal>
+                     </goals>
+                     <phase>site</phase>
+                     <configuration>
+                        <!-- Specific configuration for the aggregate report -->
+                     </configuration>
+                  </execution>
+               </executions>
+            </plugin>
+
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-surefire-plugin</artifactId>
+               <version>2.12</version>
+               <configuration>
+                  <argLine>-Xms512m -Xmx1536m -XX:MaxPermSize=512m</argLine>
+               </configuration>
+            </plugin>
+
+            <plugin>
+               <!--TODO TEXT. This plugin's configuration is used in m2e only. -->
+               <groupId>org.eclipse.m2e</groupId>
+               <artifactId>lifecycle-mapping</artifactId>
+               <version>1.0.0</version>
+               <configuration>
+                  <lifecycleMappingMetadata>
+                     <pluginExecutions>
+                        <pluginExecution>
+                           <pluginExecutionFilter>
+                              <groupId>
+                                 org.apache.maven.plugins
+                              </groupId>
+                              <artifactId>
+                                 maven-dependency-plugin
+                              </artifactId>
+                              <versionRange>[2.1,)</versionRange>
+                              <goals>
+                                 <goal>copy</goal>
+                              </goals>
+                           </pluginExecutionFilter>
+                           <action>
+                              <ignore />
+                           </action>
+                        </pluginExecution>
+                        <pluginExecution>
+                           <pluginExecutionFilter>
+                              <groupId>
+                                 org.apache.maven.plugins
+                              </groupId>
+                              <artifactId>
+                                 maven-checkstyle-plugin
+                              </artifactId>
+                              <versionRange>[2.5,)</versionRange>
+                              <goals>
+                                 <goal>checkstyle</goal>
+                              </goals>
+                           </pluginExecutionFilter>
+                           <action>
+                              <ignore />
+                           </action>
+                        </pluginExecution>
+                        <pluginExecution>
+                           <pluginExecutionFilter>
+                              <groupId>
+                                 org.apache.maven.plugins
+                              </groupId>
+                              <artifactId>
+                                 maven-clean-plugin
+                              </artifactId>
+                              <versionRange>[2.4.1,)</versionRange>
+                              <goals>
+                                 <goal>clean</goal>
+                              </goals>
+                           </pluginExecutionFilter>
+                           <action>
+                              <ignore />
+                           </action>
+                        </pluginExecution>
+                        <pluginExecution>
+                           <pluginExecutionFilter>
+                              <groupId>
+                                 org.apache.maven.plugins
+                              </groupId>
+                              <artifactId>
+                                 maven-antrun-plugin
+                              </artifactId>
+                              <versionRange>
+                                 [1.4,)
+                              </versionRange>
+                              <goals>
+                                 <goal>run</goal>
+                              </goals>
+                           </pluginExecutionFilter>
+                           <action>
+                              <ignore />
+                           </action>
+                        </pluginExecution>
+                     </pluginExecutions>
+                  </lifecycleMappingMetadata>
+               </configuration>
+            </plugin>
+         </plugins>
+      </pluginManagement>
+
+      <extensions>
+         <extension>
+            <groupId>org.apache.maven.wagon</groupId>
+            <artifactId>wagon-webdav-jackrabbit</artifactId>
+            <version>1.0-beta-7</version>
+         </extension>
+      </extensions>
+
+   </build>
+
+   <reporting>
+      <plugins>
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>cobertura-maven-plugin</artifactId>
+            <version>2.4</version>
+            <configuration>
+               <instrumentation>
+                  <ignores>
+                     <!-- <ignore></ignore> -->
+                  </ignores>
+                  <excludes>
+                     <exclude>org.jboss.forge.addon/**/*.class</exclude>
+                  </excludes>
+               </instrumentation>
+            </configuration>
+         </plugin>
+      </plugins>
+   </reporting>
+
+   <scm>
+      <connection>${forge.scm.connection}</connection>
+      <developerConnection>${forge.developer.connection}</developerConnection>
+      <url>${forge.scm.url}</url>
+      <tag>HEAD</tag>
+   </scm>
+</project>
+
