@@ -13,7 +13,6 @@
       <relativePath>../pom.xml</relativePath>
    </parent>
 
-   <groupId>org.jboss.forge.furnace</groupId>
    <artifactId>furnace-proxy</artifactId>
 
    <name>Furnace - Proxy Utilities</name>
