@@ -31,8 +31,8 @@ public interface Furnace
    public Furnace startAsync();
 
    /**
-    * Start this {@link Furnace} instance in a new background {@link Thread}, using the given {@link ClassLoader} to load
-    * core implementation resources.
+    * Start this {@link Furnace} instance in a new background {@link Thread}, using the given {@link ClassLoader} to
+    * load core implementation resources.
     */
    public Furnace startAsync(ClassLoader loader);
 
@@ -53,17 +53,24 @@ public interface Furnace
    public Furnace stop();
 
    /**
-    * When server mode is set to <code>true</code>, {@link Furnace} will run as a server process until explicitly stopped.
-    * When server mode is false, {@link Furnace} will process all inputs and exit once addons have completed any requested
-    * operations.
+    * When server mode is set to <code>true</code>, {@link Furnace} will run as a server process until explicitly
+    * stopped. When server mode is false, {@link Furnace} will process all inputs and exit once addons have completed
+    * any requested operations.
     */
    public Furnace setServerMode(boolean server);
 
    /**
     * Get the central {@link AddonRegistry} for this {@link Furnace} instance. Contains {@link Addon} registration and
-    * service information.
+    * service information. If specific {@link AddonRepository} instances are supplied, return an registry that functions
+    * with the given repositories only.
     */
-   public AddonRegistry getAddonRegistry();
+   public AddonRegistry getAddonRegistry(AddonRepository... repositories);
+
+   /**
+    * Signal to {@link Furnace} that the given {@link AddonRegistry} is no longer required, and any {@link Addon}
+    * instances that are no longer referenced by other {@link AddonRegistry} instances may be shut down.
+    */
+   public void disposeAddonRegistry(AddonRegistry registry);
 
    /**
     * Get an immutable {@link List} of configured {@link AddonRepository} instances.

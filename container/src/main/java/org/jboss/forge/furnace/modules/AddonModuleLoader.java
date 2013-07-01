@@ -17,7 +17,9 @@ import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
+import org.jboss.forge.furnace.addons.AddonView;
 import org.jboss.forge.furnace.exception.ContainerException;
+import org.jboss.forge.furnace.impl.AddonLifecycleManager;
 import org.jboss.forge.furnace.impl.AddonRepositoryImpl;
 import org.jboss.forge.furnace.modules.providers.FurnaceContainerSpec;
 import org.jboss.forge.furnace.modules.providers.JGraphTClasspathSpec;
@@ -44,18 +46,21 @@ public class AddonModuleLoader extends ModuleLoader
 {
    private static final Logger logger = Logger.getLogger(AddonModuleLoader.class.getName());
 
-   private Furnace furnace;
    private final Iterable<ModuleSpecProvider> moduleProviders;
 
    private AddonModuleIdentifierCache moduleCache;
    private AddonModuleJarFileCache moduleJarFileCache;
 
-   public AddonModuleLoader(Furnace forge)
+   private AddonLifecycleManager manager;
+
+   private ThreadLocal<AddonView> currentView = new ThreadLocal<AddonView>();
+
+   public AddonModuleLoader(Furnace furnace, AddonLifecycleManager manager)
    {
-      this.furnace = forge;
+      this.manager = manager;
       this.moduleCache = new AddonModuleIdentifierCache();
       this.moduleJarFileCache = new AddonModuleJarFileCache();
-      moduleProviders = ServiceLoader.load(ModuleSpecProvider.class, forge.getRuntimeClassLoader());
+      moduleProviders = ServiceLoader.load(ModuleSpecProvider.class, furnace.getRuntimeClassLoader());
       installModuleMBeanServer();
    }
 
@@ -94,12 +99,13 @@ public class AddonModuleLoader extends ModuleLoader
    }
 
    /**
-    * Loads a module based on the {@link AddonId}
+    * Loads a module from the current {@link AddonView} based on the {@link AddonId}
     */
-   public final Module loadModule(AddonId addonId) throws ModuleLoadException
+   public final Module loadModule(AddonView view, AddonId addonId) throws ModuleLoadException
    {
       try
       {
+         setCurrentAddonView(view);
          Module result = loadModule(moduleCache.getModuleId(addonId));
          return result;
       }
@@ -107,6 +113,20 @@ public class AddonModuleLoader extends ModuleLoader
       {
          throw e;
       }
+      finally
+      {
+         setCurrentAddonView(null);
+      }
+   }
+
+   private AddonView getCurrentAddonView()
+   {
+      return this.currentView.get();
+   }
+
+   private void setCurrentAddonView(AddonView view)
+   {
+      this.currentView.set(view);
    }
 
    private ModuleSpec findRegularModule(ModuleIdentifier id)
@@ -123,7 +143,7 @@ public class AddonModuleLoader extends ModuleLoader
 
    public ModuleSpec findAddonModule(ModuleIdentifier id)
    {
-      for (AddonRepository repository : furnace.getRepositories())
+      for (AddonRepository repository : manager.getRepositories())
       {
          AddonId found = findInstalledModule(repository, id);
 
@@ -203,23 +223,25 @@ public class AddonModuleLoader extends ModuleLoader
       Set<AddonDependencyEntry> addons = repository.getAddonDependencies(found);
       for (AddonDependencyEntry dependency : addons)
       {
-         AddonId dependencyId = furnace.getAddonRegistry().resolve(dependency).getId();
-         ModuleIdentifier moduleId = moduleCache.getModuleId(dependencyId);
-
-         if (moduleId == null && !dependency.isOptional())
+         AddonId addonId = manager.resolve(getCurrentAddonView(), dependency.getName());
+         ModuleIdentifier moduleId = null;
+         if (addonId != null)
          {
+            moduleId = findCompatibleInstalledModule(addonId);
+            if (moduleId != null)
+            {
+               builder.addDependency(DependencySpec.createModuleDependencySpec(
+                        PathFilters.not(PathFilters.getMetaInfFilter()),
+                        dependency.isExported() ? PathFilters.acceptAll() : PathFilters.rejectAll(),
+                        this,
+                        moduleCache.getModuleId(addonId),
+                        dependency.isOptional()));
+            }
+         }
+
+         if (!dependency.isOptional() && (addonId == null || moduleId == null))
             throw new ContainerException("Dependency [" + dependency + "] could not be loaded for addon [" + found
                      + "]");
-         }
-         else
-         {
-            builder.addDependency(DependencySpec.createModuleDependencySpec(
-                     PathFilters.not(PathFilters.getMetaInfFilter()),
-                     dependency.isExported() ? PathFilters.acceptAll() : PathFilters.rejectAll(),
-                     this,
-                     moduleId,
-                     dependency.isOptional()));
-         }
       }
    }
 
@@ -242,7 +264,7 @@ public class AddonModuleLoader extends ModuleLoader
    {
       AddonId found = null;
 
-      for (AddonRepository repository : furnace.getRepositories())
+      for (AddonRepository repository : manager.getRepositories())
       {
          for (AddonId addon : repository.listEnabledCompatibleWithVersion(AddonRepositoryImpl.getRuntimeAPIVersion()))
          {

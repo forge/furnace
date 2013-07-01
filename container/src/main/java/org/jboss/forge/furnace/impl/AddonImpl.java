@@ -30,7 +30,6 @@ public class AddonImpl implements Addon
 {
    private static class Memento
    {
-      public AddonStatus status = AddonStatus.MISSING;
       public Set<AddonDependency> dependencies = Sets.getConcurrentSet();
       public Set<AddonDependency> missingDependencies = Sets.getConcurrentSet();
 
@@ -40,14 +39,6 @@ public class AddonImpl implements Addon
       public Future<Void> future = new CompletedFuture<Void>(null);
       public AddonRepository repository;
       public ServiceRegistry registry;
-      public boolean dirty = true;
-
-      @Override
-      public String toString()
-      {
-         return status.toString();
-      }
-
    }
 
    @SuppressWarnings("unused")
@@ -163,27 +154,24 @@ public class AddonImpl implements Addon
       return this;
    }
 
-   public void setDirty(boolean dirty)
-   {
-      this.state.dirty = dirty;
-   }
-
-   public boolean isDirty()
-   {
-      return this.state.dirty;
-   }
-
    @Override
    public AddonStatus getStatus()
    {
-      return state.status;
-   }
+      AddonStatus result = AddonStatus.MISSING;
 
-   public Addon setStatus(AddonStatus status)
-   {
-      Assert.notNull(status, "Status must not be null.");
-      this.state.status = status;
-      return this;
+      if (getClassLoader() != null && getMissingDependencies().isEmpty())
+         result = AddonStatus.LOADED;
+
+      if (getFuture() != null)
+      {
+         if (!(getFuture() instanceof CompletedFuture))
+            result = AddonStatus.STARTED;
+
+         if (getFuture().isCancelled())
+            result = AddonStatus.FAILED;
+      }
+
+      return result;
    }
 
    public void setMissingDependencies(Set<AddonDependency> missingDependencies)
@@ -225,7 +213,7 @@ public class AddonImpl implements Addon
    @Override
    public String toString()
    {
-      return getId().toCoordinates() + (state.status == null ? "" : " - " + state.status);
+      return getId().toCoordinates() + " +" + getStatus();
    }
 
    @Override

@@ -63,7 +63,7 @@ public class MultipleRepositoryTest
 
       MavenDependencyResolver resolver = new MavenDependencyResolver(new FileResourceFactory(),
                new MavenContainer());
-      AddonManager manager = new AddonManagerImpl(furnace, resolver, resolver);
+      AddonManager manager = new AddonManagerImpl(furnace, resolver);
 
       AddonId facets = AddonId.from("org.jboss.forge.addon:facets", "2.0.0-SNAPSHOT");
       AddonId convert = AddonId.from("org.jboss.forge.addon:convert", "2.0.0-SNAPSHOT");
@@ -101,7 +101,7 @@ public class MultipleRepositoryTest
 
       MavenDependencyResolver resolver = new MavenDependencyResolver(new FileResourceFactory(),
                new MavenContainer());
-      AddonManager manager = new AddonManagerImpl(furnace, resolver, resolver);
+      AddonManager manager = new AddonManagerImpl(furnace, resolver);
 
       AddonId facets = AddonId.from("org.jboss.forge.addon:facets", "2.0.0-SNAPSHOT");
       AddonId convert = AddonId.from("org.jboss.forge.addon:convert", "2.0.0-SNAPSHOT");

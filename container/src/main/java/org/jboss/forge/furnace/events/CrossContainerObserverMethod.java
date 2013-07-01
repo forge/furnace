@@ -23,6 +23,9 @@ import org.jboss.forge.furnace.services.ServiceRegistry;
 import org.jboss.forge.furnace.util.AddonFilters;
 import org.jboss.forge.furnace.util.Annotations;
 
+/**
+ * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
+ */
 public class CrossContainerObserverMethod
 {
    public void handleEvent(@Observes @Any Object event, EventMetadata metadata)

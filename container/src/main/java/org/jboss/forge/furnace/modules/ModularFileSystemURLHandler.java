@@ -85,6 +85,7 @@ public class ModularFileSystemURLHandler
             String name = entry.getName();
             handle(name, new URL(archiveUrl + name), discoveredClasses, discoveredBeansXmlUrls);
          }
+         zip.close();
       }
       catch (ZipException e)
       {

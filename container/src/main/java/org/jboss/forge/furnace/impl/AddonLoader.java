@@ -10,39 +10,36 @@ import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonDependency;
 import org.jboss.forge.furnace.addons.AddonDependencyImpl;
 import org.jboss.forge.furnace.addons.AddonId;
-import org.jboss.forge.furnace.addons.AddonStatus;
-import org.jboss.forge.furnace.addons.AddonTree;
-import org.jboss.forge.furnace.addons.MarkLoadedAddonsDirtyVisitor;
+import org.jboss.forge.furnace.addons.AddonView;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.modules.AddonModuleLoader;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.util.Assert;
-import org.jboss.forge.furnace.util.ValuedVisitor;
-import org.jboss.forge.furnace.versions.SingleVersionRange;
 import org.jboss.modules.Module;
 
 public class AddonLoader
 {
    private static final Logger logger = Logger.getLogger(AddonLoader.class.getName());
 
-   private Furnace furnace;
-   private AddonTree tree;
    private LockManager lock;
+   private AddonLifecycleManager manager;
 
-   public AddonLoader(Furnace furnace, AddonTree tree)
+   private AddonModuleLoader loader;
+
+   public AddonLoader(Furnace furnace, AddonLifecycleManager manager)
    {
-      this.furnace = furnace;
-      this.tree = tree;
       this.lock = furnace.getLockManager();
+      this.manager = manager;
+      this.loader = new AddonModuleLoader(furnace, manager);
    }
 
-   public AddonImpl loadAddon(AddonId addonId)
+   public AddonImpl loadAddon(AddonView view, AddonId addonId)
    {
       Assert.notNull(addonId, "AddonId to load must not be null.");
 
       AddonImpl addon = null;
-      for (Addon existing : tree)
+      for (Addon existing : view.getAddons())
       {
          if (existing.getId().equals(addonId))
          {
@@ -51,21 +48,12 @@ public class AddonLoader
          }
       }
 
-      if (addon == null)
+      if (addon == null || addon.getStatus().isMissing())
       {
-         for (AddonRepository repository : furnace.getRepositories())
+         for (AddonRepository repository : view.getRepositories())
          {
-            addon = loadAddonFromRepository(repository, addonId);
+            addon = loadAddonFromRepository(view, repository, addonId);
             if (addon != null)
-               break;
-         }
-      }
-      else if (addon.getStatus().isMissing())
-      {
-         for (AddonRepository repository : furnace.getRepositories())
-         {
-            Addon loaded = loadAddonFromRepository(repository, addonId);
-            if (loaded != null && !loaded.getStatus().isMissing())
                break;
          }
       }
@@ -73,44 +61,28 @@ public class AddonLoader
       if (addon == null)
       {
          addon = new AddonImpl(lock, addonId);
-         tree.add(addon);
       }
 
       return addon;
    }
 
-   private AddonImpl loadAddonFromRepository(AddonRepository repository, final AddonId addonId)
+   private AddonImpl loadAddonFromRepository(AddonView view, AddonRepository repository, final AddonId addonId)
    {
       AddonImpl addon = null;
       if (repository.isEnabled(addonId) && repository.isDeployed(addonId))
       {
-         ValuedVisitor<AddonImpl, Addon> visitor = new ValuedVisitor<AddonImpl, Addon>()
-         {
-            @Override
-            public void visit(Addon instance)
-            {
-               if (instance.getId().equals(addonId))
-               {
-                  setResult((AddonImpl) instance);
-               }
-            }
-         };
-
-         tree.depthFirst(visitor);
-
-         addon = visitor.getResult();
+         addon = (AddonImpl) view.getAddon(addonId);
 
          if (addon == null)
          {
             addon = new AddonImpl(lock, addonId);
             addon.setRepository(repository);
-            tree.add(addon);
+            manager.add(addon);
          }
 
-         Set<AddonDependency> dependencies = fromAddonDependencyEntries(addon,
+         Set<AddonDependency> dependencies = fromAddonDependencyEntries(view, addon,
                   repository.getAddonDependencies(addonId));
          addon.setDependencies(dependencies);
-         tree.prune();
 
          if (addon.getModule() == null)
          {
@@ -120,7 +92,7 @@ public class AddonLoader
                AddonId dependencyId = dependency.getDependency().getId();
 
                boolean loaded = false;
-               for (Addon a : tree)
+               for (Addon a : view.getAddons())
                {
                   if (a.getId().equals(dependencyId) && !a.getStatus().isMissing())
                   {
@@ -148,15 +120,10 @@ public class AddonLoader
             {
                try
                {
-                  AddonModuleLoader moduleLoader = getAddonModuleLoader(repository);
-                  Module module = moduleLoader.loadModule(addonId);
-                  addon.setModuleLoader(moduleLoader);
+                  Module module = loader.loadModule(view, addonId);
+                  addon.setModuleLoader(loader);
                   addon.setModule(module);
                   addon.setRepository(repository);
-                  addon.setStatus(AddonStatus.LOADED);
-
-                  tree.depthFirst(new MarkLoadedAddonsDirtyVisitor(tree, addon));
-
                }
                catch (Exception e)
                {
@@ -169,27 +136,27 @@ public class AddonLoader
       return addon;
    }
 
-   private AddonModuleLoader loader;
-
-   private AddonModuleLoader getAddonModuleLoader(AddonRepository repository)
-   {
-      Assert.notNull(repository, "Repository must not be null.");
-
-      if (loader == null)
-      {
-         loader = new AddonModuleLoader(furnace);
-      }
-      return loader;
-   }
-
-   private Set<AddonDependency> fromAddonDependencyEntries(AddonImpl addon, Set<AddonDependencyEntry> entries)
+   private Set<AddonDependency> fromAddonDependencyEntries(AddonView view, AddonImpl addon,
+            Set<AddonDependencyEntry> entries)
    {
       Set<AddonDependency> result = new HashSet<AddonDependency>();
       for (AddonDependencyEntry entry : entries)
       {
-         Addon dependency = furnace.getAddonRegistry().resolve(entry);
-         result.add(new AddonDependencyImpl(lock, addon, entry.getVersionRange(), dependency, entry.isExported(), entry
-                  .isOptional()));
+         AddonId dependencyId = manager.resolve(view, entry.getName());
+         if (dependencyId == null)
+         {
+
+         }
+         else
+         {
+            Addon dependency = view.getAddon(dependencyId);
+            result.add(new AddonDependencyImpl(lock,
+                     addon,
+                     dependency.getId().getVersion(),
+                     dependency,
+                     entry.isExported(),
+                     entry.isOptional()));
+         }
       }
       return result;
    }

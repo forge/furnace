@@ -17,7 +17,7 @@ import org.jboss.forge.furnace.services.ExportedInstance;
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public interface AddonRegistry
+public interface AddonRegistry extends AddonView
 {
    /**
     * Get the set of currently available {@link Exported} services of the given {@link Class} type. Return
@@ -65,26 +65,4 @@ public interface AddonRegistry
     * @return the {@link Set} of {@link Class} types (Never null.)
     */
    <T> Set<Class<T>> getExportedTypes(Class<T> type);
-
-   /**
-    * Get the registered {@link Addon} for the given {@link AddonId} instance. If no such {@link Addon} is currently
-    * registered, register it and return the new reference.
-    * 
-    * @return the registered {@link Addon} (Never null.)
-    */
-   Addon getAddon(AddonId id);
-
-   /**
-    * Get all currently registered {@link Addon} instances.
-    * 
-    * @return the {@link Set} of {@link Addon} instances. (Never null.)
-    */
-   Set<Addon> getAddons();
-
-   /**
-    * Get all registered {@link Addon} instances matching the given {@link AddonFilter}.
-    * 
-    * @return the {@link Set} of {@link Addon} instances. (Never null.)
-    */
-   Set<Addon> getAddons(AddonFilter filter);
 }

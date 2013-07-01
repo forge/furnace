@@ -7,6 +7,9 @@ import javax.inject.Singleton;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 
 @Singleton
+/**
+ * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
+ */
 public class AddonRegistryProducer
 {
    private AddonRegistry registry;

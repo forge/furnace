@@ -2,11 +2,11 @@ package org.jboss.forge.furnace.impl.graph;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.impl.AddonRepositoryImpl;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
@@ -20,16 +20,13 @@ public class CompleteAddonGraph extends AddonGraph<CompleteAddonGraph>
    DirectedGraph<AddonVertex, AddonDependencyEdge> graph = new SimpleDirectedGraph<AddonVertex, AddonDependencyEdge>(
             AddonDependencyEdge.class);
 
-   private Furnace furnace;
-
-   public CompleteAddonGraph(Furnace furnace)
+   public CompleteAddonGraph(List<AddonRepository> repositories)
    {
-      this.furnace = furnace;
-      Set<AddonId> enabled = getAllEnabledAddonsInAllRepositories();
+      Set<AddonId> enabled = getAllEnabledAddonsInAllRepositories(repositories);
       Map<AddonId, Set<AddonDependencyEntry>> dependencyMap = new LinkedHashMap<AddonId, Set<AddonDependencyEntry>>();
       for (AddonId id : enabled)
       {
-         for (AddonRepository repository : furnace.getRepositories())
+         for (AddonRepository repository : repositories)
          {
             if (repository.isEnabled(id))
             {
@@ -75,10 +72,10 @@ public class CompleteAddonGraph extends AddonGraph<CompleteAddonGraph>
       }
    }
 
-   private Set<AddonId> getAllEnabledAddonsInAllRepositories()
+   private Set<AddonId> getAllEnabledAddonsInAllRepositories(List<AddonRepository> repositories)
    {
       Set<AddonId> result = new HashSet<AddonId>();
-      for (AddonRepository repository : furnace.getRepositories())
+      for (AddonRepository repository : repositories)
       {
          for (AddonId enabled : repository.listEnabledCompatibleWithVersion(AddonRepositoryImpl.getRuntimeAPIVersion()))
          {

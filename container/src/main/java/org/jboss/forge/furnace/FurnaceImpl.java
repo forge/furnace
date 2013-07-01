@@ -8,24 +8,29 @@ package org.jboss.forge.furnace;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.addons.AddonRegistry;
-import org.jboss.forge.furnace.addons.ImmutableAddonRepository;
+import org.jboss.forge.furnace.addons.AddonView;
+import org.jboss.forge.furnace.impl.AddonLifecycleManager;
 import org.jboss.forge.furnace.impl.AddonRegistryImpl;
 import org.jboss.forge.furnace.impl.AddonRepositoryImpl;
+import org.jboss.forge.furnace.impl.ImmutableAddonRepository;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 import org.jboss.forge.furnace.spi.ContainerLifecycleListener;
 import org.jboss.forge.furnace.spi.ListenerRegistration;
 import org.jboss.forge.furnace.util.Assert;
+import org.jboss.forge.furnace.util.Sets;
 import org.jboss.forge.furnace.versions.Version;
 import org.jboss.modules.Module;
 import org.jboss.modules.log.StreamModuleLogger;
@@ -41,7 +46,7 @@ public class FurnaceImpl implements Furnace
    private volatile ContainerStatus status = ContainerStatus.STOPPED;
 
    private boolean serverMode = true;
-   private AddonRegistryImpl registry;
+   private AddonLifecycleManager manager;
    private List<ContainerLifecycleListener> registeredListeners = new ArrayList<ContainerLifecycleListener>();
    private List<ListenerRegistration<ContainerLifecycleListener>> loadedListenerRegistrations = new ArrayList<ListenerRegistration<ContainerLifecycleListener>>();
 
@@ -51,6 +56,7 @@ public class FurnaceImpl implements Furnace
    private Map<AddonRepository, Integer> lastRepoVersionSeen = new HashMap<AddonRepository, Integer>();
 
    private final LockManager lock = new LockManagerImpl();
+   private final Set<AddonView> views = Sets.getConcurrentSet();
 
    private String[] args;
 
@@ -60,7 +66,7 @@ public class FurnaceImpl implements Furnace
          logger.warning("Could not detect Furnace runtime version - " +
                   "loading all addons, but failures may occur if versions are not compatible.");
 
-      registry = new AddonRegistryImpl(this);
+      manager = new AddonLifecycleManager(this);
    }
 
    @Override
@@ -114,6 +120,8 @@ public class FurnaceImpl implements Furnace
    public Furnace start(ClassLoader loader)
    {
       assertNotAlive();
+      alive = true;
+
       this.loader = loader;
 
       for (ContainerLifecycleListener listener : ServiceLoader.load(ContainerLifecycleListener.class, loader))
@@ -123,58 +131,59 @@ public class FurnaceImpl implements Furnace
       }
 
       fireBeforeContainerStartedEvent(loader);
-      if (!alive)
-      {
-         try
-         {
-            alive = true;
-            do
-            {
-               boolean dirty = false;
-               if (!registry.isStartingAddons())
-               {
-                  for (AddonRepository repository : repositories)
-                  {
-                     int repoVersion = repository.getVersion();
-                     if (repoVersion > lastRepoVersionSeen.get(repository))
-                     {
-                        logger.log(Level.INFO, "Detected changes in repository [" + repository + "].");
-                        lastRepoVersionSeen.put(repository, repoVersion);
-                        dirty = true;
-                     }
-                  }
+      status = ContainerStatus.STARTED;
 
-                  if (dirty)
+      try
+      {
+         getAddonRegistry();
+         do
+         {
+            boolean dirty = false;
+            if (!manager.isStartingAddons(views))
+            {
+               for (AddonRepository repository : repositories)
+               {
+                  int repoVersion = repository.getVersion();
+                  if (repoVersion > lastRepoVersionSeen.get(repository))
                   {
-                     try
-                     {
-                        registry.forceUpdate();
-                     }
-                     catch (Exception e)
-                     {
-                        logger.log(Level.SEVERE, "Error occurred.", e);
-                     }
+                     logger.log(Level.INFO, "Detected changes in repository [" + repository + "].");
+                     lastRepoVersionSeen.put(repository, repoVersion);
+                     dirty = true;
                   }
                }
-               Thread.sleep(100);
-            }
-            while (alive && serverMode);
 
-            while (alive && registry.isStartingAddons())
-            {
-               Thread.sleep(100);
+               if (dirty)
+               {
+                  try
+                  {
+                     manager.forceUpdate(views);
+                  }
+                  catch (Exception e)
+                  {
+                     logger.log(Level.SEVERE, "Error occurred.", e);
+                  }
+               }
             }
+            Thread.sleep(100);
          }
-         catch (Exception e)
+         while (alive && serverMode);
+
+         while (alive && manager.isStartingAddons(views))
          {
-            logger.log(Level.SEVERE, "Error occurred.", e);
-         }
-         finally
-         {
-            fireBeforeContainerStoppedEvent(loader);
-            registry.stopAll();
+            Thread.sleep(100);
          }
       }
+      catch (Exception e)
+      {
+         logger.log(Level.SEVERE, "Error occurred.", e);
+      }
+      finally
+      {
+         fireBeforeContainerStoppedEvent(loader);
+         status = ContainerStatus.STOPPED;
+         manager.stopAll();
+      }
+
       fireAfterContainerStoppedEvent(loader);
       for (ListenerRegistration<ContainerLifecycleListener> registation : loadedListenerRegistrations)
       {
@@ -189,7 +198,6 @@ public class FurnaceImpl implements Furnace
       {
          listener.beforeStart(this);
       }
-      status = ContainerStatus.STARTED;
    }
 
    private void fireBeforeContainerStoppedEvent(ClassLoader loader)
@@ -198,7 +206,6 @@ public class FurnaceImpl implements Furnace
       {
          listener.beforeStop(this);
       }
-      status = ContainerStatus.STOPPED;
    }
 
    private void fireAfterContainerStoppedEvent(ClassLoader loader)
@@ -238,9 +245,35 @@ public class FurnaceImpl implements Furnace
    }
 
    @Override
-   public AddonRegistry getAddonRegistry()
+   public AddonRegistry getAddonRegistry(AddonRepository... repositories)
    {
-      return registry;
+      assertIsAlive();
+
+      AddonRegistryImpl result = null;
+      if (repositories == null || repositories.length == 0)
+         result = new AddonRegistryImpl(lock, manager, getRepositories());
+      else
+         result = new AddonRegistryImpl(lock, manager, Arrays.asList(repositories));
+
+      if (!views.contains(result))
+         views.add(result);
+
+      return result;
+   }
+
+   @Override
+   public void disposeAddonRegistry(AddonRegistry registry)
+   {
+      assertIsAlive();
+
+      if (getAddonRegistry().equals(registry))
+         throw new IllegalArgumentException(
+                  "Cannot dispose the root AddonRegistry. Call .stop() instead.");
+
+      if (!views.contains(registry))
+         throw new IllegalArgumentException("The given AddonRegistry does not belong to this Furnace instance.");
+
+      views.remove(registry);
    }
 
    @Override
@@ -274,9 +307,11 @@ public class FurnaceImpl implements Furnace
    @Override
    public AddonRepository addRepository(AddonRepositoryMode mode, File directory)
    {
+      assertNotAlive();
+
       Assert.notNull(mode, "Addon repository mode must not be null.");
       Assert.notNull(mode, "Addon repository directory must not be null.");
-      assertNotAlive();
+
       for (AddonRepository registeredRepo : repositories)
       {
          if (registeredRepo.getRootDirectory().equals(directory))
@@ -295,6 +330,13 @@ public class FurnaceImpl implements Furnace
       return repository;
    }
 
+   public void assertIsAlive()
+   {
+      if (!alive)
+         throw new IllegalStateException(
+                  "Cannot access this method until Furnace is running. Call .start() or .startAsync() first.");
+   }
+
    public void assertNotAlive()
    {
       if (alive)
@@ -304,12 +346,20 @@ public class FurnaceImpl implements Furnace
    @Override
    public ContainerStatus getStatus()
    {
-      boolean startingAddons = registry.isStartingAddons();
+      if (!alive)
+         return ContainerStatus.STOPPED;
+
+      boolean startingAddons = manager.isStartingAddons(views);
       return startingAddons ? ContainerStatus.STARTING : status;
    }
 
    public List<ContainerLifecycleListener> getRegisteredListeners()
    {
       return Collections.unmodifiableList(registeredListeners);
+   }
+
+   public AddonLifecycleManager getAddonLifecycleManager()
+   {
+      return manager;
    }
 }

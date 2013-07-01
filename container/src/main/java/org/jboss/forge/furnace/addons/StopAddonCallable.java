@@ -6,7 +6,6 @@
  */
 package org.jboss.forge.furnace.addons;
 
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,16 +19,15 @@ import org.jboss.forge.furnace.impl.AddonRunnable;
  */
 public class StopAddonCallable implements Callable<Void>
 {
-   private static final Logger logger = Logger.getLogger(StopAllAddonsVisitor.class.getName());
+   private static final Logger logger = Logger.getLogger(StopAddonCallable.class.getName());
 
    private AddonImpl addon;
-   private AddonTree tree;
 
-   public StopAddonCallable(AddonTree tree, AddonImpl addon)
+   public StopAddonCallable(Addon addon)
    {
       super();
-      this.tree = tree;
-      this.addon = addon;
+      if (addon instanceof AddonImpl)
+         this.addon = (AddonImpl) addon;
    }
 
    @Override
@@ -37,7 +35,6 @@ public class StopAddonCallable implements Callable<Void>
    {
       if (addon != null)
       {
-         Set<AddonDependency> dependencies = addon.getDependencies();
          AddonRunnable runnable = ((AddonImpl) addon).getRunnable();
          try
          {
@@ -54,12 +51,6 @@ public class StopAddonCallable implements Callable<Void>
          {
             addon.cancelFuture();
             addon.reset();
-            addon.setDirty(false);
-
-            for (AddonDependency dependency : dependencies)
-            {
-               tree.reattach(dependency.getDependency());
-            }
          }
       }
       return null;

@@ -53,6 +53,7 @@ import org.jboss.forge.parser.xml.XMLParserException;
 @Typed()
 public final class AddonRepositoryImpl implements MutableAddonRepository
 {
+
    private static final Logger logger = Logger.getLogger(AddonRepositoryImpl.class.getName());
 
    private static final String ATTR_API_VERSION = "api-version";
@@ -85,7 +86,7 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
    {
       String version = AddonRepository.class.getPackage()
                .getImplementationVersion();
-      if(version != null)
+      if (version != null)
       {
          return new SingleVersion(version);
       }
@@ -638,4 +639,32 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
       return getRootDirectory().getAbsolutePath();
    }
 
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((addonDir == null) ? 0 : addonDir.hashCode());
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      AddonRepositoryImpl other = (AddonRepositoryImpl) obj;
+      if (addonDir == null)
+      {
+         if (other.addonDir != null)
+            return false;
+      }
+      else if (!addonDir.equals(other.addonDir))
+         return false;
+      return true;
+   }
 }

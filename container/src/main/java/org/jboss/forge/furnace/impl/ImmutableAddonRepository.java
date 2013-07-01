@@ -5,13 +5,14 @@
  * http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.jboss.forge.furnace.addons;
+package org.jboss.forge.furnace.impl;
 
 import java.io.File;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.versions.Version;

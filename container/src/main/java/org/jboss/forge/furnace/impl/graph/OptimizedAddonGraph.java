@@ -1,8 +1,9 @@
 package org.jboss.forge.furnace.impl.graph;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.forge.furnace.Furnace;
+import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.event.TraversalListenerAdapter;
 import org.jgrapht.graph.SimpleDirectedGraph;
@@ -13,7 +14,7 @@ public class OptimizedAddonGraph extends AddonGraph<OptimizedAddonGraph>
    DirectedGraph<AddonVertex, AddonDependencyEdge> graph = new SimpleDirectedGraph<AddonVertex, AddonDependencyEdge>(
             AddonDependencyEdge.class);
 
-   public OptimizedAddonGraph(Furnace furnace, final DirectedGraph<AddonVertex, AddonDependencyEdge> completeGraph)
+   public OptimizedAddonGraph(List<AddonRepository> repositories, final DirectedGraph<AddonVertex, AddonDependencyEdge> completeGraph)
    {
       for (final AtomicInteger degree = new AtomicInteger(0); degree.get() < completeGraph.vertexSet().size(); degree
                .incrementAndGet())

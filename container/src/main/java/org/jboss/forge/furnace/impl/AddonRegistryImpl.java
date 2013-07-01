@@ -6,31 +6,21 @@
  */
 package org.jboss.forge.furnace.impl;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonFilter;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.addons.AddonStatus;
-import org.jboss.forge.furnace.addons.AddonTree;
-import org.jboss.forge.furnace.addons.CheckDirtyStatusVisitor;
-import org.jboss.forge.furnace.addons.MarkDisabledLoadedAddonsDirtyVisitor;
-import org.jboss.forge.furnace.addons.StartEnabledAddonsVisitor;
-import org.jboss.forge.furnace.addons.StopAllAddonsVisitor;
-import org.jboss.forge.furnace.addons.StopDirtyAddonsVisitor;
-import org.jboss.forge.furnace.impl.graph.CompleteAddonGraph;
-import org.jboss.forge.furnace.impl.graph.OptimizedAddonGraph;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.repositories.AddonRepository;
@@ -46,40 +36,49 @@ public class AddonRegistryImpl implements AddonRegistry
 {
    private static final Logger logger = Logger.getLogger(AddonRegistryImpl.class.getName());
 
-   private final Furnace furnace;
    private final LockManager lock;
-   private final AddonTree tree;
-   private final AtomicInteger starting = new AtomicInteger(-1);
+   private List<AddonRepository> repositories;
 
-   private final ExecutorService executor = Executors.newCachedThreadPool();
+   private AddonLifecycleManager manager;
 
-   private final AddonLoader loader;
-
-   public AddonRegistryImpl(Furnace forge)
+   public AddonRegistryImpl(LockManager lock, AddonLifecycleManager manager, List<AddonRepository> repositories)
    {
-      Assert.notNull(forge, "Furnace instance must not be null.");
-      Assert.notNull(forge.getLockManager(), "LockManager must not be null.");
+      Assert.notNull(lock, "LockManager must not be null.");
+      Assert.notNull(manager, "Addon lifecycle manager must not be null.");
+      Assert.notNull(repositories, "AddonRepository list must not be null.");
+      Assert.isTrue(repositories.size() > 0, "AddonRepository list must not be empty.");
 
-      this.furnace = forge;
-      this.lock = forge.getLockManager();
-      this.tree = new AddonTree(lock);
-      this.loader = new AddonLoader(forge, tree);
+      this.lock = lock;
+      this.manager = manager;
+      this.repositories = repositories;
 
       logger.log(Level.FINE, "Instantiated AddonRegistryImpl: " + this);
    }
 
-   /*
-    * AddonRegistry methods
-    */
    @Override
-   public AddonImpl getAddon(final AddonId id)
+   public Addon getAddon(final AddonId id)
    {
-      return lock.performLocked(LockMode.READ, new Callable<AddonImpl>()
+      Assert.notNull(id, "AddonId must not be null.");
+      return lock.performLocked(LockMode.READ, new Callable<Addon>()
       {
          @Override
-         public AddonImpl call() throws Exception
+         public Addon call() throws Exception
          {
-            return loader.loadAddon(id);
+            Addon result = null;
+            for (Addon addon : getAddons())
+            {
+               if (id.equals(addon.getId()))
+               {
+                  result = addon;
+               }
+            }
+
+            if (result == null)
+            {
+               result = manager.getAddon(id);
+            }
+
+            return result;
          }
       });
    }
@@ -100,7 +99,7 @@ public class AddonRegistryImpl implements AddonRegistry
          {
             HashSet<Addon> result = new HashSet<Addon>();
 
-            for (Addon addon : tree)
+            for (Addon addon : manager.getAddons(new AddonRepositoryFilter(getRepositories())))
             {
                if (filter.accept(addon))
                   result.add(addon);
@@ -112,6 +111,12 @@ public class AddonRegistryImpl implements AddonRegistry
    }
 
    @Override
+   public Set<AddonRepository> getRepositories()
+   {
+      return Collections.unmodifiableSet(new LinkedHashSet<AddonRepository>(repositories));
+   }
+
+   @Override
    public <T> Set<ExportedInstance<T>> getExportedInstances(final Class<T> type)
    {
       return lock.performLocked(LockMode.READ, new Callable<Set<ExportedInstance<T>>>()
@@ -120,7 +125,7 @@ public class AddonRegistryImpl implements AddonRegistry
          public Set<ExportedInstance<T>> call() throws Exception
          {
             Set<ExportedInstance<T>> result = new HashSet<ExportedInstance<T>>();
-            for (Addon addon : tree)
+            for (Addon addon : getAddons())
             {
                if (AddonStatus.STARTED.equals(addon.getStatus()))
                {
@@ -142,7 +147,7 @@ public class AddonRegistryImpl implements AddonRegistry
          public Set<ExportedInstance<T>> call() throws Exception
          {
             Set<ExportedInstance<T>> result = new HashSet<ExportedInstance<T>>();
-            for (Addon addon : tree)
+            for (Addon addon : getAddons())
             {
                if (addon.getStatus().isStarted())
                {
@@ -165,7 +170,7 @@ public class AddonRegistryImpl implements AddonRegistry
          public ExportedInstance<T> call() throws Exception
          {
             ExportedInstance<T> result = null;
-            for (Addon addon : tree)
+            for (Addon addon : getAddons())
             {
                if (addon.getStatus().isStarted())
                {
@@ -191,7 +196,7 @@ public class AddonRegistryImpl implements AddonRegistry
          public ExportedInstance<T> call() throws Exception
          {
             ExportedInstance<T> result = null;
-            for (Addon addon : tree)
+            for (Addon addon : getAddons())
             {
                if (addon.getStatus().isStarted())
                {
@@ -209,115 +214,6 @@ public class AddonRegistryImpl implements AddonRegistry
    }
 
    @Override
-   public String toString()
-   {
-      StringBuilder builder = new StringBuilder();
-
-      Iterator<Addon> iterator = tree.iterator();
-      while (iterator.hasNext())
-      {
-         Addon addon = iterator.next();
-         builder.append(addon.toString());
-         if (iterator.hasNext())
-            builder.append("\n");
-      }
-
-      return builder.toString();
-   }
-
-   public void forceUpdate()
-   {
-      lock.performLocked(LockMode.WRITE, new Callable<Void>()
-      {
-         @Override
-         public Void call() throws Exception
-         {
-            if (starting.get() == -1)
-               starting.set(0);
-
-            Set<AddonId> enabled = getAllEnabled();
-            
-            CompleteAddonGraph graph = new CompleteAddonGraph(furnace);
-            OptimizedAddonGraph optimizedGraph = new OptimizedAddonGraph(furnace, graph.getGraph());
-
-            System.out.println(" ------------ DUMPING GRAPHS ------------ ");
-            System.out.println(graph);
-            System.out.println(optimizedGraph);
-
-            tree.breadthFirst(new MarkDisabledLoadedAddonsDirtyVisitor(tree, enabled));
-
-            CheckDirtyStatusVisitor dirty;
-            do
-            {
-               dirty = new CheckDirtyStatusVisitor();
-               tree.breadthFirst(new StopDirtyAddonsVisitor(tree));
-               tree.depthFirst(dirty);
-            }
-            while (dirty.isDirty());
-
-            for (AddonId addonId : enabled)
-            {
-               loader.loadAddon(addonId);
-            }
-
-            tree.depthFirst(new StartEnabledAddonsVisitor(furnace, tree, executor, starting, enabled));
-            return null;
-         }
-      });
-   }
-
-   public void stopAll()
-   {
-      lock.performLocked(LockMode.WRITE, new Callable<Void>()
-      {
-         @Override
-         public Void call() throws Exception
-         {
-            tree.breadthFirst(new StopAllAddonsVisitor(tree));
-
-            List<Runnable> waiting = executor.shutdownNow();
-            if (waiting != null && !waiting.isEmpty())
-               logger.info("(" + waiting.size() + ") addons were aborted while loading.");
-            starting.set(-1);
-            return null;
-         }
-      });
-   }
-
-   private Set<AddonId> getAllEnabled()
-   {
-      Set<AddonId> result = new HashSet<AddonId>();
-      for (AddonRepository repository : furnace.getRepositories())
-      {
-         for (AddonId enabled : repository.listEnabled())
-         {
-            result.add(enabled);
-         }
-      }
-      return result;
-   }
-
-   public void finishedStarting(AddonImpl addon)
-   {
-      starting.decrementAndGet();
-   }
-
-   /**
-    * Returns <code>true</code> if there are currently any Addons being started.
-    */
-   public boolean isStartingAddons()
-   {
-      if (starting.get() == -1)
-         return false;
-
-      /*
-       * Force a full configuration rescan.
-       */
-      forceUpdate();
-      return starting.get() > 0;
-   }
-
-   @Override
    public Set<Class<?>> getExportedTypes()
    {
       return lock.performLocked(LockMode.READ, new Callable<Set<Class<?>>>()
@@ -326,7 +222,7 @@ public class AddonRegistryImpl implements AddonRegistry
          public Set<Class<?>> call() throws Exception
          {
             Set<Class<?>> result = new HashSet<Class<?>>();
-            for (Addon addon : tree)
+            for (Addon addon : getAddons())
             {
                if (AddonStatus.STARTED.equals(addon.getStatus()))
                {
@@ -348,7 +244,7 @@ public class AddonRegistryImpl implements AddonRegistry
          public Set<Class<T>> call() throws Exception
          {
             Set<Class<T>> result = new HashSet<Class<T>>();
-            for (Addon addon : tree)
+            for (Addon addon : getAddons())
             {
                if (AddonStatus.STARTED.equals(addon.getStatus()))
                {
@@ -359,5 +255,66 @@ public class AddonRegistryImpl implements AddonRegistry
             return result;
          }
       });
+   }
+
+   @Override
+   public String toString()
+   {
+      StringBuilder builder = new StringBuilder();
+
+      builder.append("REPOSITORIES:").append("\n");
+
+      Iterator<AddonRepository> repostioryIterator = getRepositories().iterator();
+      while (repostioryIterator.hasNext())
+      {
+         AddonRepository addon = repostioryIterator.next();
+         builder.append(addon.toString());
+         if (repostioryIterator.hasNext())
+            builder.append("\n");
+      }
+
+      builder.append("\n");
+      builder.append("\n");
+      builder.append("ADDONS:").append("\n");
+
+      Iterator<Addon> addonIterator = getAddons().iterator();
+      while (addonIterator.hasNext())
+      {
+         Addon addon = addonIterator.next();
+         builder.append(addon.toString());
+         if (addonIterator.hasNext())
+            builder.append("\n");
+      }
+
+      return builder.toString();
+   }
+
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((repositories == null) ? 0 : repositories.hashCode());
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      AddonRegistryImpl other = (AddonRegistryImpl) obj;
+      if (repositories == null)
+      {
+         if (other.repositories != null)
+            return false;
+      }
+      else if (!repositories.equals(other.repositories))
+         return false;
+      return true;
    }
 }

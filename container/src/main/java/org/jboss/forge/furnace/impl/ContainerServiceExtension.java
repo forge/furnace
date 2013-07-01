@@ -45,6 +45,9 @@ import org.jboss.forge.furnace.util.Types;
 import org.jboss.forge.furnace.util.cdi.BeanBuilder;
 import org.jboss.forge.furnace.util.cdi.ContextualLifecycle;
 
+/**
+ * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a> *
+ */
 public class ContainerServiceExtension implements Extension
 {
    private static Logger logger = Logger.getLogger(ContainerServiceExtension.class.getName());

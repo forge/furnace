@@ -13,9 +13,9 @@ import java.util.logging.Logger;
 import javax.enterprise.inject.spi.BeanManager;
 
 import org.jboss.forge.furnace.Furnace;
+import org.jboss.forge.furnace.FurnaceImpl;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonDependency;
-import org.jboss.forge.furnace.addons.AddonStatus;
 import org.jboss.forge.furnace.event.PostStartup;
 import org.jboss.forge.furnace.event.PreShutdown;
 import org.jboss.forge.furnace.lock.LockMode;
@@ -39,7 +39,7 @@ public final class AddonRunnable implements Runnable
 {
    private static final Logger logger = Logger.getLogger(AddonRunnable.class.getName());
 
-   private Furnace forge;
+   private Furnace furnace;
    private AddonImpl addon;
    private AddonContainerStartup container;
 
@@ -48,14 +48,13 @@ public final class AddonRunnable implements Runnable
       @Override
       public Object call() throws Exception
       {
-         addon.setStatus(AddonStatus.LOADED);
          return null;
       }
    };
 
    public AddonRunnable(Furnace forge, AddonImpl addon)
    {
-      this.forge = forge;
+      this.furnace = forge;
       this.addon = addon;
    }
 
@@ -63,7 +62,7 @@ public final class AddonRunnable implements Runnable
    {
       try
       {
-         forge.getLockManager().performLocked(LockMode.READ, new Callable<Void>()
+         furnace.getLockManager().performLocked(LockMode.READ, new Callable<Void>()
          {
             @Override
             public Void call() throws Exception
@@ -93,7 +92,7 @@ public final class AddonRunnable implements Runnable
       currentThread.setName(addon.getId().toCoordinates());
       try
       {
-         forge.getLockManager().performLocked(LockMode.READ, new Callable<Void>()
+         furnace.getLockManager().performLocked(LockMode.READ, new Callable<Void>()
          {
             @Override
             public Void call() throws Exception
@@ -120,7 +119,7 @@ public final class AddonRunnable implements Runnable
       }
       finally
       {
-         ((AddonRegistryImpl) forge.getAddonRegistry()).finishedStarting(addon);
+         ((FurnaceImpl) furnace).getAddonLifecycleManager().finishedStarting(addon);
          currentThread.setName(name);
       }
    }
@@ -151,14 +150,12 @@ public final class AddonRunnable implements Runnable
                 * This is an import-only addon and does not require weld, nor provide remote services.
                 */
                addon.setServiceRegistry(new NullServiceRegistry());
-               addon.setStatus(AddonStatus.STARTED);
 
                shutdownCallback = new Callable<Object>()
                {
                   @Override
                   public Object call() throws Exception
                   {
-                     addon.setStatus(AddonStatus.LOADED);
                      return null;
                   }
                };
@@ -177,20 +174,20 @@ public final class AddonRunnable implements Runnable
                repositoryProducer.setRepository(addon.getRepository());
 
                FurnaceProducer forgeProducer = BeanManagerUtils.getContextualInstance(manager, FurnaceProducer.class);
-               forgeProducer.setForge(forge);
+               forgeProducer.setForge(furnace);
 
                AddonProducer addonProducer = BeanManagerUtils.getContextualInstance(manager, AddonProducer.class);
                addonProducer.setAddon(addon);
 
                AddonRegistryProducer addonRegistryProducer = BeanManagerUtils.getContextualInstance(manager,
                         AddonRegistryProducer.class);
-               addonRegistryProducer.setRegistry(forge.getAddonRegistry());
+               addonRegistryProducer.setRegistry(furnace.getAddonRegistry());
 
                ContainerServiceExtension extension = BeanManagerUtils.getContextualInstance(manager,
                         ContainerServiceExtension.class);
                ServiceRegistryProducer serviceRegistryProducer = BeanManagerUtils.getContextualInstance(manager,
                         ServiceRegistryProducer.class);
-               serviceRegistryProducer.setServiceRegistry(new ServiceRegistryImpl(forge.getLockManager(), addon,
+               serviceRegistryProducer.setServiceRegistry(new ServiceRegistryImpl(furnace.getLockManager(), addon,
                         manager, extension));
 
                ServiceRegistry registry = BeanManagerUtils.getContextualInstance(manager, ServiceRegistry.class);
@@ -214,7 +211,6 @@ public final class AddonRunnable implements Runnable
                      }
                      finally
                      {
-                        addon.setStatus(AddonStatus.LOADED);
                      }
 
                      weld.shutdown();
@@ -233,8 +229,6 @@ public final class AddonRunnable implements Runnable
                            Addons.waitUntilStarted(dependency.getDependency());
                      }
 
-                     addon.setStatus(AddonStatus.STARTED);
-
                      manager.fireEvent(new PostStartup());
                      return null;
                   }
@@ -245,7 +239,7 @@ public final class AddonRunnable implements Runnable
          }
          catch (Exception e)
          {
-            addon.setStatus(AddonStatus.FAILED);
+            addon.getFuture().cancel(false);
             throw e;
          }
       }
