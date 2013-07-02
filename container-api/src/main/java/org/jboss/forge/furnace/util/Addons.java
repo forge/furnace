@@ -35,16 +35,19 @@ public class Addons
 
    public static void waitUntilStopped(Addon addon)
    {
-      try
+      if (addon != null)
       {
-         while (addon.getStatus().isStarted())
+         try
          {
-            Thread.sleep(10);
+            while (addon.getStatus().isStarted())
+            {
+               Thread.sleep(10);
+            }
          }
-      }
-      catch (Exception e)
-      {
-         throw new ContainerException("Addon [" + addon + "] was not stopped.", e);
+         catch (Exception e)
+         {
+            throw new ContainerException("Addon [" + addon + "] was not stopped.", e);
+         }
       }
    }
 
@@ -74,25 +77,28 @@ public class Addons
 
    public static void waitUntilStopped(Addon addon, int quantity, TimeUnit unit)
    {
-      try
+      if (addon != null)
       {
-         long start = System.currentTimeMillis();
-         while (addon.getStatus().isStarted())
+         try
          {
-            if (System.currentTimeMillis() > (start + TimeUnit.MILLISECONDS.convert(quantity, unit)))
+            long start = System.currentTimeMillis();
+            while (addon.getStatus().isStarted())
             {
-               throw new TimeoutException("Timeout expired waiting for [" + addon + "] to stop.");
+               if (System.currentTimeMillis() > (start + TimeUnit.MILLISECONDS.convert(quantity, unit)))
+               {
+                  throw new TimeoutException("Timeout expired waiting for [" + addon + "] to stop.");
+               }
+               Thread.sleep(10);
             }
-            Thread.sleep(10);
          }
-      }
-      catch (RuntimeException re)
-      {
-         throw re;
-      }
-      catch (Exception e)
-      {
-         throw new ContainerException("Addon [" + addon + "] was not stopped.", e);
+         catch (RuntimeException re)
+         {
+            throw re;
+         }
+         catch (Exception e)
+         {
+            throw new ContainerException("Addon [" + addon + "] was not stopped.", e);
+         }
       }
    }
 

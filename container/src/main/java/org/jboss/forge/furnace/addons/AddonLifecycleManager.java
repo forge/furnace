@@ -6,6 +6,7 @@
  */
 package org.jboss.forge.furnace.addons;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -20,6 +21,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.FurnaceImpl;
+import org.jboss.forge.furnace.impl.graph.AddonDependencyEdge;
+import org.jboss.forge.furnace.impl.graph.AddonVertex;
 import org.jboss.forge.furnace.impl.graph.CompleteAddonGraph;
 import org.jboss.forge.furnace.impl.graph.OptimizedAddonGraph;
 import org.jboss.forge.furnace.lock.LockManager;
@@ -29,6 +32,9 @@ import org.jboss.forge.furnace.util.AddonFilters;
 import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.util.Callables;
 import org.jboss.forge.furnace.util.Sets;
+import org.jboss.forge.furnace.versions.EmptyVersion;
+import org.jgrapht.event.TraversalListenerAdapter;
+import org.jgrapht.traverse.DepthFirstIterator;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
@@ -144,17 +150,13 @@ public class AddonLifecycleManager implements AddonView
          @Override
          public Void call() throws Exception
          {
-            Set<AddonId> allEnabled = new HashSet<AddonId>();
             for (AddonView view : views)
             {
                if (starting.get() == -1)
                   starting.set(0);
 
-               Set<AddonId> enabled = getAllEnabled(view.getRepositories());
-               allEnabled.addAll(enabled);
-
-               CompleteAddonGraph graph = new CompleteAddonGraph(furnace.getRepositories());
-               OptimizedAddonGraph optimizedGraph = new OptimizedAddonGraph(furnace.getRepositories(),
+               CompleteAddonGraph graph = new CompleteAddonGraph(view.getRepositories());
+               OptimizedAddonGraph optimizedGraph = new OptimizedAddonGraph(view.getRepositories(),
                         graph.getGraph());
 
                System.out.println(" ------------ DEPEDENCY SETS ------------ ");
@@ -162,23 +164,46 @@ public class AddonLifecycleManager implements AddonView
                System.out.println(" ------------ REALTIME GRAPH ------------ ");
                System.out.println(optimizedGraph);
 
-               for (AddonId id : enabled)
-               {
-                  AddonImpl addon = getAddonLoader().loadAddon(view, id);
-                  if (!addon.getStatus().isStarted())
-                     Callables.call(new StartEnabledAddonCallable(furnace, executor, starting, addon));
-               }
-            }
-
-            for (Addon addon : getAddons())
-            {
-               if (!allEnabled.contains(addon.getId()))
-               {
-                  Callables.call(new StopAddonCallable(addon));
-               }
+               doStart(view, optimizedGraph);
             }
 
             return null;
+         }
+
+         private void doStart(final AddonView view, OptimizedAddonGraph optimizedGraph)
+         {
+            DepthFirstIterator<AddonVertex, AddonDependencyEdge> iterator = new DepthFirstIterator<AddonVertex, AddonDependencyEdge>(
+                     optimizedGraph.getGraph());
+
+            for (Addon addon : getAddons())
+            {
+               Callables.call(new StopAddonCallable(addon));
+            }
+            addons.clear();
+
+            iterator.addTraversalListener(new TraversalListenerAdapter<AddonVertex, AddonDependencyEdge>()
+            {
+               public void vertexTraversed(org.jgrapht.event.VertexTraversalEvent<AddonVertex> event)
+               {
+                  AddonVertex vertex = event.getVertex();
+                  if (!(vertex.getVersion() instanceof EmptyVersion))
+                  {
+                     AddonId addonId = vertex.getAddonId();
+
+                     AddonImpl addon = getAddonLoader().loadAddon(view, addonId);
+
+                     if (addon != null && !addon.getStatus().isStarted())
+                        Callables.call(new StartEnabledAddonCallable(furnace, executor, starting, addon));
+                     else if (addon == null)
+                        System.out.println("WRONG!");
+                  }
+                  else
+                     System.out.println("WRONG!");
+               };
+            });
+
+            while (iterator.hasNext())
+               iterator.next();
          }
       });
    }

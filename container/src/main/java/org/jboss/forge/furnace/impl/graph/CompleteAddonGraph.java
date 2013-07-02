@@ -1,8 +1,8 @@
 package org.jboss.forge.furnace.impl.graph;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -21,7 +21,7 @@ public class CompleteAddonGraph extends AddonGraph<CompleteAddonGraph>
    DirectedGraph<AddonVertex, AddonDependencyEdge> graph = new SimpleDirectedGraph<AddonVertex, AddonDependencyEdge>(
             AddonDependencyEdge.class);
 
-   public CompleteAddonGraph(List<AddonRepository> repositories)
+   public CompleteAddonGraph(Collection<AddonRepository> repositories)
    {
       Set<AddonId> enabled = getAllEnabledAddonsInAllRepositories(repositories);
       Map<AddonId, Set<AddonDependencyEntry>> dependencyMap = new LinkedHashMap<AddonId, Set<AddonDependencyEntry>>();
@@ -73,7 +73,7 @@ public class CompleteAddonGraph extends AddonGraph<CompleteAddonGraph>
       }
    }
 
-   private Set<AddonId> getAllEnabledAddonsInAllRepositories(List<AddonRepository> repositories)
+   private Set<AddonId> getAllEnabledAddonsInAllRepositories(Collection<AddonRepository> repositories)
    {
       Set<AddonId> result = new HashSet<AddonId>();
       for (AddonRepository repository : repositories)

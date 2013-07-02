@@ -1,5 +1,6 @@
 package org.jboss.forge.furnace.impl.graph;
 
+import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.versions.Version;
 
@@ -72,5 +73,10 @@ public class AddonVertex
    public String toString()
    {
       return "[" + name + "," + version + "]";
+   }
+
+   public AddonId getAddonId()
+   {
+      return AddonId.from(getName(), getVersion().toString());
    }
 }

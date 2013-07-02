@@ -40,12 +40,12 @@ public class AddonHotSwapTest
       ForgeArchive archive = ShrinkWrap
                .create(ForgeArchive.class)
                .addBeansXML()
-               .addAsAddonDependencies(AddonDependencyEntry.create("dep", "2"));
+               .addAsAddonDependencies(AddonDependencyEntry.create("dep2", "2"));
 
       return archive;
    }
 
-   @Deployment(name = "dep,2", testable = false, order = 1)
+   @Deployment(name = "dep2,2", testable = false, order = 1)
    public static ForgeArchive getDeploymentDep2()
    {
       ForgeArchive archive = ShrinkWrap
@@ -64,8 +64,8 @@ public class AddonHotSwapTest
    @Test
    public void testHotSwap() throws Exception
    {
-      AddonId depOneId = AddonId.from("dep", "1");
-      AddonId depTwoId = AddonId.from("dep", "2");
+      AddonId depOneId = AddonId.from("dep1", "1");
+      AddonId depTwoId = AddonId.from("dep2", "2");
 
       Addon depOne = registry.getAddon(depOneId);
       Addon depTwo = registry.getAddon(depTwoId);

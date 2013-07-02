@@ -1,7 +1,7 @@
 package org.jboss.forge.furnace.impl.graph;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -20,7 +20,7 @@ public class OptimizedAddonGraph extends AddonGraph<OptimizedAddonGraph>
    DirectedGraph<AddonVertex, AddonDependencyEdge> graph = new SimpleDirectedGraph<AddonVertex, AddonDependencyEdge>(
             AddonDependencyEdge.class);
 
-   public OptimizedAddonGraph(List<AddonRepository> repositories,
+   public OptimizedAddonGraph(Collection<AddonRepository> repositories,
             final DirectedGraph<AddonVertex, AddonDependencyEdge> completeGraph)
    {
       DepthFirstIterator<AddonVertex, AddonDependencyEdge> iterator = new DepthFirstIterator<AddonVertex, AddonDependencyEdge>(
@@ -38,8 +38,15 @@ public class OptimizedAddonGraph extends AddonGraph<OptimizedAddonGraph>
                AddonVertex source = completeGraph.getEdgeSource(incomingEdge);
                AddonVertex localSource = getOrCreateVertex(source.getName(), EmptyVersion.getInstance());
 
-               graph.addEdge(localSource, localVertex,
-                        new AddonDependencyEdge(new EmptyVersionRange(), incomingEdge.isExported()));
+               try
+               {
+                  graph.addEdge(localSource, localVertex,
+                           new AddonDependencyEdge(new EmptyVersionRange(), incomingEdge.isExported()));
+               }
+               catch (Exception e)
+               {
+                  e.printStackTrace();
+               }
             }
          };
       });
@@ -52,8 +59,9 @@ public class OptimizedAddonGraph extends AddonGraph<OptimizedAddonGraph>
       {
          for (AddonVertex vertex : completeGraph.vertexSet())
          {
-            if (localVertex.getName().equals(vertex.getName()) && localVertex.getVersion().compareTo(
-                     vertex.getVersion()) < 1)
+            if (localVertex.getName().equals(vertex.getName())
+                     && (localVertex.getVersion() instanceof EmptyVersion || localVertex.getVersion().compareTo(
+                              vertex.getVersion()) < 1))
             {
                if (replacements.get(localVertex) == null || replacements.get(localVertex).getVersion().compareTo(
                         vertex.getVersion()) < 1)

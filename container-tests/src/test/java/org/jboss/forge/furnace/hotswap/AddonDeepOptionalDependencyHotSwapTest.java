@@ -34,35 +34,35 @@ public class AddonDeepOptionalDependencyHotSwapTest
       return archive;
    }
 
-   @Deployment(name = "dep,1", testable = false, order = 2)
+   @Deployment(name = "dep1,1", testable = false, order = 2)
    public static ForgeArchive getDeploymentDep1()
    {
       ForgeArchive archive = ShrinkWrap
                .create(ForgeArchive.class)
                .addBeansXML()
-               .addAsAddonDependencies(AddonDependencyEntry.create("dep", "2", false, true));
+               .addAsAddonDependencies(AddonDependencyEntry.create("dep2", "2", false, true));
 
       return archive;
    }
 
-   @Deployment(name = "dep,2", testable = false, order = 1)
+   @Deployment(name = "dep2,2", testable = false, order = 1)
    public static ForgeArchive getDeploymentDep2()
    {
       ForgeArchive archive = ShrinkWrap
                .create(ForgeArchive.class)
                .addBeansXML()
-               .addAsAddonDependencies(AddonDependencyEntry.create("dep", "3", false, true));
+               .addAsAddonDependencies(AddonDependencyEntry.create("dep3", "3", false, true));
 
       return archive;
    }
 
-   @Deployment(name = "dep,3", testable = false, order = 1)
+   @Deployment(name = "dep3,3", testable = false, order = 1)
    public static ForgeArchive getDeploymentDep3()
    {
       ForgeArchive archive = ShrinkWrap
                .create(ForgeArchive.class)
                .addBeansXML()
-               .addAsAddonDependencies(AddonDependencyEntry.create("dep", "4", false, true));
+               .addAsAddonDependencies(AddonDependencyEntry.create("dep4", "4", false, true));
 
       return archive;
    }
@@ -86,10 +86,10 @@ public class AddonDeepOptionalDependencyHotSwapTest
    @Test
    public void testHotSwap() throws Exception
    {
-      AddonId dep1Id = AddonId.from("dep", "1");
-      AddonId dep2Id = AddonId.from("dep", "2");
-      AddonId dep3Id = AddonId.from("dep", "3");
-      AddonId dep4Id = AddonId.from("dep", "4");
+      AddonId dep1Id = AddonId.from("dep1", "1");
+      AddonId dep2Id = AddonId.from("dep2", "2");
+      AddonId dep3Id = AddonId.from("dep3", "3");
+      AddonId dep4Id = AddonId.from("dep4", "4");
 
       Addon dep1 = registry.getAddon(dep1Id);
       Addon dep2 = registry.getAddon(dep2Id);
