@@ -3,6 +3,7 @@ package org.jboss.forge.furnace;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.versions.EmptyVersion;
 import org.jboss.forge.furnace.versions.SingleVersion;
+import org.jboss.forge.furnace.versions.Version;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -70,13 +71,25 @@ public class AddonIdTest
    @Test(expected = IllegalArgumentException.class)
    public void testNullVersionCompact()
    {
-      AddonId.from("name", null);
+      AddonId.from("name", (Version) null);
+   }
+
+   @Test(expected = IllegalArgumentException.class)
+   public void testNullVersionString()
+   {
+      AddonId.from("name", (String) null);
    }
 
    @Test(expected = IllegalArgumentException.class)
    public void testNoNameOrVersionCompact()
    {
-      AddonId.from(null, null);
+      AddonId.from(null, (Version) null);
+   }
+
+   @Test(expected = IllegalArgumentException.class)
+   public void testNoNameOrVersionCompactString()
+   {
+      AddonId.from(null, (String) null);
    }
 
    @Test
@@ -110,7 +123,7 @@ public class AddonIdTest
       AddonId left = AddonId.from("def", "1.0.0-SNAPSHOT");
       AddonId right = AddonId.from("abc", "1.0.0-SNAPSHOT");
 
-      Assert.assertTrue(left.compareTo(right) < 1);
+      Assert.assertTrue(left.compareTo(right) > 0);
    }
 
    @Test
@@ -128,7 +141,7 @@ public class AddonIdTest
       AddonId left = AddonId.from("name", "2.0.0-SNAPSHOT");
       AddonId right = AddonId.from("name", "1.0.0-SNAPSHOT");
 
-      Assert.assertTrue(left.compareTo(right) < 1);
+      Assert.assertTrue(left.compareTo(right) > 0);
    }
 
    @Test

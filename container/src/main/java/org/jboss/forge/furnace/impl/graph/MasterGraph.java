@@ -65,7 +65,7 @@ public class MasterGraph extends AddonGraph<MasterGraph>
       {
          AddonVertex target = other.getGraph().getEdgeTarget(edge);
          mergeVertex(other, target);
-         graph.addEdge(vertex, target);
+         graph.addEdge(vertex, target, new AddonDependencyEdge(edge.getVersionRange(), edge.isExported()));
       }
 
    }

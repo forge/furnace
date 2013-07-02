@@ -66,7 +66,8 @@ public class OptimizedAddonGraph extends AddonGraph<OptimizedAddonGraph>
                if (replacements.get(localVertex) == null || replacements.get(localVertex).getVersion().compareTo(
                         vertex.getVersion()) < 1)
                {
-                  replacements.put(localVertex, new AddonVertex(localVertex.getName(), vertex.getVersion()));
+                  AddonVertex replacement = new AddonVertex(localVertex.getName(), vertex.getVersion());
+                  replacements.put(localVertex, replacement);
                }
             }
          }
@@ -90,7 +91,7 @@ public class OptimizedAddonGraph extends AddonGraph<OptimizedAddonGraph>
       Set<AddonDependencyEdge> incoming = graph.incomingEdgesOf(original);
       Set<AddonDependencyEdge> outgoing = graph.outgoingEdgesOf(original);
 
-      graph.addVertex(replacement);
+      addLocalVertex(replacement);
 
       for (AddonDependencyEdge edge : incoming)
       {

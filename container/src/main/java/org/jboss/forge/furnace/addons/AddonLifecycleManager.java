@@ -32,11 +32,12 @@ import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.util.AddonFilters;
 import org.jboss.forge.furnace.util.Assert;
+import org.jboss.forge.furnace.util.Callables;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class AddonLifecycleManager implements AddonView
+public class AddonLifecycleManager
 {
    private static final Logger logger = Logger.getLogger(AddonLifecycleManager.class.getName());
 
@@ -68,13 +69,12 @@ public class AddonLifecycleManager implements AddonView
       return loader;
    }
 
-   public void add(AddonView view, AddonImpl addon)
+   public void add(AddonView view, Addon addon)
    {
       getAddonsInView(view).add(addon);
    }
 
-   @Override
-   public Addon getAddon(final AddonId id)
+   public Addon getAddon(final AddonView view, final AddonId id)
    {
       Assert.notNull(id, "AddonId must not be null.");
       return lock.performLocked(LockMode.READ, new Callable<Addon>()
@@ -84,7 +84,7 @@ public class AddonLifecycleManager implements AddonView
          @Override
          public Addon call() throws Exception
          {
-            for (Addon addon : getAddons())
+            for (Addon addon : getAddons(view))
             {
                if (id.equals(addon.getId()))
                {
@@ -98,14 +98,12 @@ public class AddonLifecycleManager implements AddonView
       });
    }
 
-   @Override
-   public Set<Addon> getAddons()
+   public Set<Addon> getAddons(final AddonView view)
    {
-      return getAddons(AddonFilters.all());
+      return getAddons(view, AddonFilters.all());
    }
 
-   @Override
-   public Set<Addon> getAddons(final AddonFilter filter)
+   public Set<Addon> getAddons(final AddonView view, final AddonFilter filter)
    {
       return lock.performLocked(LockMode.READ, new Callable<Set<Addon>>()
       {
@@ -114,7 +112,7 @@ public class AddonLifecycleManager implements AddonView
          {
             HashSet<Addon> result = new HashSet<Addon>();
 
-            for (Addon addon : getAddonsInView(AddonLifecycleManager.this))
+            for (Addon addon : getAddonsInView(view))
             {
                if (filter.accept(addon))
                   result.add(addon);
@@ -179,7 +177,8 @@ public class AddonLifecycleManager implements AddonView
                System.out.println(" ------------ GRAPH ------------ ");
                System.out.println(master);
 
-               new MasterGraphChangeHandler(addons, currentGraph, master).hotSwapChanges(getAddonLoader());
+               new MasterGraphChangeHandler(AddonLifecycleManager.this, addons, currentGraph, master)
+                        .hotSwapChanges(getAddonLoader());
 
                currentGraph = master;
             }
@@ -245,7 +244,6 @@ public class AddonLifecycleManager implements AddonView
       return starting.get() > 0;
    }
 
-   @Override
    public Set<AddonRepository> getRepositories()
    {
       return Collections.unmodifiableSet(new LinkedHashSet<AddonRepository>(furnace.getRepositories()));
@@ -264,15 +262,14 @@ public class AddonLifecycleManager implements AddonView
       return result;
    }
 
-   @Override
-   public void dispose()
-   {
-      throw new UnsupportedOperationException("Cannot dispose the root AddonView. Call Furnace.stop() instead.");
-   }
-
    public void dispose(AddonView view)
    {
       furnace.disposeAddonView(view);
+   }
+
+   public void startAddon(Addon addon)
+   {
+      Callables.call(new StartEnabledAddonCallable(furnace, executor, starting, (AddonImpl) addon));
    }
 
 }

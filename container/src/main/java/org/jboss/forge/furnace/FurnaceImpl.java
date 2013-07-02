@@ -60,6 +60,8 @@ public class FurnaceImpl implements Furnace
 
    private String[] args;
 
+   private int registryCount = 0;
+
    public FurnaceImpl()
    {
       if (!AddonRepositoryImpl.hasRuntimeAPIVersion())
@@ -269,9 +271,9 @@ public class FurnaceImpl implements Furnace
 
       AddonRegistryImpl result = null;
       if (repositories == null || repositories.length == 0)
-         result = new AddonRegistryImpl(lock, manager, getRepositories());
+         result = new AddonRegistryImpl(lock, manager, getRepositories(), "ROOT");
       else
-         result = new AddonRegistryImpl(lock, manager, Arrays.asList(repositories));
+         result = new AddonRegistryImpl(lock, manager, Arrays.asList(repositories), String.valueOf(registryCount++));
 
       if (!views.contains(result))
          views.add(result);

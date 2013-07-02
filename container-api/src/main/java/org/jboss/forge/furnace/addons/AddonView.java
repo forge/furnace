@@ -13,6 +13,11 @@ import org.jboss.forge.furnace.repositories.AddonRepository;
 public interface AddonView
 {
    /**
+    * Get the unique name of this {@link AddonView}. Typically something short and nondescript for use in log messages.
+    */
+   String getName();
+
+   /**
     * Signal to {@link Furnace} that the given {@link AddonView} is no longer required, and any {@link Addon} instances
     * that are no longer referenced by other {@link AddonView} instances may be shut down. Addon instances in this view
     * may no longer function.

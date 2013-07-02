@@ -42,7 +42,10 @@ public class AddonRegistryImpl implements AddonRegistry
 
    private AddonLifecycleManager manager;
 
-   public AddonRegistryImpl(LockManager lock, AddonLifecycleManager manager, List<AddonRepository> repositories)
+   private String name;
+
+   public AddonRegistryImpl(LockManager lock, AddonLifecycleManager manager, List<AddonRepository> repositories,
+            String name)
    {
       Assert.notNull(lock, "LockManager must not be null.");
       Assert.notNull(manager, "Addon lifecycle manager must not be null.");
@@ -52,10 +55,11 @@ public class AddonRegistryImpl implements AddonRegistry
       this.lock = lock;
       this.manager = manager;
       this.repositories = repositories;
+      this.name = name;
 
       logger.log(Level.FINE, "Instantiated AddonRegistryImpl: " + this);
    }
-   
+
    @Override
    public void dispose()
    {
@@ -80,11 +84,6 @@ public class AddonRegistryImpl implements AddonRegistry
                }
             }
 
-            if (result == null)
-            {
-               result = manager.getAddon(id);
-            }
-
             return result;
          }
       });
@@ -106,7 +105,7 @@ public class AddonRegistryImpl implements AddonRegistry
          {
             HashSet<Addon> result = new HashSet<Addon>();
 
-            for (Addon addon : manager.getAddons(new AddonRepositoryFilter(getRepositories())))
+            for (Addon addon : manager.getAddons(AddonRegistryImpl.this, new AddonRepositoryFilter(getRepositories())))
             {
                if (filter.accept(addon))
                   result.add(addon);
@@ -323,5 +322,11 @@ public class AddonRegistryImpl implements AddonRegistry
       else if (!repositories.equals(other.repositories))
          return false;
       return true;
+   }
+
+   @Override
+   public String getName()
+   {
+      return name;
    }
 }

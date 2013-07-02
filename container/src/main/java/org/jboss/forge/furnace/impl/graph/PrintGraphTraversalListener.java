@@ -2,6 +2,7 @@ package org.jboss.forge.furnace.impl.graph;
 
 import java.util.Iterator;
 
+import org.jboss.forge.furnace.addons.AddonView;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.event.TraversalListenerAdapter;
 import org.jgrapht.event.VertexTraversalEvent;
@@ -44,8 +45,16 @@ public class PrintGraphTraversalListener extends TraversalListenerAdapter<AddonV
             {
                builder.append("\n");
                builder.append(count++).append(": ").append(vertex.getName()).append(":")
-                        .append(vertex.getVersion() == null ? MISSING : vertex.getVersion())
-                        .append("\n");
+                        .append(vertex.getVersion() == null ? MISSING : vertex.getVersion());
+
+               builder.append(" - V[");
+               for (AddonView view : vertex.getViews())
+               {
+                  builder.append(view.getName()).append(",");
+               }
+               builder.append("] ");
+
+               builder.append("\n");
             }
 
             while (dependencyIterator.hasNext())
@@ -64,8 +73,15 @@ public class PrintGraphTraversalListener extends TraversalListenerAdapter<AddonV
 
                if (edge.isExported())
                {
-                  builder.append(" (E) ");
+                  builder.append(" (E)");
                }
+               builder.append(" - V[");
+               for (AddonView view : dependency.getViews())
+               {
+                  builder.append(view.getName()).append(",");
+               }
+               builder.append("] ");
+               builder.append(parentComplete);
                builder.append("\n");
 
                DepthFirstIterator<AddonVertex, AddonDependencyEdge> iterator = new DepthFirstIterator<AddonVertex, AddonDependencyEdge>(
