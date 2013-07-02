@@ -165,10 +165,13 @@ public class AddonImpl implements Addon
       if (getFuture() != null)
       {
          if (!(getFuture() instanceof CompletedFuture))
-            result = AddonStatus.STARTED;
+         {
+            if (getFuture().isDone())
+               result = AddonStatus.STARTED;
 
-         if (getFuture().isCancelled())
-            result = AddonStatus.FAILED;
+            if (getFuture().isCancelled())
+               result = AddonStatus.FAILED;
+         }
       }
 
       return result;
@@ -213,7 +216,7 @@ public class AddonImpl implements Addon
    @Override
    public String toString()
    {
-      return getId().toCoordinates() + " +" + getStatus();
+      return getId().toCoordinates() + " +" + getStatus() + " startable: " + canBeStarted();
    }
 
    @Override

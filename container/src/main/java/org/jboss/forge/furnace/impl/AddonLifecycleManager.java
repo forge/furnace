@@ -94,12 +94,6 @@ public class AddonLifecycleManager implements AddonView
                }
             }
 
-            if (result == null)
-            {
-               result = new AddonImpl(lock, id);
-               addons.add(result);
-            }
-
             return result;
          }
       });
@@ -165,31 +159,32 @@ public class AddonLifecycleManager implements AddonView
                Set<AddonId> enabled = getAllEnabled(view.getRepositories());
                allEnabled.addAll(enabled);
 
-               // CompleteAddonGraph graph = new CompleteAddonGraph(furnace.getRepositories());
-               // OptimizedAddonGraph optimizedGraph = new OptimizedAddonGraph(furnace.getRepositories(),
-               // graph.getGraph());
+               CompleteAddonGraph graph = new CompleteAddonGraph(furnace.getRepositories());
+               OptimizedAddonGraph optimizedGraph = new OptimizedAddonGraph(furnace.getRepositories(),
+                        graph.getGraph());
+
+               System.out.println(" ------------ DUMPING GRAPHS ------------ ");
+               System.out.println(graph);
+               System.out.println(optimizedGraph);
 
                for (AddonId id : enabled)
                {
                   try
                   {
                      AddonImpl addon = getAddonLoader().loadAddon(view, id);
-//                     Callables.call(new StartEnabledAddonCallable(furnace, executor, starting, addon));
+                     if (!addon.getStatus().isStarted())
+                        Callables.call(new StartEnabledAddonCallable(furnace, executor, starting, addon));
                   }
                   catch (Exception e)
                   {
                      e.printStackTrace();
                   }
                }
-
-               // System.out.println(" ------------ DUMPING GRAPHS ------------ ");
-               // System.out.println(graph);
-               // System.out.println(optimizedGraph);
             }
 
             for (Addon addon : getAddons())
             {
-               if (allEnabled.contains(addon.getId()))
+               if (!allEnabled.contains(addon.getId()))
                {
                   Callables.call(new StopAddonCallable(addon));
                }
