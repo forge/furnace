@@ -67,7 +67,7 @@ public class AddonLoader
          {
             addon = new AddonImpl(lock, addonId);
             addon.setRepository(repository);
-            manager.add(addon);
+            manager.add(view, addon);
          }
 
          Set<AddonDependency> dependencies = fromAddonDependencyEntries(view, addon,

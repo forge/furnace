@@ -90,4 +90,10 @@ public class CompleteAddonGraph extends AddonGraph<CompleteAddonGraph>
    {
       return graph;
    }
+
+   @Override
+   protected void enhanceNewVertex(AddonVertex vertex)
+   {
+      // Intentionally blank.
+   }
 }

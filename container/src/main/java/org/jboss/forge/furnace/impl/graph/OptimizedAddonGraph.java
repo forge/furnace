@@ -1,12 +1,11 @@
 package org.jboss.forge.furnace.impl.graph;
 
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.jboss.forge.furnace.repositories.AddonRepository;
+import org.jboss.forge.furnace.addons.AddonView;
 import org.jboss.forge.furnace.versions.EmptyVersion;
 import org.jboss.forge.furnace.versions.EmptyVersionRange;
 import org.jgrapht.DirectedGraph;
@@ -19,10 +18,11 @@ public class OptimizedAddonGraph extends AddonGraph<OptimizedAddonGraph>
 {
    DirectedGraph<AddonVertex, AddonDependencyEdge> graph = new SimpleDirectedGraph<AddonVertex, AddonDependencyEdge>(
             AddonDependencyEdge.class);
+   private AddonView view;
 
-   public OptimizedAddonGraph(Collection<AddonRepository> repositories,
-            final DirectedGraph<AddonVertex, AddonDependencyEdge> completeGraph)
+   public OptimizedAddonGraph(AddonView view, final DirectedGraph<AddonVertex, AddonDependencyEdge> completeGraph)
    {
+      this.view = view;
       DepthFirstIterator<AddonVertex, AddonDependencyEdge> iterator = new DepthFirstIterator<AddonVertex, AddonDependencyEdge>(
                completeGraph);
       iterator.addTraversalListener(new TraversalListenerAdapter<AddonVertex, AddonDependencyEdge>()
@@ -111,6 +111,17 @@ public class OptimizedAddonGraph extends AddonGraph<OptimizedAddonGraph>
    public DirectedGraph<AddonVertex, AddonDependencyEdge> getGraph()
    {
       return graph;
+   }
+
+   @Override
+   protected void enhanceNewVertex(AddonVertex vertex)
+   {
+      vertex.addView(view);
+   }
+
+   public AddonView getAddonView()
+   {
+      return view;
    }
 
 }

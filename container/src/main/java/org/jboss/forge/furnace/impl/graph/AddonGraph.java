@@ -30,10 +30,18 @@ public abstract class AddonGraph<T extends AddonGraph<T>>
       if (vertex == null)
       {
          vertex = new AddonVertex(name, version);
-         getGraph().addVertex(vertex);
+         addLocalVertex(vertex);
       }
       return vertex;
    }
+
+   protected void addLocalVertex(AddonVertex vertex)
+   {
+      getGraph().addVertex(vertex);
+      enhanceNewVertex(vertex);
+   }
+
+   protected abstract void enhanceNewVertex(AddonVertex vertex);
 
    @Override
    public String toString()

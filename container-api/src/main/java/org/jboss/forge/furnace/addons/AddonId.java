@@ -61,6 +61,30 @@ public class AddonId implements Comparable<AddonId>
       return from(name, version, null);
    }
 
+   public static AddonId from(String name, Version version)
+   {
+      return from(name, version, null);
+   }
+
+   public static AddonId from(String name, Version version, Version apiVersion)
+   {
+      Assert.notNull(name, "Name cannot be null.");
+      if (name.trim().isEmpty())
+         throw new IllegalArgumentException("Name cannot be empty.");
+      Assert.notNull(version, "Version cannot be null.");
+      if (version.toString().trim().isEmpty())
+         throw new IllegalArgumentException("Version cannot be empty.");
+
+      AddonId id = new AddonId();
+      id.name = name;
+      id.version = version;
+      if (apiVersion == null || apiVersion.toString().trim().isEmpty())
+         id.apiVersion = EmptyVersion.getInstance();
+      else
+         id.apiVersion = apiVersion;
+      return id;
+   }
+
    public static AddonId from(String name, String version, String apiVersion)
    {
       Assert.notNull(name, "Name cannot be null.");

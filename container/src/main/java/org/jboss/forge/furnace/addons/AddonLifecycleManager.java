@@ -6,14 +6,16 @@
  */
 package org.jboss.forge.furnace.addons;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -21,20 +23,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.FurnaceImpl;
-import org.jboss.forge.furnace.impl.graph.AddonDependencyEdge;
-import org.jboss.forge.furnace.impl.graph.AddonVertex;
 import org.jboss.forge.furnace.impl.graph.CompleteAddonGraph;
+import org.jboss.forge.furnace.impl.graph.MasterGraph;
+import org.jboss.forge.furnace.impl.graph.MasterGraphChangeHandler;
 import org.jboss.forge.furnace.impl.graph.OptimizedAddonGraph;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.util.AddonFilters;
 import org.jboss.forge.furnace.util.Assert;
-import org.jboss.forge.furnace.util.Callables;
-import org.jboss.forge.furnace.util.Sets;
-import org.jboss.forge.furnace.versions.EmptyVersion;
-import org.jgrapht.event.TraversalListenerAdapter;
-import org.jgrapht.traverse.DepthFirstIterator;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
@@ -49,8 +46,10 @@ public class AddonLifecycleManager implements AddonView
    private FurnaceImpl furnace;
    private final LockManager lock;
 
-   private Set<Addon> addons = Sets.getConcurrentSet();
+   private Map<AddonView, Set<Addon>> addons = new ConcurrentHashMap<AddonView, Set<Addon>>();
    private AddonLoader loader;
+
+   private MasterGraph currentGraph;
 
    public AddonLifecycleManager(FurnaceImpl furnace)
    {
@@ -69,9 +68,9 @@ public class AddonLifecycleManager implements AddonView
       return loader;
    }
 
-   public void add(AddonImpl addon)
+   public void add(AddonView view, AddonImpl addon)
    {
-      this.addons.add(addon);
+      getAddonsInView(view).add(addon);
    }
 
    @Override
@@ -115,7 +114,7 @@ public class AddonLifecycleManager implements AddonView
          {
             HashSet<Addon> result = new HashSet<Addon>();
 
-            for (Addon addon : addons)
+            for (Addon addon : getAddonsInView(AddonLifecycleManager.this))
             {
                if (filter.accept(addon))
                   result.add(addon);
@@ -126,16 +125,31 @@ public class AddonLifecycleManager implements AddonView
       });
    }
 
+   protected Set<Addon> getAddonsInView(AddonView view)
+   {
+      if (!addons.containsKey(view))
+         addons.put(view, new HashSet<Addon>());
+      return addons.get(view);
+   }
+
    @Override
    public String toString()
    {
       StringBuilder builder = new StringBuilder();
 
-      Iterator<Addon> iterator = addons.iterator();
+      Iterator<Entry<AddonView, Set<Addon>>> iterator = addons.entrySet().iterator();
       while (iterator.hasNext())
       {
-         Addon addon = iterator.next();
-         builder.append(addon.toString());
+         Entry<AddonView, Set<Addon>> entry = iterator.next();
+         builder.append("VIEW: " + entry.getKey());
+         Iterator<Addon> addonsIterator = entry.getValue().iterator();
+         while (addonsIterator.hasNext())
+         {
+            Addon addon = addonsIterator.next();
+            builder.append("- ").append(addon.toString());
+            if (iterator.hasNext())
+               builder.append("\n");
+         }
          if (iterator.hasNext())
             builder.append("\n");
       }
@@ -147,6 +161,8 @@ public class AddonLifecycleManager implements AddonView
    {
       lock.performLocked(LockMode.WRITE, new Callable<Void>()
       {
+         MasterGraph master = new MasterGraph();
+
          @Override
          public Void call() throws Exception
          {
@@ -155,55 +171,20 @@ public class AddonLifecycleManager implements AddonView
                if (starting.get() == -1)
                   starting.set(0);
 
-               CompleteAddonGraph graph = new CompleteAddonGraph(view.getRepositories());
-               OptimizedAddonGraph optimizedGraph = new OptimizedAddonGraph(view.getRepositories(),
-                        graph.getGraph());
+               OptimizedAddonGraph graph = new OptimizedAddonGraph(view,
+                        new CompleteAddonGraph(view.getRepositories()).getGraph());
 
-               System.out.println(" ------------ DEPEDENCY SETS ------------ ");
-               System.out.println(graph);
-               System.out.println(" ------------ REALTIME GRAPH ------------ ");
-               System.out.println(optimizedGraph);
+               master.merge(graph);
 
-               doStart(view, optimizedGraph);
+               System.out.println(" ------------ GRAPH ------------ ");
+               System.out.println(master);
+
+               new MasterGraphChangeHandler(addons, currentGraph, master).hotSwapChanges(getAddonLoader());
+
+               currentGraph = master;
             }
 
             return null;
-         }
-
-         private void doStart(final AddonView view, OptimizedAddonGraph optimizedGraph)
-         {
-            DepthFirstIterator<AddonVertex, AddonDependencyEdge> iterator = new DepthFirstIterator<AddonVertex, AddonDependencyEdge>(
-                     optimizedGraph.getGraph());
-
-            for (Addon addon : getAddons())
-            {
-               Callables.call(new StopAddonCallable(addon));
-            }
-            addons.clear();
-
-            iterator.addTraversalListener(new TraversalListenerAdapter<AddonVertex, AddonDependencyEdge>()
-            {
-               public void vertexTraversed(org.jgrapht.event.VertexTraversalEvent<AddonVertex> event)
-               {
-                  AddonVertex vertex = event.getVertex();
-                  if (!(vertex.getVersion() instanceof EmptyVersion))
-                  {
-                     AddonId addonId = vertex.getAddonId();
-
-                     AddonImpl addon = getAddonLoader().loadAddon(view, addonId);
-
-                     if (addon != null && !addon.getStatus().isStarted())
-                        Callables.call(new StartEnabledAddonCallable(furnace, executor, starting, addon));
-                     else if (addon == null)
-                        System.out.println("WRONG!");
-                  }
-                  else
-                     System.out.println("WRONG!");
-               };
-            });
-
-            while (iterator.hasNext())
-               iterator.next();
          }
       });
    }
@@ -215,11 +196,14 @@ public class AddonLifecycleManager implements AddonView
          @Override
          public Void call() throws Exception
          {
-            for (Addon addon : addons)
+            for (Set<Addon> addonSet : addons.values())
             {
-               if (addon instanceof AddonImpl)
+               for (Addon addon : addonSet)
                {
-                  new StopAddonCallable(addon).call();
+                  if (addon instanceof AddonImpl)
+                  {
+                     new StopAddonCallable(addon).call();
+                  }
                }
             }
 

@@ -1,6 +1,10 @@
 package org.jboss.forge.furnace.impl.graph;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jboss.forge.furnace.addons.AddonId;
+import org.jboss.forge.furnace.addons.AddonView;
 import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.versions.Version;
 
@@ -8,6 +12,7 @@ public class AddonVertex
 {
    private String name;
    private Version version;
+   private Set<AddonView> views = new HashSet<AddonView>();
 
    public AddonVertex(String name, Version version)
    {
@@ -27,9 +32,19 @@ public class AddonVertex
       return version;
    }
 
-   public void overrideVersion(Version version)
+   public void addView(AddonView view)
    {
-      this.version = version;
+      this.views.add(view);
+   }
+
+   public Set<AddonView> getViews()
+   {
+      return views;
+   }
+
+   public AddonId getAddonId()
+   {
+      return AddonId.from(name, getVersion());
    }
 
    @Override
@@ -73,10 +88,5 @@ public class AddonVertex
    public String toString()
    {
       return "[" + name + "," + version + "]";
-   }
-
-   public AddonId getAddonId()
-   {
-      return AddonId.from(getName(), getVersion().toString());
    }
 }

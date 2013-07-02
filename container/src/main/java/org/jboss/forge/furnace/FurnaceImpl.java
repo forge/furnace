@@ -291,6 +291,8 @@ public class FurnaceImpl implements Furnace
          throw new IllegalArgumentException("The given AddonRegistry does not belong to this Furnace instance.");
 
       views.remove(view);
+
+      manager.forceUpdate(views);
    }
 
    @Override
@@ -378,5 +380,10 @@ public class FurnaceImpl implements Furnace
    public AddonLifecycleManager getAddonLifecycleManager()
    {
       return manager;
+   }
+
+   public Set<AddonView> getViews()
+   {
+      return views;
    }
 }
