@@ -269,24 +269,12 @@ public class AddonLifecycleManager implements AddonView
 
    public AddonId resolve(AddonView view, final String name)
    {
-      Set<Addon> addons = view.getAddons(new AddonFilter()
-      {
-         @Override
-         public boolean accept(Addon addon)
-         {
-            return name.equals(addon.getId().getName());
-         }
-      });
-
+      Assert.notNull(name, "Addon name must not be null.");
       AddonId result = null;
-      if (!addons.isEmpty())
+      for (AddonId id : getAllEnabled(view.getRepositories()))
       {
-         for (Addon addon : addons)
-         {
-            AddonId id = addon.getId();
-            if (result == null || id.getVersion().compareTo(result.getVersion()) >= 0)
-               result = id;
-         }
+         if (name.equals(id.getName()) && (result == null || id.getVersion().compareTo(result.getVersion()) >= 0))
+            result = id;
       }
 
       return result;

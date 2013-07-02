@@ -137,7 +137,7 @@ public class AddonLoader
          }
          else
          {
-            Addon dependency = view.getAddon(dependencyId);
+            AddonImpl dependency = loadAddon(view, dependencyId);
             result.add(new AddonDependencyImpl(lock,
                      addon,
                      dependency.getId().getVersion(),
