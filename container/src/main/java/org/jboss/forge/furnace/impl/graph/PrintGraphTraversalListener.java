@@ -75,13 +75,17 @@ public class PrintGraphTraversalListener extends TraversalListenerAdapter<AddonV
                {
                   builder.append(" (E)");
                }
-               builder.append(" - V[");
-               for (AddonView view : dependency.getViews())
+               builder.append(" - Views[");
+               Iterator<AddonView> viewIterator = dependency.getViews().iterator();
+               while (viewIterator.hasNext())
                {
-                  builder.append(view.getName()).append(",");
+                  AddonView view = viewIterator.next();
+                  builder.append(view.getName());
+
+                  if (viewIterator.hasNext())
+                     builder.append(", ");
                }
                builder.append("] ");
-               builder.append(parentComplete);
                builder.append("\n");
 
                DepthFirstIterator<AddonVertex, AddonDependencyEdge> iterator = new DepthFirstIterator<AddonVertex, AddonDependencyEdge>(
