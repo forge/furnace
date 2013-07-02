@@ -19,11 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.jboss.forge.furnace.Furnace;
-import org.jboss.forge.furnace.addons.Addon;
-import org.jboss.forge.furnace.addons.AddonFilter;
-import org.jboss.forge.furnace.addons.AddonId;
-import org.jboss.forge.furnace.addons.AddonView;
+import org.jboss.forge.furnace.FurnaceImpl;
 import org.jboss.forge.furnace.impl.graph.CompleteAddonGraph;
 import org.jboss.forge.furnace.impl.graph.OptimizedAddonGraph;
 import org.jboss.forge.furnace.lock.LockManager;
@@ -44,13 +40,13 @@ public class AddonLifecycleManager implements AddonView
    private final AtomicInteger starting = new AtomicInteger(-1);
    private final ExecutorService executor = Executors.newCachedThreadPool();
 
-   private Furnace furnace;
+   private FurnaceImpl furnace;
    private final LockManager lock;
 
    private Set<Addon> addons = Sets.getConcurrentSet();
    private AddonLoader loader;
 
-   public AddonLifecycleManager(Furnace furnace)
+   public AddonLifecycleManager(FurnaceImpl furnace)
    {
       Assert.notNull(furnace, "Furnace instance must not be null.");
 
@@ -161,22 +157,16 @@ public class AddonLifecycleManager implements AddonView
                OptimizedAddonGraph optimizedGraph = new OptimizedAddonGraph(furnace.getRepositories(),
                         graph.getGraph());
 
-               System.out.println(" ------------ DUMPING GRAPHS ------------ ");
+               System.out.println(" ------------ DEPEDENCY SETS ------------ ");
                System.out.println(graph);
+               System.out.println(" ------------ REALTIME GRAPH ------------ ");
                System.out.println(optimizedGraph);
 
                for (AddonId id : enabled)
                {
-                  try
-                  {
-                     AddonImpl addon = getAddonLoader().loadAddon(view, id);
-                     if (!addon.getStatus().isStarted())
-                        Callables.call(new StartEnabledAddonCallable(furnace, executor, starting, addon));
-                  }
-                  catch (Exception e)
-                  {
-                     e.printStackTrace();
-                  }
+                  AddonImpl addon = getAddonLoader().loadAddon(view, id);
+                  if (!addon.getStatus().isStarted())
+                     Callables.call(new StartEnabledAddonCallable(furnace, executor, starting, addon));
                }
             }
 
@@ -243,10 +233,6 @@ public class AddonLifecycleManager implements AddonView
       if (starting.get() == -1)
          return false;
 
-      /*
-       * Force a full configuration rescan.
-       */
-      forceUpdate(views);
       return starting.get() > 0;
    }
 
@@ -279,6 +265,17 @@ public class AddonLifecycleManager implements AddonView
       }
 
       return result;
+   }
+
+   @Override
+   public void dispose()
+   {
+      throw new UnsupportedOperationException("Cannot dispose the root AddonView. Call Furnace.stop() instead.");
+   }
+
+   public void dispose(AddonView view)
+   {
+      furnace.disposeAddonView(view);
    }
 
 }

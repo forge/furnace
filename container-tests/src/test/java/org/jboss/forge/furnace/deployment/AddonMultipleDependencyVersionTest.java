@@ -3,7 +3,7 @@ package org.jboss.forge.furnace.deployment;
 import javax.inject.Inject;
 
 import org.example.LifecycleListenerService;
-import org.example.PublisherService;
+import org.example.PublishedService;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
@@ -53,7 +53,7 @@ public class AddonMultipleDependencyVersionTest
    {
       ForgeArchive archive = ShrinkWrap
                .create(ForgeArchive.class)
-               .addClasses(LifecycleListenerService.class, PublisherService.class)
+               .addClasses(LifecycleListenerService.class, PublishedService.class)
                .addBeansXML();
 
       return archive;
@@ -65,6 +65,13 @@ public class AddonMultipleDependencyVersionTest
    @Test
    public void testVersionLookup() throws Exception
    {
+      ExportedInstance<PublishedService> exportedInstance = registry.getExportedInstance(PublishedService.class);
+      Assert.assertNotNull(exportedInstance);
+      PublishedService publishedService = exportedInstance.get();
+      Assert.assertNotNull(publishedService);
+      String message = publishedService.getMessage();
+      Assert.assertEquals("I am PublishedService.", message);
+
       int count = 0;
       for (Addon addon : registry.getAddons(AddonFilters.allStarted()))
       {
@@ -81,6 +88,6 @@ public class AddonMultipleDependencyVersionTest
             }
          }
       }
-      Assert.assertEquals(2, count);
+      Assert.assertEquals(1, count);
    }
 }

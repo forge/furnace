@@ -8,7 +8,7 @@ import org.jboss.forge.furnace.services.Exported;
 public class ConsumingService
 {
    @Inject
-   private PublisherService service;
+   private PublishedService service;
 
    public String getMessage()
    {

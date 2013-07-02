@@ -11,6 +11,7 @@ public class AddonVertex
    public AddonVertex(String name, Version version)
    {
       Assert.notNull(name, "Name must not be null.");
+      Assert.notNull(version, "Version must not be null.");
       this.name = name;
       this.version = version;
    }
@@ -23,6 +24,11 @@ public class AddonVertex
    public Version getVersion()
    {
       return version;
+   }
+
+   public void overrideVersion(Version version)
+   {
+      this.version = version;
    }
 
    @Override

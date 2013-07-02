@@ -9,7 +9,7 @@ import org.jboss.forge.furnace.services.Exported;
  */
 @Exported
 @Singleton
-public class PublisherService
+public class PublishedService
 {
    public String getMessage()
    {

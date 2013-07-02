@@ -130,7 +130,7 @@ public class FurnaceImpl implements Furnace
          loadedListenerRegistrations.add(registration);
       }
 
-      fireBeforeContainerStartedEvent(loader);
+      fireBeforeContainerStartedEvent();
       status = ContainerStatus.STARTED;
 
       try
@@ -156,7 +156,9 @@ public class FurnaceImpl implements Furnace
                {
                   try
                   {
+                     fireBeforeConfigurationScanEvent();
                      manager.forceUpdate(views);
+                     fireAfterConfigurationScanEvent();
                   }
                   catch (Exception e)
                   {
@@ -179,12 +181,12 @@ public class FurnaceImpl implements Furnace
       }
       finally
       {
-         fireBeforeContainerStoppedEvent(loader);
+         fireBeforeContainerStoppedEvent();
          status = ContainerStatus.STOPPED;
          manager.stopAll();
       }
 
-      fireAfterContainerStoppedEvent(loader);
+      fireAfterContainerStoppedEvent();
       for (ListenerRegistration<ContainerLifecycleListener> registation : loadedListenerRegistrations)
       {
          registation.removeListener();
@@ -192,7 +194,23 @@ public class FurnaceImpl implements Furnace
       return this;
    }
 
-   private void fireBeforeContainerStartedEvent(ClassLoader loader)
+   private void fireBeforeConfigurationScanEvent()
+   {
+      for (ContainerLifecycleListener listener : registeredListeners)
+      {
+         listener.beforeConfigurationScan(this);
+      }
+   }
+
+   private void fireAfterConfigurationScanEvent()
+   {
+      for (ContainerLifecycleListener listener : registeredListeners)
+      {
+         listener.afterConfigurationScan(this);
+      }
+   }
+
+   private void fireBeforeContainerStartedEvent()
    {
       for (ContainerLifecycleListener listener : registeredListeners)
       {
@@ -200,7 +218,7 @@ public class FurnaceImpl implements Furnace
       }
    }
 
-   private void fireBeforeContainerStoppedEvent(ClassLoader loader)
+   private void fireBeforeContainerStoppedEvent()
    {
       for (ContainerLifecycleListener listener : registeredListeners)
       {
@@ -208,7 +226,7 @@ public class FurnaceImpl implements Furnace
       }
    }
 
-   private void fireAfterContainerStoppedEvent(ClassLoader loader)
+   private void fireAfterContainerStoppedEvent()
    {
       for (ContainerLifecycleListener listener : registeredListeners)
       {
@@ -261,19 +279,18 @@ public class FurnaceImpl implements Furnace
       return result;
    }
 
-   @Override
-   public void disposeAddonRegistry(AddonRegistry registry)
+   public void disposeAddonView(AddonView view)
    {
       assertIsAlive();
 
-      if (getAddonRegistry().equals(registry))
+      if (getAddonRegistry().equals(view))
          throw new IllegalArgumentException(
                   "Cannot dispose the root AddonRegistry. Call .stop() instead.");
 
-      if (!views.contains(registry))
+      if (!views.contains(view))
          throw new IllegalArgumentException("The given AddonRegistry does not belong to this Furnace instance.");
 
-      views.remove(registry);
+      views.remove(view);
    }
 
    @Override

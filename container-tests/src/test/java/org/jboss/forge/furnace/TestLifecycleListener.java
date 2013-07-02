@@ -34,4 +34,14 @@ public class TestLifecycleListener implements ContainerLifecycleListener
    {
       afterStopTimesCalled++;
    }
+
+   @Override
+   public void beforeConfigurationScan(Furnace forge) throws ContainerException
+   {
+   }
+
+   @Override
+   public void afterConfigurationScan(Furnace forge) throws ContainerException
+   {
+   }
 }

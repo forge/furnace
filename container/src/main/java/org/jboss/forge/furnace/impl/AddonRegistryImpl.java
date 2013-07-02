@@ -55,6 +55,12 @@ public class AddonRegistryImpl implements AddonRegistry
 
       logger.log(Level.FINE, "Instantiated AddonRegistryImpl: " + this);
    }
+   
+   @Override
+   public void dispose()
+   {
+      manager.dispose(this);
+   }
 
    @Override
    public Addon getAddon(final AddonId id)

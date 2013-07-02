@@ -11,6 +11,7 @@ import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.impl.AddonRepositoryImpl;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.furnace.repositories.AddonRepository;
+import org.jboss.forge.furnace.versions.EmptyVersion;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.alg.CycleDetector;
 import org.jgrapht.graph.SimpleDirectedGraph;
@@ -56,7 +57,7 @@ public class CompleteAddonGraph extends AddonGraph<CompleteAddonGraph>
 
             if (!satisfied && !dependency.isOptional())
             {
-               AddonVertex missingVertex = new AddonVertex(dependency.getName(), null);
+               AddonVertex missingVertex = new AddonVertex(dependency.getName(), EmptyVersion.getInstance());
                graph.addVertex(missingVertex);
                graph.addEdge(vertex, missingVertex,
                         new AddonDependencyEdge(dependency.getVersionRange(), dependency.isExported()));

@@ -29,6 +29,16 @@ public interface ContainerLifecycleListener
    public void beforeStart(Furnace forge) throws ContainerException;
 
    /**
+    * Called before the Furnace container scans configuration files
+    */
+   public void beforeConfigurationScan(Furnace forge) throws ContainerException;
+
+   /**
+    * Called after the Furnace container scans configuration files
+    */
+   public void afterConfigurationScan(Furnace forge) throws ContainerException;
+
+   /**
     * Called before the Furnace container stops
     */
    public void beforeStop(Furnace forge) throws ContainerException;

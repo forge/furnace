@@ -67,12 +67,6 @@ public interface Furnace
    public AddonRegistry getAddonRegistry(AddonRepository... repositories);
 
    /**
-    * Signal to {@link Furnace} that the given {@link AddonRegistry} is no longer required, and any {@link Addon}
-    * instances that are no longer referenced by other {@link AddonRegistry} instances may be shut down.
-    */
-   public void disposeAddonRegistry(AddonRegistry registry);
-
-   /**
     * Get an immutable {@link List} of configured {@link AddonRepository} instances.
     */
    public List<AddonRepository> getRepositories();

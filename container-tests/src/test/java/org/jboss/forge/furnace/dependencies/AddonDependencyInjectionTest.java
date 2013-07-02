@@ -4,7 +4,7 @@ import javax.enterprise.inject.spi.Extension;
 import javax.inject.Inject;
 
 import org.example.ConsumingService;
-import org.example.PublisherService;
+import org.example.PublishedService;
 import org.example.extension.TestExtension;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -38,7 +38,7 @@ public class AddonDependencyInjectionTest
    public static ForgeArchive getDependencyDeployment()
    {
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class, "dependency.jar")
-               .addClasses(PublisherService.class)
+               .addClasses(PublishedService.class)
                .addBeansXML();
 
       return archive;
@@ -48,7 +48,7 @@ public class AddonDependencyInjectionTest
    private ConsumingService consuming;
 
    @Inject
-   private PublisherService remote;
+   private PublishedService remote;
 
    @Test
    public void testRemoteServiceInjection() throws Exception

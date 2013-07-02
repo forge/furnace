@@ -1,7 +1,7 @@
 package org.jboss.forge.furnace.dependencies;
 
 import org.example.NonService;
-import org.example.PublisherService;
+import org.example.PublishedService;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
@@ -21,7 +21,7 @@ public class ClassLoadingOnlyAddonTest
    public static ForgeArchive getDeployment()
    {
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
-               .addClass(PublisherService.class)
+               .addClass(PublishedService.class)
                .addBeansXML()
                .addAsAddonDependencies(AddonDependencyEntry.create("noncdi", "1"));
 

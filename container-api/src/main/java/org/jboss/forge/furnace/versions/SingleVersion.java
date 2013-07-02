@@ -72,6 +72,9 @@ public class SingleVersion implements Version
    @Override
    public int compareTo(Version otherVersion)
    {
+      if (otherVersion == null)
+         throw new NullPointerException("Cannot compare against null.");
+
       if (otherVersion instanceof SingleVersion)
       {
          return this.comparable.compareTo(((SingleVersion) otherVersion).comparable);
