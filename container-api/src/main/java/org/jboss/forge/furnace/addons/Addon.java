@@ -53,7 +53,8 @@ public interface Addon
 
    /**
     * Return the {@link Future} representing the boot-up sequence for this {@link Addon} instance. Returns
-    * <code>null</code> if the {@link Addon} is not starting, {@link AddonStatus#isStarted()} or {@link AddonStatus#isFailed()}
+    * <code>null</code> if the {@link Addon} is not starting, {@link AddonStatus#isStarted()} or
+    * {@link AddonStatus#isFailed()}
     */
    public Future<Void> getFuture();
 }

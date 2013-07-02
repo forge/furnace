@@ -11,6 +11,7 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
 import org.jboss.forge.furnace.addons.Addon;
+import org.jboss.forge.furnace.addons.AddonImpl;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.services.ExportedInstance;

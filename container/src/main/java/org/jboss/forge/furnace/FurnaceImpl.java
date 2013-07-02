@@ -18,9 +18,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.jboss.forge.furnace.addons.AddonLifecycleManager;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.addons.AddonView;
-import org.jboss.forge.furnace.impl.AddonLifecycleManager;
 import org.jboss.forge.furnace.impl.AddonRegistryImpl;
 import org.jboss.forge.furnace.impl.AddonRepositoryImpl;
 import org.jboss.forge.furnace.impl.ImmutableAddonRepository;

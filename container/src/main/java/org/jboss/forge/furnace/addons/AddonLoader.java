@@ -1,4 +1,4 @@
-package org.jboss.forge.furnace.impl;
+package org.jboss.forge.furnace.addons;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -6,11 +6,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.Furnace;
-import org.jboss.forge.furnace.addons.Addon;
-import org.jboss.forge.furnace.addons.AddonDependency;
-import org.jboss.forge.furnace.addons.AddonDependencyImpl;
-import org.jboss.forge.furnace.addons.AddonId;
-import org.jboss.forge.furnace.addons.AddonView;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.modules.AddonModuleLoader;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
@@ -58,11 +53,6 @@ public class AddonLoader
          }
       }
 
-      if (addon == null)
-      {
-         addon = new AddonImpl(lock, addonId);
-      }
-
       return addon;
    }
 
@@ -82,28 +72,21 @@ public class AddonLoader
 
          Set<AddonDependency> dependencies = fromAddonDependencyEntries(view, addon,
                   repository.getAddonDependencies(addonId));
-         addon.setDependencies(dependencies);
 
          if (addon.getModule() == null)
          {
             Set<AddonDependency> missingRequiredDependencies = new HashSet<AddonDependency>();
-            for (AddonDependency dependency : addon.getDependencies())
+            for (AddonDependency addonDependency : dependencies)
             {
-               AddonId dependencyId = dependency.getDependency().getId();
-
-               boolean loaded = false;
-               for (Addon a : view.getAddons())
+               Addon dependency = addonDependency.getDependency();
+               if (dependency == null && !addonDependency.isOptional())
                {
-                  if (a.getId().equals(dependencyId) && !a.getStatus().isMissing())
-                  {
-                     loaded = true;
-                  }
-               }
-               if (!loaded && !dependency.isOptional())
-               {
-                  missingRequiredDependencies.add(dependency);
+                  missingRequiredDependencies.add(addonDependency);
                }
             }
+
+            if (missingRequiredDependencies.isEmpty())
+               addon.setMissingDependencies(missingRequiredDependencies);
 
             if (!missingRequiredDependencies.isEmpty())
             {
@@ -128,10 +111,12 @@ public class AddonLoader
                catch (Exception e)
                {
                   logger.log(Level.FINE, "Failed to load addon [" + addonId + "]", e);
-                  // throw new ContainerException("Failed to load addon [" + addonId + "]", e);
                }
             }
          }
+
+         dependencies.removeAll(addon.getMissingDependencies());
+         addon.setDependencies(dependencies);
       }
       return addon;
    }
@@ -145,7 +130,10 @@ public class AddonLoader
          AddonId dependencyId = manager.resolve(view, entry.getName());
          if (dependencyId == null)
          {
-
+            if (!entry.isOptional())
+            {
+               result.add(new MissingAddonDependencyImpl(entry));
+            }
          }
          else
          {

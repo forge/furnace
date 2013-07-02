@@ -17,9 +17,9 @@ import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
+import org.jboss.forge.furnace.addons.AddonLifecycleManager;
 import org.jboss.forge.furnace.addons.AddonView;
 import org.jboss.forge.furnace.exception.ContainerException;
-import org.jboss.forge.furnace.impl.AddonLifecycleManager;
 import org.jboss.forge.furnace.impl.AddonRepositoryImpl;
 import org.jboss.forge.furnace.modules.providers.FurnaceContainerSpec;
 import org.jboss.forge.furnace.modules.providers.JGraphTClasspathSpec;

@@ -4,7 +4,7 @@
  * Licensed under the Eclipse Public License version 1.0, available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.jboss.forge.furnace.impl;
+package org.jboss.forge.furnace.addons;
 
 import java.util.Collections;
 import java.util.Set;
@@ -86,11 +86,6 @@ public class AddonImpl implements Addon
    public Set<AddonDependency> getDependencies()
    {
       return Collections.unmodifiableSet(state.dependencies);
-   }
-
-   public Set<AddonDependency> getMutableDependencies()
-   {
-      return state.dependencies;
    }
 
    public void setDependencies(Set<AddonDependency> dependencies)

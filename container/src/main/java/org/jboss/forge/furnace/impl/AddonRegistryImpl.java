@@ -19,6 +19,7 @@ import java.util.logging.Logger;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonFilter;
 import org.jboss.forge.furnace.addons.AddonId;
+import org.jboss.forge.furnace.addons.AddonLifecycleManager;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.addons.AddonStatus;
 import org.jboss.forge.furnace.lock.LockManager;

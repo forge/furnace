@@ -6,6 +6,8 @@
  */
 package org.jboss.forge.furnace.addons;
 
+import org.jboss.forge.furnace.addons.Addon;
+import org.jboss.forge.furnace.addons.AddonDependency;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.versions.Version;

@@ -10,8 +10,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.jboss.forge.furnace.impl.AddonImpl;
-import org.jboss.forge.furnace.impl.AddonRunnable;
+import org.jboss.forge.furnace.addons.Addon;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>

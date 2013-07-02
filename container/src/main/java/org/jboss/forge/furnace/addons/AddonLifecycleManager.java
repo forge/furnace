@@ -4,7 +4,7 @@
  * Licensed under the Eclipse Public License version 1.0, available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.jboss.forge.furnace.impl;
+package org.jboss.forge.furnace.addons;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -24,8 +24,6 @@ import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonFilter;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonView;
-import org.jboss.forge.furnace.addons.StartEnabledAddonCallable;
-import org.jboss.forge.furnace.addons.StopAddonCallable;
 import org.jboss.forge.furnace.impl.graph.CompleteAddonGraph;
 import org.jboss.forge.furnace.impl.graph.OptimizedAddonGraph;
 import org.jboss.forge.furnace.lock.LockManager;
@@ -270,7 +268,7 @@ public class AddonLifecycleManager implements AddonView
       });
 
       AddonId result = null;
-      if (addons.isEmpty())
+      if (!addons.isEmpty())
       {
          for (Addon addon : addons)
          {

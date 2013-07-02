@@ -4,7 +4,7 @@
  * Licensed under the Eclipse Public License version 1.0, available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.jboss.forge.furnace.impl;
+package org.jboss.forge.furnace.addons;
 
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -18,6 +18,14 @@ import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonDependency;
 import org.jboss.forge.furnace.event.PostStartup;
 import org.jboss.forge.furnace.event.PreShutdown;
+import org.jboss.forge.furnace.impl.AddonProducer;
+import org.jboss.forge.furnace.impl.AddonRegistryProducer;
+import org.jboss.forge.furnace.impl.AddonRepositoryProducer;
+import org.jboss.forge.furnace.impl.ContainerServiceExtension;
+import org.jboss.forge.furnace.impl.FurnaceProducer;
+import org.jboss.forge.furnace.impl.NullServiceRegistry;
+import org.jboss.forge.furnace.impl.ServiceRegistryImpl;
+import org.jboss.forge.furnace.impl.ServiceRegistryProducer;
 import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.modules.AddonResourceLoader;
 import org.jboss.forge.furnace.modules.ModularURLScanner;

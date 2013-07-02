@@ -6,8 +6,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.forge.furnace.Furnace;
-import org.jboss.forge.furnace.impl.AddonImpl;
-import org.jboss.forge.furnace.impl.AddonRunnable;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
