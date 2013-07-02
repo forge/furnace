@@ -47,12 +47,7 @@ public class PrintGraphTraversalListener extends TraversalListenerAdapter<AddonV
                builder.append(count++).append(": ").append(vertex.getName()).append(":")
                         .append(vertex.getVersion() == null ? MISSING : vertex.getVersion());
 
-               builder.append(" - V[");
-               for (AddonView view : vertex.getViews())
-               {
-                  builder.append(view.getName()).append(",");
-               }
-               builder.append("] ");
+               appendViews(vertex);
 
                builder.append("\n");
             }
@@ -75,17 +70,7 @@ public class PrintGraphTraversalListener extends TraversalListenerAdapter<AddonV
                {
                   builder.append(" (E)");
                }
-               builder.append(" - Views[");
-               Iterator<AddonView> viewIterator = dependency.getViews().iterator();
-               while (viewIterator.hasNext())
-               {
-                  AddonView view = viewIterator.next();
-                  builder.append(view.getName());
-
-                  if (viewIterator.hasNext())
-                     builder.append(", ");
-               }
-               builder.append("] ");
+               appendViews(dependency);
                builder.append("\n");
 
                DepthFirstIterator<AddonVertex, AddonDependencyEdge> iterator = new DepthFirstIterator<AddonVertex, AddonDependencyEdge>(
@@ -103,6 +88,21 @@ public class PrintGraphTraversalListener extends TraversalListenerAdapter<AddonV
       {
          throw e;
       }
+   }
+
+   private void appendViews(AddonVertex dependency)
+   {
+      builder.append(" - Views[");
+      Iterator<AddonView> viewIterator = dependency.getViews().iterator();
+      while (viewIterator.hasNext())
+      {
+         AddonView view = viewIterator.next();
+         builder.append(view.getName());
+
+         if (viewIterator.hasNext())
+            builder.append(", ");
+      }
+      builder.append("] ");
    }
 
    private void indent()
