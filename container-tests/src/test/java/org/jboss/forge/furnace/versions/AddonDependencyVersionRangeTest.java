@@ -1,10 +1,14 @@
 package org.jboss.forge.furnace.versions;
 
+import javax.inject.Inject;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -18,6 +22,7 @@ public class AddonDependencyVersionRangeTest
    public static ForgeArchive getDeployment()
    {
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+               .addBeansXML()
                .addAsAddonDependencies(
                         AddonDependencyEntry.create("A", "[1,2]", true),
                         AddonDependencyEntry.create("B", "1", true),
@@ -81,8 +86,13 @@ public class AddonDependencyVersionRangeTest
       return archive;
    }
 
+   @Inject
+   private AddonRegistry registry;
+
    @Test
    public void testBuildGraphs() throws Exception
    {
+      Assert.assertEquals("ROOT", registry.getName());
+      Assert.assertEquals(4, registry.getAddons().size());
    }
 }
