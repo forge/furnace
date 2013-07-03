@@ -29,11 +29,13 @@ public class AddonLoader
       this.loader = new AddonModuleLoader(furnace, manager);
    }
 
-   public AddonImpl loadAddon(AddonView view, AddonId addonId)
+   public AddonImpl loadAddon(Set<AddonView> views, AddonId addonId)
    {
       Assert.notNull(addonId, "AddonId to load must not be null.");
 
       AddonImpl addon = null;
+
+      AddonView view = views.iterator().next();
       for (Addon existing : view.getAddons())
       {
          if (existing.getId().equals(addonId))
@@ -47,16 +49,20 @@ public class AddonLoader
       {
          for (AddonRepository repository : view.getRepositories())
          {
-            addon = loadAddonFromRepository(view, repository, addonId);
+            addon = loadAddonFromRepository(views, view, repository, addonId);
             if (addon != null)
                break;
          }
       }
 
+      if (addon != null)
+         manager.add(addon);
+
       return addon;
    }
 
-   private AddonImpl loadAddonFromRepository(AddonView view, AddonRepository repository, final AddonId addonId)
+   private AddonImpl loadAddonFromRepository(Set<AddonView> views, AddonView view, AddonRepository repository,
+            final AddonId addonId)
    {
       AddonImpl addon = null;
       if (repository.isEnabled(addonId) && repository.isDeployed(addonId))
@@ -67,10 +73,9 @@ public class AddonLoader
          {
             addon = new AddonImpl(lock, addonId);
             addon.setRepository(repository);
-            manager.add(view, addon);
          }
 
-         Set<AddonDependency> dependencies = fromAddonDependencyEntries(view, addon,
+         Set<AddonDependency> dependencies = fromAddonDependencyEntries(views, view, addon,
                   repository.getAddonDependencies(addonId));
 
          if (addon.getModule() == null)
@@ -103,7 +108,7 @@ public class AddonLoader
             {
                try
                {
-                  Module module = loader.loadModule(view, addonId);
+                  Module module = loader.loadModule(views, view, addonId);
                   addon.setModuleLoader(loader);
                   addon.setModule(module);
                   addon.setRepository(repository);
@@ -121,7 +126,7 @@ public class AddonLoader
       return addon;
    }
 
-   private Set<AddonDependency> fromAddonDependencyEntries(AddonView view, AddonImpl addon,
+   private Set<AddonDependency> fromAddonDependencyEntries(Set<AddonView> views, AddonView view, AddonImpl addon,
             Set<AddonDependencyEntry> entries)
    {
       Set<AddonDependency> result = new HashSet<AddonDependency>();
@@ -137,7 +142,7 @@ public class AddonLoader
          }
          else
          {
-            AddonImpl dependency = loadAddon(view, dependencyId);
+            AddonImpl dependency = loadAddon(views, dependencyId);
             result.add(new AddonDependencyImpl(lock,
                      addon,
                      dependency.getId().getVersion(),

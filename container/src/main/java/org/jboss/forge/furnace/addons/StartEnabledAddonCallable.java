@@ -49,4 +49,9 @@ public class StartEnabledAddonCallable implements Callable<Void>
       return null;
    }
 
+   @Override
+   public String toString()
+   {
+      return addon.toString();
+   }
 }

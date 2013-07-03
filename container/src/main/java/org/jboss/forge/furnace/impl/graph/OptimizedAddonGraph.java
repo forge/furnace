@@ -11,6 +11,7 @@ import org.jboss.forge.furnace.versions.EmptyVersionRange;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.alg.CycleDetector;
 import org.jgrapht.event.TraversalListenerAdapter;
+import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.traverse.DepthFirstIterator;
 
@@ -27,7 +28,8 @@ public class OptimizedAddonGraph extends AddonGraph<OptimizedAddonGraph>
                completeGraph);
       iterator.addTraversalListener(new TraversalListenerAdapter<AddonVertex, AddonDependencyEdge>()
       {
-         public void vertexTraversed(org.jgrapht.event.VertexTraversalEvent<AddonVertex> event)
+         @Override
+         public void vertexTraversed(VertexTraversalEvent<AddonVertex> event)
          {
             AddonVertex vertex = event.getVertex();
             Set<AddonDependencyEdge> incoming = completeGraph.incomingEdgesOf(vertex);

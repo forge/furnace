@@ -54,6 +54,7 @@ public class AddonModuleLoader extends ModuleLoader
    private AddonLifecycleManager manager;
 
    private ThreadLocal<AddonView> currentView = new ThreadLocal<AddonView>();
+   private ThreadLocal<Set<AddonView>> currentViews = new ThreadLocal<Set<AddonView>>();
 
    public AddonModuleLoader(Furnace furnace, AddonLifecycleManager manager)
    {
@@ -100,13 +101,17 @@ public class AddonModuleLoader extends ModuleLoader
 
    /**
     * Loads a module from the current {@link AddonView} based on the {@link AddonId}
+    * 
+    * @param views
     */
-   public final Module loadModule(AddonView view, AddonId addonId) throws ModuleLoadException
+   public final Module loadModule(Set<AddonView> views, AddonView view, AddonId addonId) throws ModuleLoadException
    {
       try
       {
-         setCurrentAddonView(view);
-         Module result = loadModule(moduleCache.getModuleId(addonId));
+         this.currentView.set(view);
+         this.currentViews.set(views);
+         ModuleIdentifier moduleId = moduleCache.getModuleId(views, addonId);
+         Module result = loadModule(moduleId);
          return result;
       }
       catch (ModuleLoadException e)
@@ -115,18 +120,9 @@ public class AddonModuleLoader extends ModuleLoader
       }
       finally
       {
-         setCurrentAddonView(null);
+         this.currentView.remove();
+         this.currentViews.remove();
       }
-   }
-
-   private AddonView getCurrentAddonView()
-   {
-      return this.currentView.get();
-   }
-
-   private void setCurrentAddonView(AddonView view)
-   {
-      this.currentView.set(view);
    }
 
    private ModuleSpec findRegularModule(ModuleIdentifier id)
@@ -223,7 +219,7 @@ public class AddonModuleLoader extends ModuleLoader
       Set<AddonDependencyEntry> addons = repository.getAddonDependencies(found);
       for (AddonDependencyEntry dependency : addons)
       {
-         AddonId addonId = manager.resolve(getCurrentAddonView(), dependency.getName());
+         AddonId addonId = manager.resolve(this.currentView.get(), dependency.getName());
          ModuleIdentifier moduleId = null;
          if (addonId != null)
          {
@@ -234,7 +230,7 @@ public class AddonModuleLoader extends ModuleLoader
                         PathFilters.not(PathFilters.getMetaInfFilter()),
                         dependency.isExported() ? PathFilters.acceptAll() : PathFilters.rejectAll(),
                         this,
-                        moduleCache.getModuleId(addonId),
+                        moduleCache.getModuleId(this.currentViews.get(), addonId),
                         dependency.isOptional()));
             }
          }
@@ -251,7 +247,7 @@ public class AddonModuleLoader extends ModuleLoader
       List<AddonId> enabled = repository.listEnabledCompatibleWithVersion(AddonRepositoryImpl.getRuntimeAPIVersion());
       for (AddonId addon : enabled)
       {
-         if (moduleCache.getModuleId(addon).equals(moduleId))
+         if (moduleCache.getModuleId(this.currentViews.get(), addon).equals(moduleId))
          {
             found = addon;
             break;
@@ -262,27 +258,21 @@ public class AddonModuleLoader extends ModuleLoader
 
    private ModuleIdentifier findCompatibleInstalledModule(AddonId addonId)
    {
-      AddonId found = null;
+      ModuleIdentifier result = null;
 
-      for (AddonRepository repository : manager.getRepositories())
+      ALL: for (AddonRepository repository : manager.getRepositories())
       {
-         for (AddonId addon : repository.listEnabledCompatibleWithVersion(AddonRepositoryImpl.getRuntimeAPIVersion()))
+         for (AddonId id : repository.listEnabledCompatibleWithVersion(AddonRepositoryImpl.getRuntimeAPIVersion()))
          {
-            // TODO implement proper version-range resolution
-            if (addon.getName().equals(addonId.getName()))
+            if (id.getName().equals(addonId.getName()))
             {
-               found = addon;
-               break;
+               result = moduleCache.getModuleId(this.currentViews.get(), id);
+               break ALL;
             }
          }
       }
 
-      if (found != null)
-      {
-         return moduleCache.getModuleId(found);
-      }
-
-      return null;
+      return result;
    }
 
    @Override
@@ -291,11 +281,11 @@ public class AddonModuleLoader extends ModuleLoader
       return "AddonModuleLoader";
    }
 
-   public void releaseAddonModule(AddonId addonId)
+   public void releaseAddonModule(Set<AddonView> views, AddonId addonId)
    {
-      ModuleIdentifier id = moduleCache.getModuleId(addonId);
+      ModuleIdentifier id = moduleCache.getModuleId(views, addonId);
       moduleJarFileCache.closeJarFileReferences(id);
-      moduleCache.clear(addonId);
+      moduleCache.clear(views, addonId);
    }
 
 }

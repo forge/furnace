@@ -1,5 +1,6 @@
 package org.jboss.forge.furnace.impl.graph;
 
+import org.jboss.forge.furnace.versions.SingleVersion;
 import org.jboss.forge.furnace.versions.Version;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.traverse.DepthFirstIterator;
@@ -10,12 +11,14 @@ public abstract class AddonGraph<T extends AddonGraph<T>>
 
    protected AddonVertex getVertex(String name, Version version)
    {
-      AddonVertex temp = new AddonVertex(name, version);
-
       AddonVertex result = null;
       for (AddonVertex vertex : getGraph().vertexSet())
       {
-         if (temp.equals(vertex))
+         String vertexName = vertex.getName();
+         // FIXME some weird CLAC javassist issue requiring this unwrapping?
+         Version vertexVersion = new SingleVersion(vertex.getVersion().toString());
+         if (vertexName.equals(name)
+                  && version.compareTo(vertexVersion) == 0)
          {
             result = vertex;
             break;

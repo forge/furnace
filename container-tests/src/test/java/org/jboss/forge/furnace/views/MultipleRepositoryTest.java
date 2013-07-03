@@ -4,7 +4,7 @@
  * Licensed under the Eclipse Public License version 1.0, available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.jboss.forge.furnace;
+package org.jboss.forge.furnace.views;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,11 +17,15 @@ import org.jboss.forge.addon.maven.dependencies.FileResourceFactory;
 import org.jboss.forge.addon.maven.dependencies.MavenContainer;
 import org.jboss.forge.addon.maven.dependencies.MavenDependencyResolver;
 import org.jboss.forge.addon.resource.DirectoryResource;
+import org.jboss.forge.arquillian.ConfigurationScanListener;
+import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 import org.jboss.forge.furnace.se.ForgeFactory;
 import org.jboss.forge.furnace.services.ExportedInstance;
+import org.jboss.forge.furnace.spi.ContainerLifecycleListener;
+import org.jboss.forge.furnace.spi.ListenerRegistration;
 import org.jboss.forge.furnace.util.Addons;
 import org.jboss.forge.furnace.util.Files;
 import org.junit.After;
@@ -54,7 +58,7 @@ public class MultipleRepositoryTest
    }
 
    @Test
-   public void testAddonsCanReferenceDependenciesInOtherRepositories() throws IOException
+   public void testAddonsCanReferenceDependenciesInOtherRepositories() throws IOException, InterruptedException
    {
       Furnace furnace = ForgeFactory.getInstance(Furnace.class.getClassLoader());
       AddonRepository left = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
@@ -87,7 +91,15 @@ public class MultipleRepositoryTest
       Assert.assertTrue(left.isDeployed(convert));
       Assert.assertTrue(right.isDeployed(resources));
 
+      ConfigurationScanListener listener = new ConfigurationScanListener();
+      ListenerRegistration<ContainerLifecycleListener> registration = furnace.addContainerLifecycleListener(listener);
+
+      while (!listener.isConfigurationScanned())
+         Thread.sleep(100);
+
       Addons.waitUntilStarted(furnace.getAddonRegistry().getAddon(resources), 10, TimeUnit.SECONDS);
+
+      registration.removeListener();
 
       furnace.stop();
    }

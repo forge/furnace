@@ -10,10 +10,6 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.Future;
 
-import org.jboss.forge.furnace.addons.Addon;
-import org.jboss.forge.furnace.addons.AddonDependency;
-import org.jboss.forge.furnace.addons.AddonId;
-import org.jboss.forge.furnace.addons.AddonStatus;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.modules.AddonModuleLoader;
 import org.jboss.forge.furnace.repositories.AddonRepository;
@@ -41,6 +37,7 @@ public class AddonImpl implements Addon
       public ServiceRegistry registry;
    }
 
+   public Set<AddonView> views = Sets.getConcurrentSet();
    @SuppressWarnings("unused")
    private final LockManager lock;
    private final AddonId id;
@@ -72,8 +69,9 @@ public class AddonImpl implements Addon
    public void reset()
    {
       if (getModuleLoader() != null)
-         getModuleLoader().releaseAddonModule(id);
+         getModuleLoader().releaseAddonModule(views, id);
       this.state = new Memento();
+      this.views.clear();
    }
 
    @Override
@@ -149,6 +147,17 @@ public class AddonImpl implements Addon
       return this;
    }
 
+   public Set<AddonView> getViews()
+   {
+      return this.views;
+   }
+
+   public void setViews(Set<AddonView> views)
+   {
+      this.views.clear();
+      this.views.addAll(views);
+   }
+
    @Override
    public AddonStatus getStatus()
    {
@@ -211,7 +220,12 @@ public class AddonImpl implements Addon
    @Override
    public String toString()
    {
-      return getId().toCoordinates() + " +" + getStatus() + " startable: " + canBeStarted();
+      StringBuilder builder = new StringBuilder();
+      builder.append(getId().toCoordinates() + " +" + getStatus());
+      if (canBeStarted())
+         builder.append(" READY");
+      builder.append(" HC: ").append(hashCode());
+      return builder.toString();
    }
 
    @Override
@@ -220,6 +234,7 @@ public class AddonImpl implements Addon
       final int prime = 31;
       int result = 1;
       result = prime * result + ((id == null) ? 0 : id.hashCode());
+      result = prime * result + ((views == null) ? 0 : views.hashCode());
       return result;
    }
 
@@ -230,15 +245,22 @@ public class AddonImpl implements Addon
          return true;
       if (obj == null)
          return false;
-      if (!(obj instanceof Addon))
+      if (getClass() != obj.getClass())
          return false;
       AddonImpl other = (AddonImpl) obj;
       if (id == null)
       {
-         if (other.getId() != null)
+         if (other.id != null)
             return false;
       }
-      else if (!id.equals(other.getId()))
+      else if (!id.equals(other.id))
+         return false;
+      if (views == null)
+      {
+         if (other.views != null)
+            return false;
+      }
+      else if (!views.equals(other.views))
          return false;
       return true;
    }

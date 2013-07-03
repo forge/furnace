@@ -3,7 +3,9 @@ package org.jboss.forge.furnace.impl.graph;
 import java.util.Set;
 
 import org.jgrapht.DirectedGraph;
+import org.jgrapht.Graphs;
 import org.jgrapht.event.TraversalListenerAdapter;
+import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.traverse.DepthFirstIterator;
 
@@ -20,28 +22,37 @@ public class MasterGraph extends AddonGraph<MasterGraph>
 
    public void merge(final OptimizedAddonGraph other)
    {
-      DepthFirstIterator<AddonVertex, AddonDependencyEdge> iterator = new DepthFirstIterator<AddonVertex, AddonDependencyEdge>(
-               other.getGraph());
-
-      iterator.addTraversalListener(new TraversalListenerAdapter<AddonVertex, AddonDependencyEdge>()
+      if (graph.vertexSet().isEmpty())
       {
-         public void vertexTraversed(org.jgrapht.event.VertexTraversalEvent<AddonVertex> event)
-         {
-            AddonVertex vertex = event.getVertex();
-            mergeVertex(other, vertex);
-         };
-      });
+         if (!Graphs.addGraph(graph, other.getGraph()))
+            throw new IllegalStateException("Error while copying graphs.");
+      }
+      else
+      {
+         DepthFirstIterator<AddonVertex, AddonDependencyEdge> iterator = new DepthFirstIterator<AddonVertex, AddonDependencyEdge>(
+                  other.getGraph());
 
-      while (iterator.hasNext())
-         iterator.next();
+         iterator.addTraversalListener(new TraversalListenerAdapter<AddonVertex, AddonDependencyEdge>()
+         {
+            @Override
+            public void vertexTraversed(VertexTraversalEvent<AddonVertex> event)
+            {
+               mergeVertex(other, event.getVertex());
+            };
+         });
+
+         while (iterator.hasNext())
+            iterator.next();
+      }
    }
 
-   private void mergeVertex(final OptimizedAddonGraph other, AddonVertex vertex)
+   private AddonVertex mergeVertex(final OptimizedAddonGraph other, AddonVertex vertex)
    {
       AddonVertex localVertex = getVertex(vertex.getName(), vertex.getVersion());
       if (localVertex == null)
       {
          addLocalVertex(vertex);
+         localVertex = vertex;
          copySubtree(other, vertex);
       }
       else
@@ -56,6 +67,7 @@ public class MasterGraph extends AddonGraph<MasterGraph>
             copySubtree(other, vertex);
          }
       }
+      return localVertex;
    }
 
    private void copySubtree(OptimizedAddonGraph other, AddonVertex vertex)
@@ -64,8 +76,8 @@ public class MasterGraph extends AddonGraph<MasterGraph>
       for (AddonDependencyEdge edge : outgoing)
       {
          AddonVertex target = other.getGraph().getEdgeTarget(edge);
-         mergeVertex(other, target);
-         graph.addEdge(vertex, target, new AddonDependencyEdge(edge.getVersionRange(), edge.isExported()));
+         AddonVertex localTarget = mergeVertex(other, target);
+         graph.addEdge(vertex, localTarget, new AddonDependencyEdge(edge.getVersionRange(), edge.isExported()));
       }
 
    }

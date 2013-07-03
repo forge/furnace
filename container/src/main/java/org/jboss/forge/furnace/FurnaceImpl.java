@@ -269,15 +269,47 @@ public class FurnaceImpl implements Furnace
    {
       assertIsAlive();
 
-      AddonRegistryImpl result = null;
-      if (repositories == null || repositories.length == 0)
-         result = new AddonRegistryImpl(lock, manager, getRepositories(), "ROOT");
-      else
-         result = new AddonRegistryImpl(lock, manager, Arrays.asList(repositories), String.valueOf(registryCount++));
+      AddonRegistry result = findView(repositories);
 
-      if (!views.contains(result))
-         views.add(result);
+      if (result == null)
+      {
+         if (repositories == null || repositories.length == 0)
+         {
+            result = new AddonRegistryImpl(lock, manager, getRepositories(), "ROOT");
+            views.add(result);
+         }
+         else
+         {
+            result = new AddonRegistryImpl(lock, manager, Arrays.asList(repositories), String.valueOf(registryCount++));
+            views.add(result);
+            manager.forceUpdate(views);
+         }
+      }
 
+      return result;
+   }
+
+   private AddonRegistry findView(AddonRepository... repositories)
+   {
+      AddonRegistry result = null;
+
+      for (AddonView view : views)
+      {
+         Set<AddonRepository> viewRepositories = view.getRepositories();
+         if (repositories == null || repositories.length == 0)
+         {
+            if (viewRepositories.containsAll(getRepositories()) && getRepositories().containsAll(viewRepositories))
+               result = (AddonRegistry) view;
+         }
+         else if (viewRepositories.containsAll(Arrays.asList(repositories))
+                  && Arrays.asList(repositories).containsAll(viewRepositories))
+         {
+            result = (AddonRegistry) view;
+         }
+
+         if (result != null)
+            break;
+      }
       return result;
    }
 
@@ -387,5 +419,11 @@ public class FurnaceImpl implements Furnace
    public Set<AddonView> getViews()
    {
       return views;
+   }
+   
+   @Override
+   public String toString()
+   {
+      return manager.toString();
    }
 }

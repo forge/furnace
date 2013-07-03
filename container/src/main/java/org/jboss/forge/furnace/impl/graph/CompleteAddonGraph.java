@@ -86,6 +86,7 @@ public class CompleteAddonGraph extends AddonGraph<CompleteAddonGraph>
       return result;
    }
 
+   @Override
    public DirectedGraph<AddonVertex, AddonDependencyEdge> getGraph()
    {
       return graph;
