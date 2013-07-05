@@ -38,7 +38,6 @@ public class MasterGraphChangeHandler
          @Override
          public void vertexFinished(VertexTraversalEvent<AddonVertex> event)
          {
-            MasterGraph temp = graph;
             AddonVertex vertex = event.getVertex();
             AddonView view = vertex.getViews().iterator().next();
             AddonId addonId = vertex.getAddonId();
@@ -61,7 +60,7 @@ public class MasterGraphChangeHandler
       iterator.addTraversalListener(new TraversalListenerAdapter<AddonVertex, AddonDependencyEdge>()
       {
          @Override
-         public void vertexTraversed(VertexTraversalEvent<AddonVertex> event)
+         public void vertexFinished(VertexTraversalEvent<AddonVertex> event)
          {
             AddonVertex vertex = event.getVertex();
             Addon addon = vertex.getAddon();
