@@ -15,6 +15,7 @@ public class AddonVertex
    private Version version;
    private Set<AddonView> views = new HashSet<AddonView>();
    private Addon addon;
+   private boolean dirty;
 
    public AddonVertex(String name, Version version)
    {
@@ -42,6 +43,16 @@ public class AddonVertex
    public Version getVersion()
    {
       return version;
+   }
+
+   public void setDirty(boolean dirty)
+   {
+      this.dirty = dirty;
+   }
+
+   public boolean isDirty()
+   {
+      return dirty;
    }
 
    public void addView(AddonView view)

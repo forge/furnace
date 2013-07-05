@@ -153,11 +153,6 @@ public class AddonLifecycleManager
             MasterGraph last = stateManager.getCurrentGraph();
             stateManager.setCurrentGraph(master);
 
-            for (Addon addon : addons)
-            {
-               Callables.call(new StopAddonCallable(stateManager, addon));
-            }
-
             new MasterGraphChangeHandler(AddonLifecycleManager.this, last, master).hotSwapChanges();
 
             return null;
@@ -282,6 +277,11 @@ public class AddonLifecycleManager
       {
          e.printStackTrace();
       }
+   }
+
+   public void stopAddon(Addon addon)
+   {
+      Callables.call(new StopAddonCallable(stateManager, addon));
    }
 
 }

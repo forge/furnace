@@ -6,8 +6,6 @@ import org.jboss.forge.furnace.addons.AddonLifecycleManager;
 import org.jboss.forge.furnace.addons.AddonView;
 import org.jgrapht.event.TraversalListenerAdapter;
 import org.jgrapht.event.VertexTraversalEvent;
-import org.jgrapht.graph.DirectedSubgraph;
-import org.jgrapht.graph.Subgraph;
 import org.jgrapht.traverse.DepthFirstIterator;
 
 public class MasterGraphChangeHandler
@@ -27,7 +25,11 @@ public class MasterGraphChangeHandler
    public void hotSwapChanges()
    {
       initGraph();
+      markDirty();
+      stopDirty();
+      loadAddons();
       startupIncremental();
+      clearDirtyStatus();
    }
 
    private void initGraph()
@@ -44,9 +46,94 @@ public class MasterGraphChangeHandler
             AddonView view = vertex.getViews().iterator().next();
             AddonId addonId = vertex.getAddonId();
             Addon addon = lifecycleManager.getAddon(view, addonId);
-            lifecycleManager.loadAddon(addon);
-
             vertex.setAddon(addon);
+         };
+      });
+
+      while (iterator.hasNext())
+         iterator.next();
+   }
+
+   private void markDirty()
+   {
+      DepthFirstIterator<AddonVertex, AddonDependencyEdge> iterator = new DepthFirstIterator<AddonVertex, AddonDependencyEdge>(
+               graph.getGraph());
+
+      iterator.addTraversalListener(new TraversalListenerAdapter<AddonVertex, AddonDependencyEdge>()
+      {
+         @Override
+         public void vertexFinished(VertexTraversalEvent<AddonVertex> event)
+         {
+            // If this vertex is missing or any dependency was missing (is dirty), then this is dirty also
+            AddonVertex vertex = event.getVertex();
+            Addon addon = vertex.getAddon();
+            if (addon.getStatus().isMissing() || addon.getStatus().isFailed())
+            {
+               vertex.setDirty(true);
+            }
+
+            for (AddonDependencyEdge edge : graph.getGraph().outgoingEdgesOf(vertex))
+            {
+               AddonVertex target = graph.getGraph().getEdgeTarget(edge);
+               if (target.isDirty())
+                  vertex.setDirty(true);
+            }
+
+            if (isSubgraphEquivalent(vertex))
+            {
+               /*
+                * If the dependency set of this addon has changed since the last graph, then it is dirty
+                */
+               vertex.setDirty(true);
+            }
+         };
+
+         private boolean isSubgraphEquivalent(AddonVertex vertex)
+         {
+            if (currentGraph != null)
+            {
+
+            }
+            return false;
+         }
+      });
+
+      while (iterator.hasNext())
+         iterator.next();
+   }
+
+   private void stopDirty()
+   {
+      DepthFirstIterator<AddonVertex, AddonDependencyEdge> iterator = new DepthFirstIterator<AddonVertex, AddonDependencyEdge>(
+               graph.getGraph());
+
+      iterator.addTraversalListener(new TraversalListenerAdapter<AddonVertex, AddonDependencyEdge>()
+      {
+         @Override
+         public void vertexFinished(VertexTraversalEvent<AddonVertex> event)
+         {
+            if (event.getVertex().isDirty())
+               lifecycleManager.stopAddon(event.getVertex().getAddon());
+         };
+      });
+
+      while (iterator.hasNext())
+         iterator.next();
+   }
+
+   private void loadAddons()
+   {
+      DepthFirstIterator<AddonVertex, AddonDependencyEdge> iterator = new DepthFirstIterator<AddonVertex, AddonDependencyEdge>(
+               graph.getGraph());
+
+      iterator.addTraversalListener(new TraversalListenerAdapter<AddonVertex, AddonDependencyEdge>()
+      {
+         @Override
+         public void vertexFinished(VertexTraversalEvent<AddonVertex> event)
+         {
+            Addon addon = event.getVertex().getAddon();
+            if (addon.getStatus().isMissing())
+               lifecycleManager.loadAddon(addon);
          };
       });
 
@@ -64,9 +151,27 @@ public class MasterGraphChangeHandler
          @Override
          public void vertexFinished(VertexTraversalEvent<AddonVertex> event)
          {
-            AddonVertex vertex = event.getVertex();
-            Addon addon = vertex.getAddon();
-            lifecycleManager.startAddon(addon);
+            Addon addon = event.getVertex().getAddon();
+            if (addon.getStatus().isLoaded())
+               lifecycleManager.startAddon(addon);
+         };
+      });
+
+      while (iterator.hasNext())
+         iterator.next();
+   }
+
+   private void clearDirtyStatus()
+   {
+      DepthFirstIterator<AddonVertex, AddonDependencyEdge> iterator = new DepthFirstIterator<AddonVertex, AddonDependencyEdge>(
+               graph.getGraph());
+
+      iterator.addTraversalListener(new TraversalListenerAdapter<AddonVertex, AddonDependencyEdge>()
+      {
+         @Override
+         public void vertexFinished(VertexTraversalEvent<AddonVertex> event)
+         {
+            event.getVertex().setDirty(false);
          };
       });
 
