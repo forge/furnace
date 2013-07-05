@@ -11,7 +11,6 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
 import org.jboss.forge.furnace.addons.Addon;
-import org.jboss.forge.furnace.addons.AddonImpl;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.services.ExportedInstance;
@@ -28,13 +27,13 @@ public class ServiceRegistryImpl implements ServiceRegistry
 
    private BeanManager manager;
 
-   private AddonImpl addon;
+   private Addon addon;
 
    private Logger log = Logger.getLogger(getClass().getName());
 
    private LockManager lock;
 
-   public ServiceRegistryImpl(LockManager lock, AddonImpl addon, BeanManager manager,
+   public ServiceRegistryImpl(LockManager lock, Addon addon, BeanManager manager,
             ContainerServiceExtension extension)
    {
       this.lock = lock;

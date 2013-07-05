@@ -1,9 +1,6 @@
 package org.jboss.forge.furnace.addons;
 
-import org.jboss.forge.furnace.addons.Addon;
-import org.jboss.forge.furnace.addons.AddonDependency;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
-import org.jboss.forge.furnace.versions.Version;
 
 public class MissingAddonDependencyImpl implements AddonDependency
 {
@@ -16,19 +13,7 @@ public class MissingAddonDependencyImpl implements AddonDependency
    }
 
    @Override
-   public Addon getDependent()
-   {
-      return null;
-   }
-
-   @Override
    public Addon getDependency()
-   {
-      return null;
-   }
-
-   @Override
-   public Version getDependencyVersion()
    {
       return null;
    }
@@ -53,7 +38,7 @@ public class MissingAddonDependencyImpl implements AddonDependency
    @Override
    public String toString()
    {
-      return "MissingAddonDependencyImpl [entry=" + entry + "]";
+      return "Missing: " + entry + "";
    }
 
 }

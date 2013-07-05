@@ -13,20 +13,16 @@ import java.util.logging.Logger;
 import javax.enterprise.inject.spi.BeanManager;
 
 import org.jboss.forge.furnace.Furnace;
-import org.jboss.forge.furnace.FurnaceImpl;
-import org.jboss.forge.furnace.addons.Addon;
-import org.jboss.forge.furnace.addons.AddonDependency;
 import org.jboss.forge.furnace.event.PostStartup;
 import org.jboss.forge.furnace.event.PreShutdown;
+import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.impl.AddonProducer;
 import org.jboss.forge.furnace.impl.AddonRegistryProducer;
 import org.jboss.forge.furnace.impl.AddonRepositoryProducer;
 import org.jboss.forge.furnace.impl.ContainerServiceExtension;
 import org.jboss.forge.furnace.impl.FurnaceProducer;
-import org.jboss.forge.furnace.impl.NullServiceRegistry;
 import org.jboss.forge.furnace.impl.ServiceRegistryImpl;
 import org.jboss.forge.furnace.impl.ServiceRegistryProducer;
-import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.modules.AddonResourceLoader;
 import org.jboss.forge.furnace.modules.ModularURLScanner;
 import org.jboss.forge.furnace.modules.ModularWeld;
@@ -48,7 +44,7 @@ public final class AddonRunnable implements Runnable
    private static final Logger logger = Logger.getLogger(AddonRunnable.class.getName());
 
    private Furnace furnace;
-   private AddonImpl addon;
+   private Addon addon;
    private AddonContainerStartup container;
 
    private Callable<Object> shutdownCallable = new Callable<Object>()
@@ -60,9 +56,17 @@ public final class AddonRunnable implements Runnable
       }
    };
 
-   public AddonRunnable(Furnace forge, AddonImpl addon)
+   private AddonLifecycleManager lifecycleManager;
+   private AddonStateManager stateManager;
+
+   public AddonRunnable(Furnace furnace,
+            AddonLifecycleManager lifecycleManager,
+            AddonStateManager stateManager,
+            Addon addon)
    {
-      this.furnace = forge;
+      this.lifecycleManager = lifecycleManager;
+      this.stateManager = stateManager;
+      this.furnace = furnace;
       this.addon = addon;
    }
 
@@ -70,25 +74,22 @@ public final class AddonRunnable implements Runnable
    {
       try
       {
-         furnace.getLockManager().performLocked(LockMode.READ, new Callable<Void>()
-         {
-            @Override
-            public Void call() throws Exception
-            {
-               logger.info("< Stopping container [" + addon.getId() + "] [" + addon.getRepository().getRootDirectory()
-                        + "]");
-               long start = System.currentTimeMillis();
-               ClassLoaders.executeIn(addon.getClassLoader(), shutdownCallable);
-               logger.info("<< Stopped container [" + addon.getId() + "] - "
-                        + (System.currentTimeMillis() - start) + "ms");
-               return null;
-            }
-         });
+         logger.info("< Stopping container [" + addon.getId() + "] [" + addon.getRepository().getRootDirectory()
+                  + "]");
+         long start = System.currentTimeMillis();
+         ClassLoaders.executeIn(addon.getClassLoader(), shutdownCallable);
+         logger.info("<< Stopped container [" + addon.getId() + "] - "
+                  + (System.currentTimeMillis() - start) + "ms");
       }
       catch (RuntimeException e)
       {
          logger.log(Level.SEVERE, "Failed to shut down addon " + addon.getId(), e);
          throw e;
+      }
+      catch (Exception e)
+      {
+         logger.log(Level.SEVERE, "Failed to shut down addon " + addon.getId(), e);
+         throw new ContainerException("Failed to shut down addon " + addon.getId(), e);
       }
    }
 
@@ -100,39 +101,32 @@ public final class AddonRunnable implements Runnable
       currentThread.setName(addon.getId().toCoordinates());
       try
       {
-         furnace.getLockManager().performLocked(LockMode.READ, new Callable<Void>()
-         {
-            @Override
-            public Void call() throws Exception
-            {
-               logger.info("> Starting container [" + addon.getId() + "] [" + addon.getRepository().getRootDirectory()
-                        + "]");
-               long start = System.currentTimeMillis();
-               container = new AddonContainerStartup();
-               shutdownCallable = ClassLoaders.executeIn(addon.getClassLoader(), container);
-               logger.info(">> Started container [" + addon.getId() + "] - "
-                        + (System.currentTimeMillis() - start) + "ms");
-               return null;
-            }
-         });
+         logger.info("> Starting container [" + addon.getId() + "] [" + addon.getRepository().getRootDirectory()
+                  + "]");
+         long start = System.currentTimeMillis();
+         container = new AddonContainerStartup();
+         shutdownCallable = ClassLoaders.executeIn(addon.getClassLoader(), container);
+         logger.info(">> Started container [" + addon.getId() + "] - "
+                  + (System.currentTimeMillis() - start) + "ms");
 
          if (container.postStartupTask != null)
             ClassLoaders.executeIn(addon.getClassLoader(), container.postStartupTask);
       }
       catch (Throwable e)
       {
-         logger.log(Level.SEVERE, "Failed to start addon [" + addon.getId() + "] with module [" + addon.getModule()
+         logger.log(Level.SEVERE, "Failed to start addon [" + addon.getId() + "] with classloader ["
+                  + stateManager.getClassLoaderOf(addon)
                   + "]", e);
          throw new RuntimeException(e);
       }
       finally
       {
-         ((FurnaceImpl) furnace).getAddonLifecycleManager().finishedStarting(addon);
+         lifecycleManager.finishedStarting(addon);
          currentThread.setName(name);
       }
    }
 
-   public AddonImpl getAddon()
+   public Addon getAddon()
    {
       return addon;
    }
@@ -157,8 +151,6 @@ public final class AddonRunnable implements Runnable
                /*
                 * This is an import-only addon and does not require weld, nor provide remote services.
                 */
-               addon.setServiceRegistry(new NullServiceRegistry());
-
                shutdownCallback = new Callable<Object>()
                {
                   @Override
@@ -200,7 +192,7 @@ public final class AddonRunnable implements Runnable
 
                ServiceRegistry registry = BeanManagerUtils.getContextualInstance(manager, ServiceRegistry.class);
                Assert.notNull(registry, "Service registry was null.");
-               addon.setServiceRegistry(registry);
+               stateManager.setServiceRegistry(addon, registry);
 
                logger.info("Services loaded from addon [" + addon.getId() + "] -  " + registry.getExportedTypes());
 

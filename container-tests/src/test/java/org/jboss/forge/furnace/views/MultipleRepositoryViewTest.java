@@ -10,13 +10,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.forge.addon.convert.ConverterFactory;
 import org.jboss.forge.addon.manager.AddonManager;
 import org.jboss.forge.addon.manager.impl.AddonManagerImpl;
 import org.jboss.forge.addon.maven.dependencies.FileResourceFactory;
 import org.jboss.forge.addon.maven.dependencies.MavenContainer;
 import org.jboss.forge.addon.maven.dependencies.MavenDependencyResolver;
-import org.jboss.forge.addon.resource.DirectoryResource;
 import org.jboss.forge.arquillian.ConfigurationScanListener;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
@@ -25,7 +23,6 @@ import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 import org.jboss.forge.furnace.se.ForgeFactory;
-import org.jboss.forge.furnace.services.ExportedInstance;
 import org.jboss.forge.furnace.spi.ContainerLifecycleListener;
 import org.jboss.forge.furnace.spi.ListenerRegistration;
 import org.jboss.forge.furnace.util.Addons;
@@ -60,7 +57,7 @@ public class MultipleRepositoryViewTest
    }
 
    @Test
-   public void testAddonsCanBeSharedBetweenViews() throws IOException, InterruptedException
+   public void testAddonsSharedIfSubgraphEquivalent() throws IOException, InterruptedException
    {
       Furnace furnace = ForgeFactory.getInstance(Furnace.class.getClassLoader());
       AddonRepository left = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
@@ -121,7 +118,7 @@ public class MultipleRepositoryViewTest
    }
 
    @Test
-   public void testAddonsDontFailIfDuplicatedInOtherRepositories() throws IOException, Exception
+   public void testAddonsDuplicatedIfSubgraphDiffers() throws IOException, InterruptedException
    {
       Furnace furnace = ForgeFactory.getInstance(Furnace.class.getClassLoader());
       AddonRepository left = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
@@ -131,43 +128,59 @@ public class MultipleRepositoryViewTest
                new MavenContainer());
       AddonManager manager = new AddonManagerImpl(furnace, resolver);
 
-      AddonId facets = AddonId.from("org.jboss.forge.addon:facets", "2.0.0-SNAPSHOT");
-      AddonId convert = AddonId.from("org.jboss.forge.addon:convert", "2.0.0-SNAPSHOT");
-      AddonId resources = AddonId.from("org.jboss.forge.addon:resources", "2.0.0-SNAPSHOT");
+      AddonId facets = AddonId.from("org.jboss.forge.addon:facets", "2.0.0.Alpha5");
+      AddonId convert = AddonId.from("org.jboss.forge.addon:convert", "2.0.0.Alpha5");
+      AddonId resources = AddonId.from("org.jboss.forge.addon:resources", "2.0.0.Alpha5");
+      AddonId dependencies = AddonId.from("org.jboss.forge.addon:dependencies", "2.0.0.Alpha5");
 
+      AddonId facets6 = AddonId.from("org.jboss.forge.addon:facets", "2.0.0.Alpha6");
+
+      Assert.assertFalse(left.isDeployed(dependencies));
       Assert.assertFalse(left.isDeployed(resources));
       Assert.assertFalse(left.isDeployed(facets));
+      Assert.assertFalse(left.isDeployed(facets6));
       Assert.assertFalse(left.isDeployed(convert));
+      Assert.assertFalse(right.isDeployed(dependencies));
       Assert.assertFalse(right.isDeployed(resources));
       Assert.assertFalse(right.isDeployed(facets));
+      Assert.assertFalse(right.isDeployed(facets6));
       Assert.assertFalse(right.isDeployed(convert));
 
       manager.install(facets).perform(left);
       manager.install(convert).perform(left);
       manager.install(resources).perform(left);
-      manager.install(resources).perform(right);
+      manager.install(dependencies).perform(left);
+
+      manager.install(facets6).perform(right);
+
+      Assert.assertTrue(left.isDeployed(facets));
+      Assert.assertTrue(left.isDeployed(convert));
+      Assert.assertTrue(left.isDeployed(resources));
+      Assert.assertTrue(left.isDeployed(dependencies));
+      Assert.assertFalse(left.isDeployed(facets6));
 
       Assert.assertFalse(right.isDeployed(facets));
       Assert.assertFalse(right.isDeployed(convert));
-      Assert.assertTrue(left.isDeployed(resources));
-      Assert.assertTrue(left.isDeployed(convert));
-      Assert.assertTrue(left.isDeployed(resources));
-      Assert.assertTrue(right.isDeployed(resources));
+      Assert.assertFalse(right.isDeployed(resources));
+      Assert.assertFalse(right.isDeployed(dependencies));
+      Assert.assertTrue(right.isDeployed(facets6));
 
       furnace.startAsync();
 
-      Addons.waitUntilStarted(furnace.getAddonRegistry().getAddon(resources), 10, TimeUnit.SECONDS);
-      Addons.waitUntilStarted(furnace.getAddonRegistry().getAddon(facets), 10, TimeUnit.SECONDS);
-      Addons.waitUntilStarted(furnace.getAddonRegistry().getAddon(convert), 10, TimeUnit.SECONDS);
+      ConfigurationScanListener listener = new ConfigurationScanListener();
+      ListenerRegistration<ContainerLifecycleListener> registration = furnace.addContainerLifecycleListener(listener);
 
-      System.out.println("Getting instances.");
-      ExportedInstance<ConverterFactory> instance = furnace.getAddonRegistry()
-               .getExportedInstance(ConverterFactory.class);
-      ConverterFactory factory = instance.get();
+      while (!listener.isConfigurationScanned())
+         Thread.sleep(100);
 
-      factory.getConverter(File.class,
-               furnace.getAddonRegistry().getAddon(resources).getClassLoader()
-                        .loadClass(DirectoryResource.class.getName()));
+      AddonRegistry registry = furnace.getAddonRegistry();
+      Addons.waitUntilStarted(registry.getAddon(resources), 10, TimeUnit.SECONDS);
+      AddonRegistry leftRegistry = furnace.getAddonRegistry(left);
+
+      Addon addon = leftRegistry.getAddon(facets);
+      Assert.assertNotNull(addon);
+
+      registration.removeListener();
 
       furnace.stop();
    }

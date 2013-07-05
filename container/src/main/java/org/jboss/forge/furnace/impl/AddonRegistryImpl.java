@@ -105,7 +105,7 @@ public class AddonRegistryImpl implements AddonRegistry
          {
             HashSet<Addon> result = new HashSet<Addon>();
 
-            for (Addon addon : manager.getAddons(AddonRegistryImpl.this, new AddonRepositoryFilter(getRepositories())))
+            for (Addon addon : manager.getAddons(AddonRegistryImpl.this))
             {
                if (filter.accept(addon))
                   result.add(addon);

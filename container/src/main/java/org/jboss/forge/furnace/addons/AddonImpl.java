@@ -6,72 +6,29 @@
  */
 package org.jboss.forge.furnace.addons;
 
-import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.Future;
 
-import org.jboss.forge.furnace.lock.LockManager;
-import org.jboss.forge.furnace.modules.AddonModuleLoader;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.services.ServiceRegistry;
 import org.jboss.forge.furnace.util.Assert;
-import org.jboss.forge.furnace.util.CompletedFuture;
-import org.jboss.forge.furnace.util.Sets;
-import org.jboss.modules.Module;
+import org.jboss.forge.furnace.util.NullFuture;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
 public class AddonImpl implements Addon
 {
-   private static class Memento
-   {
-      public Set<AddonDependency> dependencies = Sets.getConcurrentSet();
-      public Set<AddonDependency> missingDependencies = Sets.getConcurrentSet();
-
-      public AddonModuleLoader moduleLoader;
-      public Module module;
-      public AddonRunnable runnable;
-      public Future<Void> future = new CompletedFuture<Void>(null);
-      public AddonRepository repository;
-      public ServiceRegistry registry;
-   }
-
-   public Set<AddonView> views = Sets.getConcurrentSet();
-   @SuppressWarnings("unused")
-   private final LockManager lock;
    private final AddonId id;
-   private Memento state = new Memento();
+   private AddonStateManager manager;
 
-   public AddonImpl(LockManager lock, AddonId id)
+   public AddonImpl(AddonStateManager manager, AddonId id)
    {
-      Assert.notNull(lock, "LockManager must not be null.");
+      Assert.notNull(manager, "Manager must not be null.");
       Assert.notNull(id, "AddonId must not be null.");
 
       this.id = id;
-      this.lock = lock;
-   }
-
-   public boolean canBeStarted()
-   {
-      return getRunnable() == null && getStatus().isLoaded();
-   }
-
-   public boolean cancelFuture()
-   {
-      boolean result = false;
-      Future<Void> future = getFuture();
-      if (future != null && !future.isDone())
-         result = future.cancel(true);
-      return result;
-   }
-
-   public void reset()
-   {
-      if (getModuleLoader() != null)
-         getModuleLoader().releaseAddonModule(views, id);
-      this.state = new Memento();
-      this.views.clear();
+      this.manager = manager;
    }
 
    @Override
@@ -83,79 +40,31 @@ public class AddonImpl implements Addon
    @Override
    public Set<AddonDependency> getDependencies()
    {
-      return Collections.unmodifiableSet(state.dependencies);
-   }
-
-   public void setDependencies(Set<AddonDependency> dependencies)
-   {
-      Assert.notNull(dependencies, "Dependencies must not be null.");
-
-      this.state.dependencies = Sets.getConcurrentSet();
-      this.state.dependencies.addAll(dependencies);
+      return manager.getDependenciesOf(this);
    }
 
    @Override
    public ClassLoader getClassLoader()
    {
-      if (state.module != null)
-         return state.module.getClassLoader();
-      return null;
+      return manager.getClassLoaderOf(this);
    }
 
-   public Module getModule()
+   @Override
+   public Future<Void> getFuture()
    {
-      return state.module;
-   }
-
-   public Addon setModule(Module module)
-   {
-      this.state.module = module;
-      return this;
-   }
-
-   public AddonModuleLoader getModuleLoader()
-   {
-      return state.moduleLoader;
-   }
-
-   public void setModuleLoader(AddonModuleLoader moduleLoader)
-   {
-      this.state.moduleLoader = moduleLoader;
+      return manager.getFutureOf(this);
    }
 
    @Override
    public AddonRepository getRepository()
    {
-      return state.repository;
-   }
-
-   public void setRepository(AddonRepository repository)
-   {
-      this.state.repository = repository;
+      return manager.getRepositoryOf(this);
    }
 
    @Override
    public ServiceRegistry getServiceRegistry()
    {
-      return state.registry;
-   }
-
-   public Addon setServiceRegistry(ServiceRegistry registry)
-   {
-      Assert.notNull(registry, "Registry must not be null.");
-      this.state.registry = registry;
-      return this;
-   }
-
-   public Set<AddonView> getViews()
-   {
-      return this.views;
-   }
-
-   public void setViews(Set<AddonView> views)
-   {
-      this.views.clear();
-      this.views.addAll(views);
+      return manager.getServiceRegistryOf(this);
    }
 
    @Override
@@ -163,12 +72,12 @@ public class AddonImpl implements Addon
    {
       AddonStatus result = AddonStatus.MISSING;
 
-      if (getClassLoader() != null && getMissingDependencies().isEmpty())
+      if (getClassLoader() != null)
          result = AddonStatus.LOADED;
 
       if (getFuture() != null)
       {
-         if (!(getFuture() instanceof CompletedFuture))
+         if (!(getFuture() instanceof NullFuture))
          {
             if (getFuture().isDone())
                result = AddonStatus.STARTED;
@@ -181,48 +90,12 @@ public class AddonImpl implements Addon
       return result;
    }
 
-   public void setMissingDependencies(Set<AddonDependency> missingDependencies)
-   {
-      Assert.notNull(missingDependencies, "Missing dependencies must not be null.");
-
-      this.state.missingDependencies = Sets.getConcurrentSet();
-      this.state.missingDependencies.addAll(missingDependencies);
-   }
-
-   public Set<AddonDependency> getMissingDependencies()
-   {
-      return Collections.unmodifiableSet(state.missingDependencies);
-   }
-
-   @Override
-   public Future<Void> getFuture()
-   {
-      return state.future;
-   }
-
-   public void setFuture(Future<Void> future)
-   {
-      Assert.notNull(future, "Future must not be null.");
-      this.state.future = future;
-   }
-
-   public AddonRunnable getRunnable()
-   {
-      return state.runnable;
-   }
-
-   public void setRunnable(AddonRunnable runnable)
-   {
-      Assert.notNull(runnable, "Runnable must not be null.");
-      this.state.runnable = runnable;
-   }
-
    @Override
    public String toString()
    {
       StringBuilder builder = new StringBuilder();
       builder.append(getId().toCoordinates() + " +" + getStatus());
-      if (canBeStarted())
+      if (getFuture() == null)
          builder.append(" READY");
       builder.append(" HC: ").append(hashCode());
       return builder.toString();
@@ -234,7 +107,6 @@ public class AddonImpl implements Addon
       final int prime = 31;
       int result = 1;
       result = prime * result + ((id == null) ? 0 : id.hashCode());
-      result = prime * result + ((views == null) ? 0 : views.hashCode());
       return result;
    }
 
@@ -254,13 +126,6 @@ public class AddonImpl implements Addon
             return false;
       }
       else if (!id.equals(other.id))
-         return false;
-      if (views == null)
-      {
-         if (other.views != null)
-            return false;
-      }
-      else if (!views.equals(other.views))
          return false;
       return true;
    }

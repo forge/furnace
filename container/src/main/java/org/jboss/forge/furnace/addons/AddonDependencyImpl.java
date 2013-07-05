@@ -6,61 +6,38 @@
  */
 package org.jboss.forge.furnace.addons;
 
-import org.jboss.forge.furnace.addons.Addon;
-import org.jboss.forge.furnace.addons.AddonDependency;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.util.Assert;
-import org.jboss.forge.furnace.versions.Version;
 
 /**
  * An edge in the registered {@link Addon} graph.
- *
+ * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
 public class AddonDependencyImpl implements AddonDependency
 {
-   private final Addon dependent;
-
    private boolean exported = false;
    private boolean optional = false;
    private Addon dependency;
-   private Version dependencyVersion;
 
    @SuppressWarnings("unused")
    private LockManager lockManager;
 
-   public AddonDependencyImpl(LockManager lockManager,
-            Addon dependent, Version dependencyVersion, Addon dependency, boolean exported, boolean optional)
+   public AddonDependencyImpl(LockManager lockManager, Addon dependency, boolean exported, boolean optional)
    {
       Assert.notNull(lockManager, "LockManager must not be null.");
-      Assert.notNull(dependent, "Dependent Addon must not be null.");
-      Assert.notNull(dependencyVersion, "VersionRange must not be null.");
       Assert.notNull(dependency, "Dependency Addon not be null.");
 
       this.lockManager = lockManager;
-      this.dependent = dependent;
-      this.dependencyVersion = dependencyVersion;
       this.dependency = dependency;
       this.exported = exported;
       this.optional = optional;
    }
 
    @Override
-   public Addon getDependent()
-   {
-      return dependent;
-   }
-
-   @Override
    public Addon getDependency()
    {
       return dependency;
-   }
-
-   @Override
-   public Version getDependencyVersion()
-   {
-      return dependencyVersion;
    }
 
    @Override

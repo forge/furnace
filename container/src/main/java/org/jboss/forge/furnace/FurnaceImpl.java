@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,7 +29,6 @@ import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 import org.jboss.forge.furnace.spi.ContainerLifecycleListener;
 import org.jboss.forge.furnace.spi.ListenerRegistration;
 import org.jboss.forge.furnace.util.Assert;
-import org.jboss.forge.furnace.util.Sets;
 import org.jboss.forge.furnace.versions.Version;
 import org.jboss.modules.Module;
 import org.jboss.modules.log.StreamModuleLogger;
@@ -56,7 +54,6 @@ public class FurnaceImpl implements Furnace
    private Map<AddonRepository, Integer> lastRepoVersionSeen = new HashMap<AddonRepository, Integer>();
 
    private final LockManager lock = new LockManagerImpl();
-   private final Set<AddonView> views = Sets.getConcurrentSet();
 
    private String[] args;
 
@@ -141,7 +138,7 @@ public class FurnaceImpl implements Furnace
          do
          {
             boolean dirty = false;
-            if (!manager.isStartingAddons(views))
+            if (!manager.isStartingAddons())
             {
                for (AddonRepository repository : repositories)
                {
@@ -159,7 +156,7 @@ public class FurnaceImpl implements Furnace
                   try
                   {
                      fireBeforeConfigurationScanEvent();
-                     manager.forceUpdate(views);
+                     manager.forceUpdate();
                      fireAfterConfigurationScanEvent();
                   }
                   catch (Exception e)
@@ -172,7 +169,7 @@ public class FurnaceImpl implements Furnace
          }
          while (alive && serverMode);
 
-         while (alive && manager.isStartingAddons(views))
+         while (alive && manager.isStartingAddons())
          {
             Thread.sleep(100);
          }
@@ -269,47 +266,23 @@ public class FurnaceImpl implements Furnace
    {
       assertIsAlive();
 
-      AddonRegistry result = findView(repositories);
+      AddonRegistry result = manager.findView(repositories);
 
       if (result == null)
       {
          if (repositories == null || repositories.length == 0)
          {
             result = new AddonRegistryImpl(lock, manager, getRepositories(), "ROOT");
-            views.add(result);
+            manager.addView(result);
          }
          else
          {
             result = new AddonRegistryImpl(lock, manager, Arrays.asList(repositories), String.valueOf(registryCount++));
-            views.add(result);
-            manager.forceUpdate(views);
+            manager.addView(result);
+            manager.forceUpdate();
          }
       }
 
-      return result;
-   }
-
-   private AddonRegistry findView(AddonRepository... repositories)
-   {
-      AddonRegistry result = null;
-
-      for (AddonView view : views)
-      {
-         Set<AddonRepository> viewRepositories = view.getRepositories();
-         if (repositories == null || repositories.length == 0)
-         {
-            if (viewRepositories.containsAll(getRepositories()) && getRepositories().containsAll(viewRepositories))
-               result = (AddonRegistry) view;
-         }
-         else if (viewRepositories.containsAll(Arrays.asList(repositories))
-                  && Arrays.asList(repositories).containsAll(viewRepositories))
-         {
-            result = (AddonRegistry) view;
-         }
-
-         if (result != null)
-            break;
-      }
       return result;
    }
 
@@ -321,12 +294,8 @@ public class FurnaceImpl implements Furnace
          throw new IllegalArgumentException(
                   "Cannot dispose the root AddonRegistry. Call .stop() instead.");
 
-      if (!views.contains(view))
-         throw new IllegalArgumentException("The given AddonRegistry does not belong to this Furnace instance.");
-
-      views.remove(view);
-
-      manager.forceUpdate(views);
+      manager.removeView(view);
+      manager.forceUpdate();
    }
 
    @Override
@@ -402,7 +371,7 @@ public class FurnaceImpl implements Furnace
       if (!alive)
          return ContainerStatus.STOPPED;
 
-      boolean startingAddons = manager.isStartingAddons(views);
+      boolean startingAddons = manager.isStartingAddons();
       return startingAddons ? ContainerStatus.STARTING : status;
    }
 
@@ -416,11 +385,6 @@ public class FurnaceImpl implements Furnace
       return manager;
    }
 
-   public Set<AddonView> getViews()
-   {
-      return views;
-   }
-   
    @Override
    public String toString()
    {

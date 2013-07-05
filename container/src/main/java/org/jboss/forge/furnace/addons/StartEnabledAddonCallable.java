@@ -12,15 +12,23 @@ import org.jboss.forge.furnace.Furnace;
  */
 public class StartEnabledAddonCallable implements Callable<Void>
 {
+   private Furnace furnace;
+   private AddonLifecycleManager lifecycleManager;
+   private AddonStateManager stateManager;
    private ExecutorService executor;
    private AtomicInteger starting;
-   private AddonImpl addon;
-   private Furnace furnace;
+   private Addon addon;
 
-   public StartEnabledAddonCallable(Furnace furnace, ExecutorService executor, AtomicInteger starting,
-            AddonImpl toStart)
+   public StartEnabledAddonCallable(Furnace furnace,
+            AddonLifecycleManager lifecycleManager,
+            AddonStateManager stateManager,
+            ExecutorService executor,
+            AtomicInteger starting,
+            Addon toStart)
    {
       this.furnace = furnace;
+      this.lifecycleManager = lifecycleManager;
+      this.stateManager = stateManager;
       this.executor = executor;
       this.starting = starting;
       this.addon = toStart;
@@ -29,7 +37,7 @@ public class StartEnabledAddonCallable implements Callable<Void>
    @Override
    public Void call()
    {
-      if (addon.canBeStarted())
+      if (stateManager.canBeStarted(addon))
       {
          if (executor.isShutdown())
          {
@@ -37,13 +45,12 @@ public class StartEnabledAddonCallable implements Callable<Void>
          }
 
          Future<Void> result = null;
-         if (addon.getRunnable() == null)
+         if (stateManager.getRunnableOf(addon) == null)
          {
             starting.incrementAndGet();
-            AddonRunnable runnable = new AddonRunnable(furnace, addon);
+            AddonRunnable runnable = new AddonRunnable(furnace, lifecycleManager, stateManager, addon);
             result = executor.submit(runnable, null);
-            addon.setFuture(result);
-            addon.setRunnable(runnable);
+            stateManager.setHandles(addon, result, runnable);
          }
       }
       return null;

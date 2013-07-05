@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.addons.Addon;
+import org.jboss.forge.furnace.util.Assert;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
@@ -20,37 +21,36 @@ public class StopAddonCallable implements Callable<Void>
 {
    private static final Logger logger = Logger.getLogger(StopAddonCallable.class.getName());
 
-   private AddonImpl addon;
+   private AddonStateManager stateManager;
+   private Addon addon;
 
-   public StopAddonCallable(Addon addon)
+   public StopAddonCallable(AddonStateManager stateManager, Addon addon)
    {
-      super();
-      if (addon instanceof AddonImpl)
-         this.addon = (AddonImpl) addon;
+      Assert.notNull(stateManager, "State manager must not be null.");
+      Assert.notNull(addon, "Addon to stop must not be null.");
+
+      this.stateManager = stateManager;
+      this.addon = addon;
    }
 
    @Override
    public Void call() throws Exception
    {
-      if (addon != null)
+      AddonRunnable runnable = stateManager.getRunnableOf(addon);
+      try
       {
-         AddonRunnable runnable = ((AddonImpl) addon).getRunnable();
-         try
+         if (runnable != null)
          {
-            if (runnable != null)
-            {
-               runnable.shutdown();
-            }
+            runnable.shutdown();
          }
-         catch (Exception e)
-         {
-            logger.log(Level.WARNING, "Failed to shut down addon " + addon, e);
-         }
-         finally
-         {
-            addon.cancelFuture();
-            addon.reset();
-         }
+      }
+      catch (Exception e)
+      {
+         logger.log(Level.WARNING, "Failed to shut down addon " + addon, e);
+      }
+      finally
+      {
+         stateManager.cancel(addon);
       }
       return null;
    }

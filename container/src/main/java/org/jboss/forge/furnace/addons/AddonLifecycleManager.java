@@ -6,10 +6,9 @@
  */
 package org.jboss.forge.furnace.addons;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -20,6 +19,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.FurnaceImpl;
+import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.impl.graph.CompleteAddonGraph;
 import org.jboss.forge.furnace.impl.graph.MasterGraph;
 import org.jboss.forge.furnace.impl.graph.MasterGraphChangeHandler;
@@ -30,6 +30,7 @@ import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.util.AddonFilters;
 import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.util.Callables;
+import org.jboss.forge.furnace.util.ClassLoaders;
 import org.jboss.forge.furnace.util.Sets;
 
 /**
@@ -39,16 +40,15 @@ public class AddonLifecycleManager
 {
    private static final Logger logger = Logger.getLogger(AddonLifecycleManager.class.getName());
 
-   private final AtomicInteger starting = new AtomicInteger(-1);
-   private final ExecutorService executor = Executors.newCachedThreadPool();
-
-   private FurnaceImpl furnace;
    private final LockManager lock;
+   private FurnaceImpl furnace;
+   private AddonLoader loader;
+   private AddonStateManager stateManager;
 
    private Set<Addon> addons = Sets.getConcurrentSet();
-   private AddonLoader loader;
-
-   private MasterGraph currentGraph;
+   private final Set<AddonView> views = Sets.getConcurrentSet();
+   private final AtomicInteger starting = new AtomicInteger(-1);
+   private final ExecutorService executor = Executors.newCachedThreadPool();
 
    public AddonLifecycleManager(FurnaceImpl furnace)
    {
@@ -56,20 +56,19 @@ public class AddonLifecycleManager
 
       this.furnace = furnace;
       this.lock = furnace.getLockManager();
+      this.stateManager = new AddonStateManager(lock);
+      this.loader = new AddonLoader(furnace, this, stateManager);
 
       logger.log(Level.FINE, "Instantiated AddonRTegistryImpl: " + this);
    }
 
-   private AddonLoader getAddonLoader()
+   public Addon getAddon(Set<AddonView> views, AddonId id)
    {
-      if (loader == null)
-         loader = new AddonLoader(furnace, this);
-      return loader;
-   }
+      Assert.notNull(views, "Addon view set must not be null.");
+      Assert.isTrue(!views.isEmpty(), "Addon view set must not be empty.");
+      Assert.notNull(id, "Addon ID must not be null.");
 
-   public void add(Addon addon)
-   {
-      addons.add(addon);
+      return getAddon(views.iterator().next(), id);
    }
 
    public Addon getAddon(final AddonView view, final AddonId id)
@@ -91,6 +90,12 @@ public class AddonLifecycleManager
                }
             }
 
+            if (result == null)
+            {
+               result = new AddonImpl(stateManager, id);
+               addons.add(result);
+            }
+
             return result;
          }
       });
@@ -110,10 +115,10 @@ public class AddonLifecycleManager
          {
             HashSet<Addon> result = new HashSet<Addon>();
 
+            AddonViewFilter viewFilter = new AddonViewFilter(stateManager, view);
             for (Addon addon : addons)
             {
-               Set<AddonView> views = ((AddonImpl) addon).getViews();
-               if (views.contains(view) && filter.accept(addon))
+               if (viewFilter.accept(addon) && filter.accept(addon))
                   result.add(addon);
             }
 
@@ -122,24 +127,7 @@ public class AddonLifecycleManager
       });
    }
 
-   @Override
-   public String toString()
-   {
-      StringBuilder builder = new StringBuilder();
-
-      Iterator<Addon> addonsIterator = addons.iterator();
-      while (addonsIterator.hasNext())
-      {
-         Addon addon = addonsIterator.next();
-         builder.append("- ").append(addon.toString());
-         if (addonsIterator.hasNext())
-            builder.append("\n");
-      }
-
-      return builder.toString();
-   }
-
-   public void forceUpdate(final Set<AddonView> views)
+   public void forceUpdate()
    {
       lock.performLocked(LockMode.WRITE, new Callable<Void>()
       {
@@ -164,17 +152,15 @@ public class AddonLifecycleManager
                System.out.println(master);
             }
 
-            MasterGraph last = currentGraph;
-            currentGraph = master;
+            MasterGraph last = stateManager.getCurrentGraph();
+            stateManager.setCurrentGraph(master);
 
             for (Addon addon : addons)
             {
-               Callables.call(new StopAddonCallable(addon));
+               Callables.call(new StopAddonCallable(stateManager, addon));
             }
-            addons.clear();
 
-            new MasterGraphChangeHandler(AddonLifecycleManager.this, last, master)
-                     .hotSwapChanges(getAddonLoader());
+            new MasterGraphChangeHandler(AddonLifecycleManager.this, stateManager, last, master).hotSwapChanges();
 
             return null;
          }
@@ -190,10 +176,7 @@ public class AddonLifecycleManager
          {
             for (Addon addon : addons)
             {
-               if (addon instanceof AddonImpl)
-               {
-                  new StopAddonCallable(addon).call();
-               }
+               new StopAddonCallable(stateManager, addon).call();
             }
 
             List<Runnable> waiting = executor.shutdownNow();
@@ -205,51 +188,20 @@ public class AddonLifecycleManager
       });
    }
 
-   private Set<AddonId> getAllEnabled(Set<AddonRepository> repositories)
-   {
-      Set<AddonId> result = new HashSet<AddonId>();
-      for (AddonRepository repository : repositories)
-      {
-         for (AddonId enabled : repository.listEnabled())
-         {
-            result.add(enabled);
-         }
-      }
-      return result;
-   }
-
-   public void finishedStarting(AddonImpl addon)
+   public void finishedStarting(Addon addon)
    {
       starting.decrementAndGet();
    }
 
    /**
-    * Returns <code>true</code> if there are currently any Addons being started.
+    * Returns <code>true</code> if there are currently any Addons being started. (Non-blocking.)
     */
-   public boolean isStartingAddons(Set<AddonView> views)
+   public boolean isStartingAddons()
    {
       if (starting.get() == -1)
          return false;
 
       return starting.get() > 0;
-   }
-
-   public Set<AddonRepository> getRepositories()
-   {
-      return Collections.unmodifiableSet(new LinkedHashSet<AddonRepository>(furnace.getRepositories()));
-   }
-
-   public AddonId resolve(AddonView view, final String name)
-   {
-      Assert.notNull(name, "Addon name must not be null.");
-      AddonId result = null;
-      for (AddonId id : getAllEnabled(view.getRepositories()))
-      {
-         if (name.equals(id.getName()) && (result == null || id.getVersion().compareTo(result.getVersion()) >= 0))
-            result = id;
-      }
-
-      return result;
    }
 
    public void dispose(AddonView view)
@@ -260,12 +212,86 @@ public class AddonLifecycleManager
    public void startAddon(Addon addon)
    {
       Assert.notNull(addon, "Addon to start must not be null.");
-      Callables.call(new StartEnabledAddonCallable(furnace, executor, starting, (AddonImpl) addon));
+      Callables.call(new StartEnabledAddonCallable(furnace, this, stateManager, executor, starting, addon));
    }
 
    public AddonView getRootView()
    {
       return furnace.getAddonRegistry();
+   }
+
+   public void addView(AddonView view)
+   {
+      this.views.add(view);
+   }
+
+   public AddonRegistry findView(AddonRepository... repositories)
+   {
+      AddonRegistry result = null;
+      List<AddonRepository> furnaceRepositories = furnace.getRepositories();
+
+      for (AddonView view : views)
+      {
+         Set<AddonRepository> viewRepositories = view.getRepositories();
+         if (repositories == null || repositories.length == 0)
+         {
+            if (viewRepositories.containsAll(furnaceRepositories)
+                     && furnaceRepositories.containsAll(viewRepositories))
+               result = (AddonRegistry) view;
+         }
+         else if (viewRepositories.containsAll(Arrays.asList(repositories))
+                  && Arrays.asList(repositories).containsAll(viewRepositories))
+         {
+            result = (AddonRegistry) view;
+         }
+
+         if (result != null)
+            break;
+      }
+      return result;
+   }
+
+   public void removeView(AddonView view)
+   {
+      if (!views.contains(view))
+         throw new IllegalArgumentException("The given view does not belong to this Furnace instance.");
+   }
+
+   @Override
+   public String toString()
+   {
+      StringBuilder builder = new StringBuilder();
+
+      Iterator<Addon> addonsIterator = addons.iterator();
+      while (addonsIterator.hasNext())
+      {
+         Addon addon = addonsIterator.next();
+         builder.append("- ").append(addon.toString());
+         if (addonsIterator.hasNext())
+            builder.append("\n");
+      }
+
+      return builder.toString();
+   }
+
+   public void loadAddon(final Addon addon)
+   {
+      try
+      {
+         ClassLoaders.executeIn(this.getClass().getClassLoader(), new Callable<Void>()
+         {
+            @Override
+            public Void call() throws Exception
+            {
+               loader.loadAddon(addon);
+               return null;
+            }
+         });
+      }
+      catch (Exception e)
+      {
+         throw new ContainerException("Could not load addon: " + addon.getId(), e);
+      }
    }
 
 }

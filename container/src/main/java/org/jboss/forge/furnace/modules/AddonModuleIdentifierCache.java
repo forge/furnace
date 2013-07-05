@@ -10,11 +10,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.UUID;
 
+import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonId;
-import org.jboss.forge.furnace.addons.AddonView;
 import org.jboss.modules.ModuleIdentifier;
 
 /**
@@ -23,19 +22,18 @@ import org.jboss.modules.ModuleIdentifier;
  */
 class AddonModuleIdentifierCache
 {
-   private Map<AddonKey, ModuleIdentifier> map = new HashMap<AddonKey, ModuleIdentifier>();
+   private Map<Addon, ModuleIdentifier> map = new HashMap<Addon, ModuleIdentifier>();
 
-   public void clear(Set<AddonView> views, AddonId addonId)
+   public void clear(Addon addon)
    {
-      map.remove(addonId);
+      map.remove(addon);
    }
 
-   public ModuleIdentifier getModuleId(Set<AddonView> views, AddonId addonId)
+   public ModuleIdentifier getModuleId(Addon addon)
    {
-      AddonKey key = new AddonKey(views, addonId);
-      if (!map.containsKey(key))
-         map.put(key, ModuleIdentifier.fromString(toModuleId(addonId) + "_" + UUID.randomUUID().toString()));
-      return map.get(key);
+      if (!map.containsKey(addon))
+         map.put(addon, ModuleIdentifier.fromString(toModuleId(addon.getId()) + "_" + UUID.randomUUID().toString()));
+      return map.get(addon);
    }
 
    private String toModuleId(AddonId id)
@@ -47,10 +45,10 @@ class AddonModuleIdentifierCache
    public String toString()
    {
       StringBuilder builder = new StringBuilder();
-      Iterator<Entry<AddonKey, ModuleIdentifier>> iterator = map.entrySet().iterator();
+      Iterator<Entry<Addon, ModuleIdentifier>> iterator = map.entrySet().iterator();
       while (iterator.hasNext())
       {
-         Entry<AddonKey, ModuleIdentifier> entry = iterator.next();
+         Entry<Addon, ModuleIdentifier> entry = iterator.next();
          builder.append(entry.getKey()).append(" -> ").append(entry.getValue());
          if (iterator.hasNext())
             builder.append("\n");
@@ -58,61 +56,4 @@ class AddonModuleIdentifierCache
       return builder.toString();
    }
 
-   public class AddonKey
-   {
-      private Set<AddonView> views;
-      private AddonId addonId;
-
-      public AddonKey(Set<AddonView> views, AddonId addonId)
-      {
-         this.views = views;
-         this.addonId = addonId;
-      }
-
-      @Override
-      public int hashCode()
-      {
-         final int prime = 31;
-         int result = 1;
-         result = prime * result + getOuterType().hashCode();
-         result = prime * result + ((addonId == null) ? 0 : addonId.hashCode());
-         result = prime * result + ((views == null) ? 0 : views.hashCode());
-         return result;
-      }
-
-      @Override
-      public boolean equals(Object obj)
-      {
-         if (this == obj)
-            return true;
-         if (obj == null)
-            return false;
-         if (getClass() != obj.getClass())
-            return false;
-         AddonKey other = (AddonKey) obj;
-         if (!getOuterType().equals(other.getOuterType()))
-            return false;
-         if (addonId == null)
-         {
-            if (other.addonId != null)
-               return false;
-         }
-         else if (!addonId.equals(other.addonId))
-            return false;
-         if (views == null)
-         {
-            if (other.views != null)
-               return false;
-         }
-         else if (!views.equals(other.views))
-            return false;
-         return true;
-      }
-
-      private AddonModuleIdentifierCache getOuterType()
-      {
-         return AddonModuleIdentifierCache.this;
-      }
-
-   }
 }

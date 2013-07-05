@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.Furnace;
+import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.modules.AddonModuleLoader;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
@@ -18,121 +19,82 @@ public class AddonLoader
    private static final Logger logger = Logger.getLogger(AddonLoader.class.getName());
 
    private LockManager lock;
-   private AddonLifecycleManager manager;
-
+   private AddonLifecycleManager lifecycleManager;
+   private AddonStateManager stateManager;
    private AddonModuleLoader loader;
 
-   public AddonLoader(Furnace furnace, AddonLifecycleManager manager)
+   public AddonLoader(Furnace furnace, AddonLifecycleManager lifecycleManager, AddonStateManager stateManager)
    {
       this.lock = furnace.getLockManager();
-      this.manager = manager;
-      this.loader = new AddonModuleLoader(furnace, manager);
+      this.lifecycleManager = lifecycleManager;
+      this.stateManager = stateManager;
+      this.loader = new AddonModuleLoader(furnace, lifecycleManager, stateManager);
    }
 
-   public AddonImpl loadAddon(Set<AddonView> views, AddonId addonId)
+   public void loadAddon(Addon addon)
    {
-      Assert.notNull(addonId, "AddonId to load must not be null.");
+      Assert.notNull(addon, "Addon to load must not be null.");
 
-      AddonImpl addon = null;
-
-      AddonView view = views.iterator().next();
-      for (Addon existing : view.getAddons())
+      if (addon.getStatus().isMissing())
       {
-         if (existing.getId().equals(addonId))
+         AddonRepository repository =
+                  stateManager.getViewsOf(addon).iterator().next().getRepositories().iterator().next();
+         if (repository.isEnabled(addon.getId())
+                  && repository.isDeployed(addon.getId()))
          {
-            addon = (AddonImpl) existing;
-            break;
-         }
-      }
+            Set<AddonDependency> dependencies = fromAddonDependencyEntries(addon,
+                     repository.getAddonDependencies(addon.getId()));
 
-      if (addon == null || addon.getStatus().isMissing())
-      {
-         for (AddonRepository repository : view.getRepositories())
-         {
-            addon = loadAddonFromRepository(views, view, repository, addonId);
-            if (addon != null)
-               break;
-         }
-      }
-
-      if (addon != null)
-         manager.add(addon);
-
-      return addon;
-   }
-
-   private AddonImpl loadAddonFromRepository(Set<AddonView> views, AddonView view, AddonRepository repository,
-            final AddonId addonId)
-   {
-      AddonImpl addon = null;
-      if (repository.isEnabled(addonId) && repository.isDeployed(addonId))
-      {
-         addon = (AddonImpl) view.getAddon(addonId);
-
-         if (addon == null)
-         {
-            addon = new AddonImpl(lock, addonId);
-            addon.setRepository(repository);
-         }
-
-         Set<AddonDependency> dependencies = fromAddonDependencyEntries(views, view, addon,
-                  repository.getAddonDependencies(addonId));
-
-         if (addon.getModule() == null)
-         {
             Set<AddonDependency> missingRequiredDependencies = new HashSet<AddonDependency>();
             for (AddonDependency addonDependency : dependencies)
             {
-               Addon dependency = addonDependency.getDependency();
-               if (dependency == null && !addonDependency.isOptional())
+               if (addonDependency instanceof MissingAddonDependencyImpl && !addonDependency.isOptional())
                {
                   missingRequiredDependencies.add(addonDependency);
                }
             }
 
-            if (missingRequiredDependencies.isEmpty())
-               addon.setMissingDependencies(missingRequiredDependencies);
-
             if (!missingRequiredDependencies.isEmpty())
             {
-               if (addon.getMissingDependencies().size() != missingRequiredDependencies.size())
+               if (stateManager.getMissingDependenciesOf(addon).size() != missingRequiredDependencies.size())
                {
                   logger.warning("Addon [" + addon + "] has [" + missingRequiredDependencies.size()
                            + "] missing dependencies: "
                            + missingRequiredDependencies + " and will be not be loaded until all required"
                            + " dependencies are available.");
                }
-               addon.setMissingDependencies(missingRequiredDependencies);
+               stateManager.setState(addon, new AddonState(missingRequiredDependencies));
             }
             else
             {
                try
                {
-                  Module module = loader.loadModule(views, view, addonId);
-                  addon.setModuleLoader(loader);
-                  addon.setModule(module);
-                  addon.setRepository(repository);
+                  Module module = loader.loadAddonModule(addon);
+                  stateManager.setState(addon, new AddonState(dependencies, repository, loader, module));
+               }
+               catch (RuntimeException e)
+               {
+                  logger.log(Level.FINE, "Failed to load addon [" + addon.getId() + "]", e);
+                  throw e;
                }
                catch (Exception e)
                {
-                  logger.log(Level.FINE, "Failed to load addon [" + addonId + "]", e);
+                  logger.log(Level.FINE, "Failed to load addon [" + addon.getId() + "]", e);
+                  throw new ContainerException("Failed to load addon [" + addon.getId() + "]", e);
                }
             }
          }
-
-         dependencies.removeAll(addon.getMissingDependencies());
-         addon.setDependencies(dependencies);
       }
-      return addon;
    }
 
-   private Set<AddonDependency> fromAddonDependencyEntries(Set<AddonView> views, AddonView view, AddonImpl addon,
+   private Set<AddonDependency> fromAddonDependencyEntries(Addon addon,
             Set<AddonDependencyEntry> entries)
    {
       Set<AddonDependency> result = new HashSet<AddonDependency>();
       for (AddonDependencyEntry entry : entries)
       {
-         AddonId dependencyId = manager.resolve(view, entry.getName());
+         Set<AddonView> views = stateManager.getViewsOf(addon);
+         AddonId dependencyId = stateManager.resolveAddonId(views, entry.getName());
          if (dependencyId == null)
          {
             if (!entry.isOptional())
@@ -142,10 +104,8 @@ public class AddonLoader
          }
          else
          {
-            AddonImpl dependency = loadAddon(views, dependencyId);
+            Addon dependency = lifecycleManager.getAddon(views.iterator().next(), dependencyId);
             result.add(new AddonDependencyImpl(lock,
-                     addon,
-                     dependency.getId().getVersion(),
                      dependency,
                      entry.isExported(),
                      entry.isOptional()));

@@ -3,6 +3,7 @@ package org.jboss.forge.furnace.impl.graph;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonView;
 import org.jboss.forge.furnace.util.Assert;
@@ -13,6 +14,7 @@ public class AddonVertex
    private String name;
    private Version version;
    private Set<AddonView> views = new HashSet<AddonView>();
+   private Addon addon;
 
    public AddonVertex(String name, Version version)
    {
@@ -20,6 +22,16 @@ public class AddonVertex
       Assert.notNull(version, "Version must not be null.");
       this.name = name;
       this.version = version;
+   }
+
+   public Addon getAddon()
+   {
+      return addon;
+   }
+
+   public void setAddon(Addon addon)
+   {
+      this.addon = addon;
    }
 
    public String getName()

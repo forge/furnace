@@ -16,11 +16,11 @@ import java.util.concurrent.TimeoutException;
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class CompletedFuture<T> implements Future<T>
+public class NullFuture<T> implements Future<T>
 {
    private T value;
 
-   public CompletedFuture(T value)
+   public NullFuture(T value)
    {
       super();
       this.value = value;

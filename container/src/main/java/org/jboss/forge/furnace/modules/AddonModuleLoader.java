@@ -16,8 +16,10 @@ import java.util.jar.JarFile;
 import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.Furnace;
+import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonLifecycleManager;
+import org.jboss.forge.furnace.addons.AddonStateManager;
 import org.jboss.forge.furnace.addons.AddonView;
 import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.impl.AddonRepositoryImpl;
@@ -28,6 +30,7 @@ import org.jboss.forge.furnace.modules.providers.WeldClasspathSpec;
 import org.jboss.forge.furnace.modules.providers.XPathJDKClasspathSpec;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.furnace.repositories.AddonRepository;
+import org.jboss.forge.furnace.versions.Version;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -51,34 +54,40 @@ public class AddonModuleLoader extends ModuleLoader
    private AddonModuleIdentifierCache moduleCache;
    private AddonModuleJarFileCache moduleJarFileCache;
 
-   private AddonLifecycleManager manager;
+   private AddonLifecycleManager lifecycleManager;
+   private AddonStateManager stateManager;
 
-   private ThreadLocal<AddonView> currentView = new ThreadLocal<AddonView>();
-   private ThreadLocal<Set<AddonView>> currentViews = new ThreadLocal<Set<AddonView>>();
+   private ThreadLocal<Addon> currentAddon = new ThreadLocal<Addon>();
 
-   public AddonModuleLoader(Furnace furnace, AddonLifecycleManager manager)
+   public AddonModuleLoader(Furnace furnace, AddonLifecycleManager lifecycleManager, AddonStateManager stateManager)
    {
-      this.manager = manager;
+      this.lifecycleManager = lifecycleManager;
+      this.stateManager = stateManager;
       this.moduleCache = new AddonModuleIdentifierCache();
       this.moduleJarFileCache = new AddonModuleJarFileCache();
-      moduleProviders = ServiceLoader.load(ModuleSpecProvider.class, furnace.getRuntimeClassLoader());
+      this.moduleProviders = ServiceLoader.load(ModuleSpecProvider.class, furnace.getRuntimeClassLoader());
       installModuleMBeanServer();
    }
 
    /**
-    * Installs the MBeanServer.
+    * Loads a module for the given Addon.
     */
-   private void installModuleMBeanServer()
+   public final Module loadAddonModule(Addon addon) throws ModuleLoadException
    {
       try
       {
-         Method method = ModuleLoader.class.getDeclaredMethod("installMBeanServer");
-         method.setAccessible(true);
-         method.invoke(null);
+         this.currentAddon.set(addon);
+         ModuleIdentifier moduleId = moduleCache.getModuleId(addon);
+         Module result = loadModule(moduleId);
+         return result;
       }
-      catch (Exception e)
+      catch (ModuleLoadException e)
       {
-         throw new ContainerException("Could not install Modules MBean server", e);
+         throw e;
+      }
+      finally
+      {
+         this.currentAddon.remove();
       }
    }
 
@@ -92,37 +101,14 @@ public class AddonModuleLoader extends ModuleLoader
    @Override
    protected ModuleSpec findModule(ModuleIdentifier id) throws ModuleLoadException
    {
-      ModuleSpec result = findAddonModule(id);
+      ModuleSpec result = null;
+      if (currentAddon.get() != null)
+         result = findAddonModule(id);
+
       if (result == null)
          result = findRegularModule(id);
 
       return result;
-   }
-
-   /**
-    * Loads a module from the current {@link AddonView} based on the {@link AddonId}
-    * 
-    * @param views
-    */
-   public final Module loadModule(Set<AddonView> views, AddonView view, AddonId addonId) throws ModuleLoadException
-   {
-      try
-      {
-         this.currentView.set(view);
-         this.currentViews.set(views);
-         ModuleIdentifier moduleId = moduleCache.getModuleId(views, addonId);
-         Module result = loadModule(moduleId);
-         return result;
-      }
-      catch (ModuleLoadException e)
-      {
-         throw e;
-      }
-      finally
-      {
-         this.currentView.remove();
-         this.currentViews.remove();
-      }
    }
 
    private ModuleSpec findRegularModule(ModuleIdentifier id)
@@ -139,9 +125,10 @@ public class AddonModuleLoader extends ModuleLoader
 
    public ModuleSpec findAddonModule(ModuleIdentifier id)
    {
-      for (AddonRepository repository : manager.getRepositories())
+      Set<AddonView> views = stateManager.getViewsOf(currentAddon.get());
+      for (AddonRepository repository : views.iterator().next().getRepositories())
       {
-         AddonId found = findInstalledModule(repository, id);
+         AddonId found = findInstalledModule(views, repository, id);
 
          if (found != null)
          {
@@ -163,7 +150,7 @@ public class AddonModuleLoader extends ModuleLoader
                      PathFilters.acceptAll()));
             try
             {
-               addAddonDependencies(repository, found, builder);
+               addAddonDependencies(views, repository, found, builder);
             }
             catch (ContainerException e)
             {
@@ -213,16 +200,17 @@ public class AddonModuleLoader extends ModuleLoader
       }
    }
 
-   private void addAddonDependencies(AddonRepository repository, AddonId found, Builder builder)
+   private void addAddonDependencies(Set<AddonView> views, AddonRepository repository, AddonId found, Builder builder)
             throws ContainerException
    {
       Set<AddonDependencyEntry> addons = repository.getAddonDependencies(found);
       for (AddonDependencyEntry dependency : addons)
       {
-         AddonId addonId = manager.resolve(this.currentView.get(), dependency.getName());
+         AddonId addonId = stateManager.resolveAddonId(views, dependency.getName());
          ModuleIdentifier moduleId = null;
          if (addonId != null)
          {
+            Addon addon = lifecycleManager.getAddon(views, addonId);
             moduleId = findCompatibleInstalledModule(addonId);
             if (moduleId != null)
             {
@@ -230,7 +218,7 @@ public class AddonModuleLoader extends ModuleLoader
                         PathFilters.not(PathFilters.getMetaInfFilter()),
                         dependency.isExported() ? PathFilters.acceptAll() : PathFilters.rejectAll(),
                         this,
-                        moduleCache.getModuleId(this.currentViews.get(), addonId),
+                        moduleCache.getModuleId(addon),
                         dependency.isOptional()));
             }
          }
@@ -241,18 +229,21 @@ public class AddonModuleLoader extends ModuleLoader
       }
    }
 
-   private AddonId findInstalledModule(AddonRepository repository, ModuleIdentifier moduleId)
+   private AddonId findInstalledModule(Set<AddonView> views, AddonRepository repository, ModuleIdentifier moduleId)
    {
       AddonId found = null;
+
       List<AddonId> enabled = repository.listEnabledCompatibleWithVersion(AddonRepositoryImpl.getRuntimeAPIVersion());
-      for (AddonId addon : enabled)
+      for (AddonId id : enabled)
       {
-         if (moduleCache.getModuleId(this.currentViews.get(), addon).equals(moduleId))
+         Addon addon = lifecycleManager.getAddon(views, id);
+         if (moduleCache.getModuleId(addon).equals(moduleId))
          {
-            found = addon;
+            found = id;
             break;
          }
       }
+
       return found;
    }
 
@@ -260,15 +251,16 @@ public class AddonModuleLoader extends ModuleLoader
    {
       ModuleIdentifier result = null;
 
-      ALL: for (AddonRepository repository : manager.getRepositories())
+      Addon addon = currentAddon.get();
+      Version runtimeAPIVersion = AddonRepositoryImpl.getRuntimeAPIVersion();
+
+      AddonRepository repository = stateManager.getViewsOf(addon).iterator().next().getRepositories().iterator().next();
+      List<AddonId> enabled = repository.listEnabledCompatibleWithVersion(runtimeAPIVersion);
+      for (AddonId id : enabled)
       {
-         for (AddonId id : repository.listEnabledCompatibleWithVersion(AddonRepositoryImpl.getRuntimeAPIVersion()))
+         if (id.getName().equals(addonId.getName()))
          {
-            if (id.getName().equals(addonId.getName()))
-            {
-               result = moduleCache.getModuleId(this.currentViews.get(), id);
-               break ALL;
-            }
+            result = moduleCache.getModuleId(addon);
          }
       }
 
@@ -281,11 +273,28 @@ public class AddonModuleLoader extends ModuleLoader
       return "AddonModuleLoader";
    }
 
-   public void releaseAddonModule(Set<AddonView> views, AddonId addonId)
+   public void releaseAddonModule(Addon addon)
    {
-      ModuleIdentifier id = moduleCache.getModuleId(views, addonId);
+      ModuleIdentifier id = moduleCache.getModuleId(addon);
       moduleJarFileCache.closeJarFileReferences(id);
-      moduleCache.clear(views, addonId);
+      moduleCache.clear(addon);
+   }
+
+   /**
+    * Installs the MBeanServer.
+    */
+   private void installModuleMBeanServer()
+   {
+      try
+      {
+         Method method = ModuleLoader.class.getDeclaredMethod("installMBeanServer");
+         method.setAccessible(true);
+         method.invoke(null);
+      }
+      catch (Exception e)
+      {
+         throw new ContainerException("Could not install Modules MBean server", e);
+      }
    }
 
 }

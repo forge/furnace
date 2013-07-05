@@ -6,7 +6,6 @@
  */
 package org.jboss.forge.furnace.addons;
 
-import org.jboss.forge.furnace.versions.Version;
 
 /**
  * An edge in the registered {@link Addon} graph.
@@ -16,19 +15,9 @@ import org.jboss.forge.furnace.versions.Version;
 public interface AddonDependency
 {
    /**
-    * Get the {@link Addon} dependent on the {@link Addon} returned by {@link #getDependency()}.
-    */
-   public Addon getDependent();
-
-   /**
     * Get the {@link Addon} dependency of the {@link Addon} returned by {@link #getDependent()}.
     */
    public Addon getDependency();
-
-   /**
-    * Return the {@link Version} of which the {@link Addon} returned by {@link #getDependency()} must be included.
-    */
-   public Version getDependencyVersion();
 
    /**
     * Return <code>true</code> if the {@link Addon} dependency returned by {@link #getDependency()} is exported by the

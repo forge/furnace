@@ -2,6 +2,7 @@ package org.jboss.forge.furnace.impl.graph;
 
 import java.util.Set;
 
+import org.jboss.forge.furnace.versions.Version;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.Graphs;
 import org.jgrapht.event.TraversalListenerAdapter;
@@ -22,6 +23,9 @@ public class MasterGraph extends AddonGraph<MasterGraph>
 
    public void merge(final OptimizedAddonGraph other)
    {
+      if (other.getGraph().vertexSet().isEmpty())
+         return;
+
       if (graph.vertexSet().isEmpty())
       {
          if (!Graphs.addGraph(graph, other.getGraph()))
@@ -115,6 +119,12 @@ public class MasterGraph extends AddonGraph<MasterGraph>
    protected void enhanceNewVertex(AddonVertex vertex)
    {
       // Intentionally blank.
+   }
+
+   @Override
+   public AddonVertex getVertex(String name, Version version)
+   {
+      return super.getVertex(name, version);
    }
 
 }
