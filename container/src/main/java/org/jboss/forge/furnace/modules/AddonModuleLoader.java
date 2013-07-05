@@ -49,7 +49,7 @@ public class AddonModuleLoader extends ModuleLoader
 {
    private static final Logger logger = Logger.getLogger(AddonModuleLoader.class.getName());
 
-   private final Iterable<ModuleSpecProvider> moduleProviders;
+   private Iterable<ModuleSpecProvider> moduleProviders;
 
    private AddonModuleIdentifierCache moduleCache;
    private AddonModuleJarFileCache moduleJarFileCache;
@@ -59,13 +59,15 @@ public class AddonModuleLoader extends ModuleLoader
 
    private ThreadLocal<Addon> currentAddon = new ThreadLocal<Addon>();
 
+   private Furnace furnace;
+
    public AddonModuleLoader(Furnace furnace, AddonLifecycleManager lifecycleManager, AddonStateManager stateManager)
    {
+      this.furnace = furnace;
       this.lifecycleManager = lifecycleManager;
       this.stateManager = stateManager;
       this.moduleCache = new AddonModuleIdentifierCache();
       this.moduleJarFileCache = new AddonModuleJarFileCache();
-      this.moduleProviders = ServiceLoader.load(ModuleSpecProvider.class, furnace.getRuntimeClassLoader());
       installModuleMBeanServer();
    }
 
@@ -114,13 +116,20 @@ public class AddonModuleLoader extends ModuleLoader
    private ModuleSpec findRegularModule(ModuleIdentifier id)
    {
       ModuleSpec result = null;
-      for (ModuleSpecProvider p : moduleProviders)
+      for (ModuleSpecProvider p : getModuleProviders())
       {
          result = p.get(this, id);
          if (result != null)
             break;
       }
       return result;
+   }
+
+   private Iterable<ModuleSpecProvider> getModuleProviders()
+   {
+      if (moduleProviders == null)
+         moduleProviders = ServiceLoader.load(ModuleSpecProvider.class, furnace.getRuntimeClassLoader());
+      return moduleProviders;
    }
 
    public ModuleSpec findAddonModule(ModuleIdentifier id)

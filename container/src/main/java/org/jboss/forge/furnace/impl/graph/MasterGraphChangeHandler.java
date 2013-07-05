@@ -3,7 +3,6 @@ package org.jboss.forge.furnace.impl.graph;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonLifecycleManager;
-import org.jboss.forge.furnace.addons.AddonStateManager;
 import org.jboss.forge.furnace.addons.AddonView;
 import org.jgrapht.event.TraversalListenerAdapter;
 import org.jgrapht.event.VertexTraversalEvent;
@@ -11,16 +10,14 @@ import org.jgrapht.traverse.DepthFirstIterator;
 
 public class MasterGraphChangeHandler
 {
-   private AddonStateManager stateManager;
    private AddonLifecycleManager lifecycleManager;
    private MasterGraph currentGraph;
    private MasterGraph graph;
 
-   public MasterGraphChangeHandler(AddonLifecycleManager lifefycleManager, AddonStateManager stateManager,
+   public MasterGraphChangeHandler(AddonLifecycleManager lifefycleManager,
             MasterGraph currentGraph, MasterGraph graph)
    {
       this.lifecycleManager = lifefycleManager;
-      this.stateManager = stateManager;
       this.currentGraph = currentGraph;
       this.graph = graph;
    }
@@ -38,17 +35,15 @@ public class MasterGraphChangeHandler
 
       iterator.addTraversalListener(new TraversalListenerAdapter<AddonVertex, AddonDependencyEdge>()
       {
-
          @Override
-         public void vertexTraversed(VertexTraversalEvent<AddonVertex> event)
+         public void vertexFinished(VertexTraversalEvent<AddonVertex> event)
          {
+            MasterGraph temp = graph;
             AddonVertex vertex = event.getVertex();
             AddonView view = vertex.getViews().iterator().next();
             AddonId addonId = vertex.getAddonId();
             Addon addon = lifecycleManager.getAddon(view, addonId);
-
-            if (stateManager.canBeLoaded(addon))
-               lifecycleManager.loadAddon(addon);
+            lifecycleManager.loadAddon(addon);
 
             vertex.setAddon(addon);
          };

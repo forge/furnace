@@ -37,6 +37,7 @@ public class AddonLoader
 
       if (addon.getStatus().isMissing())
       {
+         loader.releaseAddonModule(addon);
          AddonRepository repository =
                   stateManager.getViewsOf(addon).iterator().next().getRepositories().iterator().next();
          if (repository.isEnabled(addon.getId())
@@ -70,7 +71,7 @@ public class AddonLoader
                try
                {
                   Module module = loader.loadAddonModule(addon);
-                  stateManager.setState(addon, new AddonState(dependencies, repository, loader, module));
+                  stateManager.setState(addon, new AddonState(dependencies, repository, module));
                }
                catch (RuntimeException e)
                {

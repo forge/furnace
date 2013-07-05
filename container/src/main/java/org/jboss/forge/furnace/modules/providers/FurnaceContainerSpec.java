@@ -15,6 +15,11 @@ public class FurnaceContainerSpec extends AbstractModuleSpecProvider
    public static final ModuleIdentifier ID = ModuleIdentifier.create("org.jboss.forge.furnace.api");
 
    public static Set<String> paths = new HashSet<String>();
+   
+   public FurnaceContainerSpec()
+   {
+      System.out.println("Constructed furnace container spefc");
+   }
 
    static
    {

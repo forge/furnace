@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.concurrent.Future;
 
 import org.jboss.forge.furnace.impl.NullServiceRegistry;
-import org.jboss.forge.furnace.modules.AddonModuleLoader;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.services.ServiceRegistry;
 import org.jboss.forge.furnace.util.Assert;
@@ -19,21 +18,18 @@ public class AddonState
    private Set<AddonDependency> missingDependencies = new HashSet<AddonDependency>();
    private AddonRepository repository;
    private ServiceRegistry registry = new NullServiceRegistry();
-   private AddonModuleLoader loader;
    private Module module;
    private AddonRunnable runnable;
 
-   public AddonState(Set<AddonDependency> dependencies, AddonRepository repository, AddonModuleLoader loader,
+   public AddonState(Set<AddonDependency> dependencies, AddonRepository repository,
             Module module)
    {
       Assert.notNull(dependencies, "Addon dependency set must not be null.");
       Assert.notNull(repository, "Addon repository must not be null.");
-      Assert.notNull(loader, "Addon loader must not be null.");
       Assert.notNull(module, "Addon Module must not be null.");
 
       this.dependencies = dependencies;
       this.repository = repository;
-      this.loader = loader;
       this.module = module;
    }
 
@@ -100,11 +96,6 @@ public class AddonState
    public void setServiceRegistry(ServiceRegistry registry)
    {
       this.registry = registry;
-   }
-
-   public AddonModuleLoader getModuleLoader()
-   {
-      return loader;
    }
 
 }

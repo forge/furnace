@@ -36,21 +36,13 @@ public class StopAddonCallable implements Callable<Void>
    @Override
    public Void call() throws Exception
    {
-      AddonRunnable runnable = stateManager.getRunnableOf(addon);
       try
       {
-         if (runnable != null)
-         {
-            runnable.shutdown();
-         }
+         stateManager.cancel(addon);
       }
       catch (Exception e)
       {
          logger.log(Level.WARNING, "Failed to shut down addon " + addon, e);
-      }
-      finally
-      {
-         stateManager.cancel(addon);
       }
       return null;
    }

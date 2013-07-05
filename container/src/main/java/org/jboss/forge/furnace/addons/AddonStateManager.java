@@ -11,7 +11,6 @@ import org.jboss.forge.furnace.impl.graph.AddonVertex;
 import org.jboss.forge.furnace.impl.graph.MasterGraph;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.lock.LockMode;
-import org.jboss.forge.furnace.modules.AddonModuleLoader;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.services.ServiceRegistry;
 import org.jboss.forge.furnace.util.Assert;
@@ -170,24 +169,19 @@ public class AddonStateManager
    {
       boolean result = false;
 
-      AddonState state = getState(addon);
+      AddonRunnable runnable = getRunnableOf(addon);
+      if (runnable != null)
+      {
+         runnable.shutdown();
+      }
 
       Future<Void> future = getFutureOf(addon);
       if (future != null && !future.isDone())
          result = future.cancel(true);
 
-      AddonModuleLoader loader = state.getModuleLoader();
-      if (loader != null)
-         loader.releaseAddonModule(addon);
-
       setState(addon, null);
 
       return result;
-   }
-
-   public boolean canBeLoaded(Addon addon)
-   {
-      return getMissingDependenciesOf(addon).isEmpty();
    }
 
    public boolean canBeStarted(Addon addon)

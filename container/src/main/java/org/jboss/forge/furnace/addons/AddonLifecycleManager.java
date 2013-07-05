@@ -19,7 +19,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.FurnaceImpl;
-import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.impl.graph.CompleteAddonGraph;
 import org.jboss.forge.furnace.impl.graph.MasterGraph;
 import org.jboss.forge.furnace.impl.graph.MasterGraphChangeHandler;
@@ -30,7 +29,6 @@ import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.util.AddonFilters;
 import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.util.Callables;
-import org.jboss.forge.furnace.util.ClassLoaders;
 import org.jboss.forge.furnace.util.Sets;
 
 /**
@@ -160,7 +158,7 @@ public class AddonLifecycleManager
                Callables.call(new StopAddonCallable(stateManager, addon));
             }
 
-            new MasterGraphChangeHandler(AddonLifecycleManager.this, stateManager, last, master).hotSwapChanges();
+            new MasterGraphChangeHandler(AddonLifecycleManager.this, last, master).hotSwapChanges();
 
             return null;
          }
@@ -274,23 +272,15 @@ public class AddonLifecycleManager
       return builder.toString();
    }
 
-   public void loadAddon(final Addon addon)
+   public void loadAddon(Addon addon)
    {
       try
       {
-         ClassLoaders.executeIn(this.getClass().getClassLoader(), new Callable<Void>()
-         {
-            @Override
-            public Void call() throws Exception
-            {
-               loader.loadAddon(addon);
-               return null;
-            }
-         });
+         loader.loadAddon(addon);
       }
       catch (Exception e)
       {
-         throw new ContainerException("Could not load addon: " + addon.getId(), e);
+         e.printStackTrace();
       }
    }
 

@@ -64,8 +64,6 @@ public class FurnaceImpl implements Furnace
       if (!AddonRepositoryImpl.hasRuntimeAPIVersion())
          logger.warning("Could not detect Furnace runtime version - " +
                   "loading all addons, but failures may occur if versions are not compatible.");
-
-      manager = new AddonLifecycleManager(this);
    }
 
    @Override
@@ -138,7 +136,7 @@ public class FurnaceImpl implements Furnace
          do
          {
             boolean dirty = false;
-            if (!manager.isStartingAddons())
+            if (!getLifecycleManager().isStartingAddons())
             {
                for (AddonRepository repository : repositories)
                {
@@ -156,7 +154,7 @@ public class FurnaceImpl implements Furnace
                   try
                   {
                      fireBeforeConfigurationScanEvent();
-                     manager.forceUpdate();
+                     getLifecycleManager().forceUpdate();
                      fireAfterConfigurationScanEvent();
                   }
                   catch (Exception e)
@@ -169,7 +167,7 @@ public class FurnaceImpl implements Furnace
          }
          while (alive && serverMode);
 
-         while (alive && manager.isStartingAddons())
+         while (alive && getLifecycleManager().isStartingAddons())
          {
             Thread.sleep(100);
          }
@@ -182,7 +180,7 @@ public class FurnaceImpl implements Furnace
       {
          fireBeforeContainerStoppedEvent();
          status = ContainerStatus.STOPPED;
-         manager.stopAll();
+         getLifecycleManager().stopAll();
       }
 
       fireAfterContainerStoppedEvent();
@@ -266,20 +264,21 @@ public class FurnaceImpl implements Furnace
    {
       assertIsAlive();
 
-      AddonRegistry result = manager.findView(repositories);
+      AddonRegistry result = getLifecycleManager().findView(repositories);
 
       if (result == null)
       {
          if (repositories == null || repositories.length == 0)
          {
-            result = new AddonRegistryImpl(lock, manager, getRepositories(), "ROOT");
-            manager.addView(result);
+            result = new AddonRegistryImpl(lock, getLifecycleManager(), getRepositories(), "ROOT");
+            getLifecycleManager().addView(result);
          }
          else
          {
-            result = new AddonRegistryImpl(lock, manager, Arrays.asList(repositories), String.valueOf(registryCount++));
-            manager.addView(result);
-            manager.forceUpdate();
+            result = new AddonRegistryImpl(lock, getLifecycleManager(), Arrays.asList(repositories),
+                     String.valueOf(registryCount++));
+            getLifecycleManager().addView(result);
+            getLifecycleManager().forceUpdate();
          }
       }
 
@@ -294,8 +293,8 @@ public class FurnaceImpl implements Furnace
          throw new IllegalArgumentException(
                   "Cannot dispose the root AddonRegistry. Call .stop() instead.");
 
-      manager.removeView(view);
-      manager.forceUpdate();
+      getLifecycleManager().removeView(view);
+      getLifecycleManager().forceUpdate();
    }
 
    @Override
@@ -371,7 +370,7 @@ public class FurnaceImpl implements Furnace
       if (!alive)
          return ContainerStatus.STOPPED;
 
-      boolean startingAddons = manager.isStartingAddons();
+      boolean startingAddons = getLifecycleManager().isStartingAddons();
       return startingAddons ? ContainerStatus.STARTING : status;
    }
 
@@ -382,12 +381,19 @@ public class FurnaceImpl implements Furnace
 
    public AddonLifecycleManager getAddonLifecycleManager()
    {
-      return manager;
+      return getLifecycleManager();
    }
 
    @Override
    public String toString()
    {
-      return manager.toString();
+      return getLifecycleManager().toString();
+   }
+
+   private AddonLifecycleManager getLifecycleManager()
+   {
+      if (manager == null)
+         manager = new AddonLifecycleManager(this);
+      return manager;
    }
 }
