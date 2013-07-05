@@ -97,11 +97,10 @@ public class MultipleRepositoryViewTest
       Assert.assertTrue(right.isDeployed(resources));
       Assert.assertTrue(right.isDeployed(facets6));
 
-      furnace.startAsync();
-
       ConfigurationScanListener listener = new ConfigurationScanListener();
       ListenerRegistration<ContainerLifecycleListener> registration = furnace.addContainerLifecycleListener(listener);
 
+      furnace.startAsync();
       while (!listener.isConfigurationScanned())
          Thread.sleep(100);
 
@@ -109,8 +108,11 @@ public class MultipleRepositoryViewTest
       Addons.waitUntilStarted(registry.getAddon(resources), 10, TimeUnit.SECONDS);
       AddonRegistry leftRegistry = furnace.getAddonRegistry(left);
 
-      Addon addon = leftRegistry.getAddon(facets);
-      Assert.assertNotNull(addon);
+      Assert.assertNotNull(leftRegistry.getAddon(facets));
+      Assert.assertNull(registry.getAddon(facets));
+
+      Assert.assertNotNull(registry.getAddon(facets6));
+      Assert.assertNull(leftRegistry.getAddon(facets6));
 
       registration.removeListener();
 

@@ -56,4 +56,16 @@ class AddonModuleIdentifierCache
       return builder.toString();
    }
 
+   public Addon getAddon(ModuleIdentifier id)
+   {
+      for (Entry<Addon, ModuleIdentifier> entry : map.entrySet())
+      {
+         if (entry.getValue().equals(id))
+         {
+            return entry.getKey();
+         }
+      }
+      return null;
+   }
+
 }

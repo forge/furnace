@@ -18,7 +18,8 @@ public abstract class AddonGraph<T extends AddonGraph<T>>
          // FIXME some weird CLAC javassist issue requiring this unwrapping?
          Version vertexVersion = new SingleVersion(vertex.getVersion().toString());
          if (vertexName.equals(name)
-                  && version.compareTo(vertexVersion) == 0)
+                  && new SingleVersion(version.toString())
+                           .compareTo(new SingleVersion(vertexVersion.toString())) == 0)
          {
             result = vertex;
             break;

@@ -38,50 +38,55 @@ public class AddonLoader
       if (addon.getStatus().isMissing())
       {
          loader.releaseAddonModule(addon);
-         AddonRepository repository =
-                  stateManager.getViewsOf(addon).iterator().next().getRepositories().iterator().next();
-         if (repository.isEnabled(addon.getId())
-                  && repository.isDeployed(addon.getId()))
+         Set<AddonRepository> repositories =
+                  stateManager.getViewsOf(addon).iterator().next().getRepositories();
+
+         for (AddonRepository repository : repositories)
          {
-            Set<AddonDependency> dependencies = fromAddonDependencyEntries(addon,
-                     repository.getAddonDependencies(addon.getId()));
+            if (addon.getStatus().isMissing()
+                     && repository.isEnabled(addon.getId())
+                     && repository.isDeployed(addon.getId()))
+            {
+               Set<AddonDependency> dependencies = fromAddonDependencyEntries(addon,
+                        repository.getAddonDependencies(addon.getId()));
 
-            Set<AddonDependency> missingRequiredDependencies = new HashSet<AddonDependency>();
-            for (AddonDependency addonDependency : dependencies)
-            {
-               if (addonDependency instanceof MissingAddonDependencyImpl && !addonDependency.isOptional())
+               Set<AddonDependency> missingRequiredDependencies = new HashSet<AddonDependency>();
+               for (AddonDependency addonDependency : dependencies)
                {
-                  missingRequiredDependencies.add(addonDependency);
+                  if (addonDependency instanceof MissingAddonDependencyImpl && !addonDependency.isOptional())
+                  {
+                     missingRequiredDependencies.add(addonDependency);
+                  }
                }
-            }
 
-            if (!missingRequiredDependencies.isEmpty())
-            {
-               if (stateManager.getMissingDependenciesOf(addon).size() != missingRequiredDependencies.size())
+               if (!missingRequiredDependencies.isEmpty())
                {
-                  logger.warning("Addon [" + addon + "] has [" + missingRequiredDependencies.size()
-                           + "] missing dependencies: "
-                           + missingRequiredDependencies + " and will be not be loaded until all required"
-                           + " dependencies are available.");
+                  if (stateManager.getMissingDependenciesOf(addon).size() != missingRequiredDependencies.size())
+                  {
+                     logger.warning("Addon [" + addon + "] has [" + missingRequiredDependencies.size()
+                              + "] missing dependencies: "
+                              + missingRequiredDependencies + " and will be not be loaded until all required"
+                              + " dependencies are available.");
+                  }
+                  stateManager.setState(addon, new AddonState(missingRequiredDependencies));
                }
-               stateManager.setState(addon, new AddonState(missingRequiredDependencies));
-            }
-            else
-            {
-               try
+               else
                {
-                  Module module = loader.loadAddonModule(addon);
-                  stateManager.setState(addon, new AddonState(dependencies, repository, module));
-               }
-               catch (RuntimeException e)
-               {
-                  logger.log(Level.FINE, "Failed to load addon [" + addon.getId() + "]", e);
-                  throw e;
-               }
-               catch (Exception e)
-               {
-                  logger.log(Level.FINE, "Failed to load addon [" + addon.getId() + "]", e);
-                  throw new ContainerException("Failed to load addon [" + addon.getId() + "]", e);
+                  try
+                  {
+                     Module module = loader.loadAddonModule(addon);
+                     stateManager.setState(addon, new AddonState(dependencies, repository, module));
+                  }
+                  catch (RuntimeException e)
+                  {
+                     logger.log(Level.FINE, "Failed to load addon [" + addon.getId() + "]", e);
+                     throw e;
+                  }
+                  catch (Exception e)
+                  {
+                     logger.log(Level.FINE, "Failed to load addon [" + addon.getId() + "]", e);
+                     throw new ContainerException("Failed to load addon [" + addon.getId() + "]", e);
+                  }
                }
             }
          }

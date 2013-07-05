@@ -103,12 +103,10 @@ public class AddonModuleLoader extends ModuleLoader
    @Override
    protected ModuleSpec findModule(ModuleIdentifier id) throws ModuleLoadException
    {
-      ModuleSpec result = null;
-      if (currentAddon.get() != null)
-         result = findAddonModule(id);
+      ModuleSpec result = findRegularModule(id);
 
-      if (result == null)
-         result = findRegularModule(id);
+      if (result == null && currentAddon.get() != null)
+         result = findAddonModule(id);
 
       return result;
    }
@@ -132,45 +130,50 @@ public class AddonModuleLoader extends ModuleLoader
       return moduleProviders;
    }
 
-   public ModuleSpec findAddonModule(ModuleIdentifier id)
+   private ModuleSpec findAddonModule(ModuleIdentifier id)
    {
-      Set<AddonView> views = stateManager.getViewsOf(currentAddon.get());
-      for (AddonRepository repository : views.iterator().next().getRepositories())
+      Addon addon = currentAddon.get();
+      if (addon != null)
       {
-         AddonId found = findInstalledModule(views, repository, id);
-
-         if (found != null)
+         Set<AddonView> views = stateManager.getViewsOf(addon);
+         for (AddonRepository repository : views.iterator().next().getRepositories())
          {
-            Builder builder = ModuleSpec.build(id);
+            AddonId found = addon.getId();
+            Addon mappedAddon = moduleCache.getAddon(id);
 
-            // Set up the ClassPath for this addon Module
-
-            // TODO Reduce visibility of Weld and JGrapht to Forge Module only.
-            builder.addDependency(DependencySpec.createModuleDependencySpec(SystemClasspathSpec.ID));
-            builder.addDependency(DependencySpec.createModuleDependencySpec(XPathJDKClasspathSpec.ID));
-            builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(),
-                     PathFilters.rejectAll(), null, FurnaceContainerSpec.ID, false));
-            builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(),
-                     PathFilters.rejectAll(), null, JGraphTClasspathSpec.ID, false));
-            builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(),
-                     PathFilters.rejectAll(), null, WeldClasspathSpec.ID, false));
-
-            builder.addDependency(DependencySpec.createLocalDependencySpec(PathFilters.acceptAll(),
-                     PathFilters.acceptAll()));
-            try
+            if (mappedAddon != null && mappedAddon.getId().equals(found))
             {
-               addAddonDependencies(views, repository, found, builder);
-            }
-            catch (ContainerException e)
-            {
-               // TODO implement proper fault handling. For now, abort.
-               logger.warning(e.getMessage());
-               return null;
-            }
+               Builder builder = ModuleSpec.build(id);
 
-            addLocalResources(repository, found, builder, id);
+               // Set up the ClassPath for this addon Module
 
-            return builder.create();
+               // TODO Reduce visibility of Weld and JGrapht to Forge Module only.
+               builder.addDependency(DependencySpec.createModuleDependencySpec(SystemClasspathSpec.ID));
+               builder.addDependency(DependencySpec.createModuleDependencySpec(XPathJDKClasspathSpec.ID));
+               builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(),
+                        PathFilters.rejectAll(), null, FurnaceContainerSpec.ID, false));
+               builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(),
+                        PathFilters.rejectAll(), null, JGraphTClasspathSpec.ID, false));
+               builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(),
+                        PathFilters.rejectAll(), null, WeldClasspathSpec.ID, false));
+
+               builder.addDependency(DependencySpec.createLocalDependencySpec(PathFilters.acceptAll(),
+                        PathFilters.acceptAll()));
+               try
+               {
+                  addAddonDependencies(views, repository, found, builder);
+               }
+               catch (ContainerException e)
+               {
+                  // TODO implement proper fault handling. For now, abort.
+                  logger.warning(e.getMessage());
+                  return null;
+               }
+
+               addLocalResources(repository, found, builder, id);
+
+               return builder.create();
+            }
          }
       }
       return null;
@@ -236,24 +239,6 @@ public class AddonModuleLoader extends ModuleLoader
             throw new ContainerException("Dependency [" + dependency + "] could not be loaded for addon [" + found
                      + "]");
       }
-   }
-
-   private AddonId findInstalledModule(Set<AddonView> views, AddonRepository repository, ModuleIdentifier moduleId)
-   {
-      AddonId found = null;
-
-      List<AddonId> enabled = repository.listEnabledCompatibleWithVersion(AddonRepositoryImpl.getRuntimeAPIVersion());
-      for (AddonId id : enabled)
-      {
-         Addon addon = lifecycleManager.getAddon(views, id);
-         if (moduleCache.getModuleId(addon).equals(moduleId))
-         {
-            found = id;
-            break;
-         }
-      }
-
-      return found;
    }
 
    private ModuleIdentifier findCompatibleInstalledModule(AddonId addonId)

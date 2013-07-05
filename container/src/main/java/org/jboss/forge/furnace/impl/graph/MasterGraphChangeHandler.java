@@ -6,6 +6,8 @@ import org.jboss.forge.furnace.addons.AddonLifecycleManager;
 import org.jboss.forge.furnace.addons.AddonView;
 import org.jgrapht.event.TraversalListenerAdapter;
 import org.jgrapht.event.VertexTraversalEvent;
+import org.jgrapht.graph.DirectedSubgraph;
+import org.jgrapht.graph.Subgraph;
 import org.jgrapht.traverse.DepthFirstIterator;
 
 public class MasterGraphChangeHandler
