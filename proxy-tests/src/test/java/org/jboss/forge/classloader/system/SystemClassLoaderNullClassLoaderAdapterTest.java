@@ -9,13 +9,9 @@ package org.jboss.forge.classloader.system;
 
 import java.util.List;
 
-import javax.inject.Inject;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
-import org.jboss.forge.furnace.Furnace;
-import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.proxy.ClassLoaderAdapterBuilder;
 import org.jboss.forge.proxy.Proxies;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -42,12 +38,6 @@ public class SystemClassLoaderNullClassLoaderAdapterTest
 
       return archive;
    }
-
-   @Inject
-   private AddonRegistry registry;
-
-   @Inject
-   private Furnace furnace;
 
    @SuppressWarnings("unchecked")
    @Test

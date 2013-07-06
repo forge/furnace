@@ -22,7 +22,7 @@ public class JavaIOFactory
 
    public void useFile(File file)
    {
-      if (!(file instanceof File))
+      if (file == null)
          throw new IllegalArgumentException("Should have been a File");
       if (!file.getClass().equals(File.class))
          throw new IllegalArgumentException("Should have been a File class");

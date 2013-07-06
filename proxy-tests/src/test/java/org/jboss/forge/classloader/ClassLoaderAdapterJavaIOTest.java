@@ -64,7 +64,7 @@ public class ClassLoaderAdapterJavaIOTest
       File file = (File) foreignType.getMethod("getFile")
                .invoke(foreignType.newInstance());
 
-      Assert.assertTrue(file instanceof File);
+      Assert.assertNotNull(file);
       Assert.assertTrue(file.getClass().equals(File.class));
 
       Object delegate = foreignType.newInstance();
