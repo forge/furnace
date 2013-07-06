@@ -30,6 +30,7 @@ import org.jboss.forge.furnace.util.Files;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -101,6 +102,7 @@ public class MultipleRepositoryViewTest
       ListenerRegistration<ContainerLifecycleListener> registration = furnace.addContainerLifecycleListener(listener);
 
       furnace.startAsync();
+
       while (!listener.isConfigurationScanned())
          Thread.sleep(100);
 
@@ -120,6 +122,7 @@ public class MultipleRepositoryViewTest
    }
 
    @Test
+   @Ignore("FORGE-770")
    public void testAddonsDuplicatedIfSubgraphDiffers() throws IOException, InterruptedException
    {
       Furnace furnace = ForgeFactory.getInstance(Furnace.class.getClassLoader());
@@ -167,10 +170,10 @@ public class MultipleRepositoryViewTest
       Assert.assertFalse(right.isDeployed(dependencies));
       Assert.assertTrue(right.isDeployed(facets6));
 
-      furnace.startAsync();
-
       ConfigurationScanListener listener = new ConfigurationScanListener();
       ListenerRegistration<ContainerLifecycleListener> registration = furnace.addContainerLifecycleListener(listener);
+
+      furnace.startAsync();
 
       while (!listener.isConfigurationScanned())
          Thread.sleep(100);
