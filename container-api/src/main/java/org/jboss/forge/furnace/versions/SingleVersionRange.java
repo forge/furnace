@@ -85,4 +85,85 @@ public class SingleVersionRange implements VersionRange
       return version.toString();
    }
 
+   @Override
+   public int hashCode()
+   {
+      int result = 13;
+
+      if (getMin() == null)
+      {
+         result += 1;
+      }
+      else
+      {
+         result += getMin().hashCode();
+      }
+
+      result *= isMinInclusive() ? 1 : 2;
+
+      if (getMax() == null)
+      {
+         result -= 3;
+      }
+      else
+      {
+         result -= getMax().hashCode();
+      }
+
+      result *= isMaxInclusive() ? 2 : 3;
+
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object other)
+   {
+      if (this == other)
+      {
+         return true;
+      }
+
+      if (!(other instanceof VersionRange))
+      {
+         return false;
+      }
+
+      VersionRange restriction = (VersionRange) other;
+      if (getMin() != null)
+      {
+         if (!getMin().equals(restriction.getMin()))
+         {
+            return false;
+         }
+      }
+      else if (restriction.getMin() != null)
+      {
+         return false;
+      }
+
+      if (isMinInclusive() != restriction.isMinInclusive())
+      {
+         return false;
+      }
+
+      if (getMax() != null)
+      {
+         if (!getMax().equals(restriction.getMax()))
+         {
+            return false;
+         }
+      }
+      else if (restriction.getMax() != null)
+      {
+         return false;
+      }
+
+      if (isMaxInclusive() != restriction.isMaxInclusive())
+      {
+         return false;
+      }
+
+      return true;
+   }
+
 }
