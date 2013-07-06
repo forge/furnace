@@ -109,10 +109,10 @@ public class MultipleRepositoryViewTest
       AddonRegistry leftRegistry = furnace.getAddonRegistry(left);
 
       Assert.assertNotNull(leftRegistry.getAddon(facets));
-      Assert.assertNull(registry.getAddon(facets));
+      Assert.assertTrue(registry.getAddon(facets).getStatus().isMissing());
 
       Assert.assertNotNull(registry.getAddon(facets6));
-      Assert.assertNull(leftRegistry.getAddon(facets6));
+      Assert.assertTrue(leftRegistry.getAddon(facets6).getStatus().isMissing());
 
       registration.removeListener();
 

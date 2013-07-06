@@ -63,7 +63,6 @@ public class MultipleRepositoryTest
       Furnace furnace = ForgeFactory.getInstance(Furnace.class.getClassLoader());
       AddonRepository left = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
       AddonRepository right = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir2);
-      furnace.startAsync();
 
       MavenDependencyResolver resolver = new MavenDependencyResolver(new FileResourceFactory(),
                new MavenContainer());
@@ -93,6 +92,8 @@ public class MultipleRepositoryTest
 
       ConfigurationScanListener listener = new ConfigurationScanListener();
       ListenerRegistration<ContainerLifecycleListener> registration = furnace.addContainerLifecycleListener(listener);
+
+      furnace.startAsync();
 
       while (!listener.isConfigurationScanned())
          Thread.sleep(100);

@@ -101,7 +101,12 @@ public class AddonLoader
       {
          Set<AddonView> views = stateManager.getViewsOf(addon);
          AddonId dependencyId = stateManager.resolveAddonId(views, entry.getName());
-         if (dependencyId == null)
+
+         Addon dependency = null;
+         if(dependencyId != null)
+            dependency = lifecycleManager.getAddon(views.iterator().next(), dependencyId);
+         
+         if (dependency == null || dependency.getStatus().isMissing())
          {
             if (!entry.isOptional())
             {
@@ -110,7 +115,6 @@ public class AddonLoader
          }
          else
          {
-            Addon dependency = lifecycleManager.getAddon(views.iterator().next(), dependencyId);
             result.add(new AddonDependencyImpl(lock,
                      dependency,
                      entry.isExported(),

@@ -75,16 +75,7 @@ public class AddonRegistryImpl implements AddonRegistry
          @Override
          public Addon call() throws Exception
          {
-            Addon result = null;
-            for (Addon addon : getAddons())
-            {
-               if (id.equals(addon.getId()))
-               {
-                  result = addon;
-               }
-            }
-
-            return result;
+            return manager.getAddon(AddonRegistryImpl.this, id);
          }
       });
    }

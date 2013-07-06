@@ -1,9 +1,12 @@
 package org.jboss.forge.furnace.impl.graph;
 
+import java.util.Set;
+
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonLifecycleManager;
 import org.jboss.forge.furnace.addons.AddonView;
+import org.jgrapht.DirectedGraph;
 import org.jgrapht.event.TraversalListenerAdapter;
 import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.traverse.DepthFirstIterator;
@@ -11,14 +14,14 @@ import org.jgrapht.traverse.DepthFirstIterator;
 public class MasterGraphChangeHandler
 {
    private AddonLifecycleManager lifecycleManager;
-   private MasterGraph currentGraph;
+   private MasterGraph lastMasterGraph;
    private MasterGraph graph;
 
    public MasterGraphChangeHandler(AddonLifecycleManager lifefycleManager,
             MasterGraph currentGraph, MasterGraph graph)
    {
       this.lifecycleManager = lifefycleManager;
-      this.currentGraph = currentGraph;
+      this.lastMasterGraph = currentGraph;
       this.graph = graph;
    }
 
@@ -27,6 +30,7 @@ public class MasterGraphChangeHandler
       initGraph();
       markDirty();
       stopDirty();
+      stopRemoved();
       loadAddons();
       startupIncremental();
       clearDirtyStatus();
@@ -79,7 +83,7 @@ public class MasterGraphChangeHandler
                   vertex.setDirty(true);
             }
 
-            if (isSubgraphEquivalent(vertex))
+            if (!isSubgraphEquivalent(vertex))
             {
                /*
                 * If the dependency set of this addon has changed since the last graph, then it is dirty
@@ -90,11 +94,29 @@ public class MasterGraphChangeHandler
 
          private boolean isSubgraphEquivalent(AddonVertex vertex)
          {
-            if (currentGraph != null)
+            boolean result = true;
+            if (lastMasterGraph != null)
             {
+               AddonVertex oldVertex = lastMasterGraph.getVertex(vertex.getName(), vertex.getVersion());
+               if (oldVertex != null)
+               {
+                  DirectedGraph<AddonVertex, AddonDependencyEdge> lastGraph = lastMasterGraph.getGraph();
+                  Set<AddonDependencyEdge> outgoing = lastGraph.outgoingEdgesOf(oldVertex);
 
+                  for (AddonDependencyEdge lastEdge : outgoing)
+                  {
+                     AddonVertex lastTarget = lastGraph.getEdgeTarget(lastEdge);
+                     AddonVertex target = graph.getVertex(lastTarget.getName(), lastTarget.getVersion());
+                     AddonDependencyEdge edge = graph.getGraph().getEdge(vertex, target);
+                     if (edge == null || !isSubgraphEquivalent(target))
+                     {
+                        result = false;
+                        break;
+                     }
+                  }
+               }
             }
-            return false;
+            return result;
          }
       });
 
@@ -110,7 +132,7 @@ public class MasterGraphChangeHandler
       iterator.addTraversalListener(new TraversalListenerAdapter<AddonVertex, AddonDependencyEdge>()
       {
          @Override
-         public void vertexFinished(VertexTraversalEvent<AddonVertex> event)
+         public void vertexTraversed(VertexTraversalEvent<AddonVertex> event)
          {
             if (event.getVertex().isDirty())
                lifecycleManager.stopAddon(event.getVertex().getAddon());
@@ -119,6 +141,29 @@ public class MasterGraphChangeHandler
 
       while (iterator.hasNext())
          iterator.next();
+   }
+
+   private void stopRemoved()
+   {
+      if (lastMasterGraph != null)
+      {
+         DepthFirstIterator<AddonVertex, AddonDependencyEdge> iterator = new DepthFirstIterator<AddonVertex, AddonDependencyEdge>(
+                  lastMasterGraph.getGraph());
+
+         iterator.addTraversalListener(new TraversalListenerAdapter<AddonVertex, AddonDependencyEdge>()
+         {
+            @Override
+            public void vertexFinished(VertexTraversalEvent<AddonVertex> event)
+            {
+               AddonVertex lastVertex = event.getVertex();
+               if (graph.getVertex(lastVertex.getName(), lastVertex.getVersion()) == null)
+                  lifecycleManager.stopAddon(lastVertex.getAddon());
+            };
+         });
+
+         while (iterator.hasNext())
+            iterator.next();
+      }
    }
 
    private void loadAddons()

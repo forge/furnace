@@ -67,7 +67,7 @@ public class AddonDeepOptionalDependencyHotSwapTest
       return archive;
    }
 
-   @Deployment(name = "dep,4", testable = false, order = 1)
+   @Deployment(name = "dep4,4", testable = false, order = 1)
    public static ForgeArchive getDeploymentDep4()
    {
       ForgeArchive archive = ShrinkWrap
