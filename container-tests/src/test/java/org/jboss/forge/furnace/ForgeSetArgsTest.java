@@ -48,7 +48,8 @@ public class ForgeSetArgsTest
       forge.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
       forge.startAsync();
 
-      Assert.assertSame(args, forge.getArgs());
+      String[] forgeArgs = forge.getArgs();
+      Assert.assertArrayEquals(args, forgeArgs);
 
       forge.stop();
    }
