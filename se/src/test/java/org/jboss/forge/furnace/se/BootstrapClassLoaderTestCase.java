@@ -29,7 +29,7 @@ public class BootstrapClassLoaderTestCase
       Assert.assertEquals(FurnaceImpl.class.getName(), result.getClass().getName());
    }
 
-   @Test
+   @Test(expected = IllegalStateException.class)
    public void shouldBeAbleToUseFactoryDelegateTypesafely() throws Exception
    {
       Furnace instance = ForgeFactory.getInstance();
@@ -58,7 +58,7 @@ public class BootstrapClassLoaderTestCase
       instance.getRepositories().get(0).getAddonResources(AddonId.from("a", "1"));
    }
 
-   @Test
+   @Test(expected = IllegalStateException.class)
    public void shouldBeAbleToPassInterfacesIntoDelegate() throws Exception
    {
       Furnace instance = ForgeFactory.getInstance();

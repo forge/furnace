@@ -37,14 +37,14 @@ public class ClassLoaderParameterUnwrappedTest
                .addBeansXML()
                .addClasses(IterableFactory.class, ClassWithClassAsParameter.class)
                .addAsAddonDependencies(
-                        AddonDependencyEntry.create("dep", "1"),
-                        AddonDependencyEntry.create("dep", "2")
+                        AddonDependencyEntry.create("dep1", "1"),
+                        AddonDependencyEntry.create("dep2", "2")
                );
 
       return archive;
    }
 
-   @Deployment(name = "dep,1", testable = false, order = 2)
+   @Deployment(name = "dep1,1", testable = false, order = 2)
    public static ForgeArchive getDeploymentDep1()
    {
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
@@ -54,7 +54,7 @@ public class ClassLoaderParameterUnwrappedTest
       return archive;
    }
 
-   @Deployment(name = "dep,2", testable = false, order = 1)
+   @Deployment(name = "dep2,2", testable = false, order = 1)
    public static ForgeArchive getDeploymentDep2()
    {
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
@@ -71,7 +71,7 @@ public class ClassLoaderParameterUnwrappedTest
    public void testUnwrapClassParameter() throws Exception
    {
       ClassLoader thisLoader = ClassLoaderParameterUnwrappedTest.class.getClassLoader();
-      ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep", "1")).getClassLoader();
+      ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep1", "1")).getClassLoader();
 
       Class<?> foreignType = dep1Loader.loadClass(IterableFactory.class.getName());
       Object delegate = foreignType.newInstance();
@@ -104,8 +104,8 @@ public class ClassLoaderParameterUnwrappedTest
    public void testUnwrapUnknownClassParameter() throws Exception
    {
       ClassLoader thisLoader = ClassLoaderParameterUnwrappedTest.class.getClassLoader();
-      ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep", "1")).getClassLoader();
-      ClassLoader dep2Loader = registry.getAddon(AddonId.from("dep", "2")).getClassLoader();
+      ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep1", "1")).getClassLoader();
+      ClassLoader dep2Loader = registry.getAddon(AddonId.from("dep2", "2")).getClassLoader();
 
       Class<?> foreignType = dep2Loader.loadClass(MockResult.class.getName());
       Object delegate = foreignType.newInstance();

@@ -7,6 +7,7 @@
 package org.jboss.forge.proxy;
 
 import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -74,12 +75,13 @@ public class ClassLoaderAdapterCallback implements MethodHandler
 
             Method delegateMethod = getDelegateMethod(thisMethod);
 
-            List<Object> parameterValues = convertParameterValues(args, delegateMethod);
+            List<Object> parameterValues = enhanceParameterValues(args, delegateMethod);
 
             AccessibleObject.setAccessible(new AccessibleObject[] { delegateMethod }, true);
             try
             {
-               Object result = delegateMethod.invoke(delegate, parameterValues.toArray());
+               Object[] parameterValueArray = parameterValues.toArray();
+               Object result = delegateMethod.invoke(delegate, parameterValueArray);
                return enhanceResult(thisMethod, result);
             }
             catch (InvocationTargetException e)
@@ -97,7 +99,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler
             Method delegateMethod = null;
             try
             {
-               List<Class<?>> parameterTypes = convertParameterTypes(proxy);
+               List<Class<?>> parameterTypes = translateParameterTypes(proxy);
                delegateMethod = delegate.getClass().getMethod(proxy.getName(),
                         parameterTypes.toArray(new Class<?>[parameterTypes.size()]));
             }
@@ -255,7 +257,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler
       return true;
    }
 
-   private List<Object> convertParameterValues(final Object[] args, Method delegateMethod)
+   private List<Object> enhanceParameterValues(final Object[] args, Method delegateMethod)
    {
       List<Object> parameterValues = new ArrayList<Object>();
       for (int i = 0; i < delegateMethod.getParameterTypes().length; i++)
@@ -263,106 +265,126 @@ public class ClassLoaderAdapterCallback implements MethodHandler
          final Class<?> delegateParameterType = delegateMethod.getParameterTypes()[i];
          final Object parameterValue = args[i];
 
-         if (parameterValue == null)
-            parameterValues.add(null);
-         else
+         parameterValues.add(enhanceSingleParamterValue(delegateMethod, delegateParameterType, parameterValue));
+      }
+      return parameterValues;
+   }
+
+   private Object enhanceSingleParamterValue(Method delegateMethod, final Class<?> delegateParameterType,
+            final Object parameterValue)
+   {
+      if (parameterValue != null)
+      {
+         if (parameterValue instanceof Class<?>)
          {
-            if (parameterValue instanceof Class<?>)
+            Class<?> paramClassValue = (Class<?>) parameterValue;
+            Class<?> loadedClass;
+            try
             {
-               Class<?> paramClassValue = (Class<?>) parameterValue;
-               Class<?> loadedClass;
+               loadedClass = delegateLoader.loadClass(Proxies.unwrapProxyClassName(paramClassValue));
+            }
+            catch (ClassNotFoundException e)
+            {
+               // Oh oh, there is no class with this type in the target.
+               // Trying with delegate ClassLoader;
                try
                {
-                  loadedClass = delegateLoader.loadClass(Proxies.unwrapProxyClassName(paramClassValue));
+                  loadedClass = unwrappedDelegateLoader.loadClass(Proxies.unwrapProxyClassName(paramClassValue));
                }
-               catch (ClassNotFoundException e)
+               catch (ClassNotFoundException cnfe)
                {
-                  // Oh oh, there is no class with this type in the target.
-                  // Trying with delegate ClassLoader;
-                  try
-                  {
-                     loadedClass = unwrappedDelegateLoader.loadClass(Proxies.unwrapProxyClassName(paramClassValue));
-                  }
-                  catch (ClassNotFoundException cnfe)
-                  {
-                     /*
-                      * No way, here is the original class and god bless you :) Also unwrap any proxy types since we
-                      * don't know about this object, there is no reason to pass a proxied class type.
-                      */
-                     loadedClass = Proxies.unwrapProxyTypes(paramClassValue);
-                  }
+                  /*
+                   * No way, here is the original class and god bless you :) Also unwrap any proxy types since we don't
+                   * know about this object, there is no reason to pass a proxied class type.
+                   */
+                  loadedClass = Proxies.unwrapProxyTypes(paramClassValue);
                }
-               parameterValues.add(loadedClass);
+            }
+            return loadedClass;
+         }
+         else
+         {
+            Object unwrappedValue = Proxies.unwrapOnce(parameterValue);
+            if (delegateParameterType.isAssignableFrom(unwrappedValue.getClass())
+                     && !Proxies.isLanguageType(unwrappedValue.getClass()))
+            {
+               // https://issues.jboss.org/browse/FORGE-939
+               return unwrappedValue;
             }
             else
             {
-               Object unwrappedValue = Proxies.unwrapOnce(parameterValue);
-               if (delegateParameterType.isAssignableFrom(unwrappedValue.getClass()) 
-                        && !Proxies.isLanguageType(unwrappedValue.getClass()))
+               unwrappedValue = Proxies.unwrap(parameterValue);
+               Class<?> unwrappedValueType = Proxies.unwrapProxyTypes(unwrappedValue.getClass(), delegateMethod
+                        .getDeclaringClass().getClassLoader(), callingLoader,
+                        delegateLoader, unwrappedValue.getClass()
+                                 .getClassLoader());
+
+               ClassLoader valueDelegateLoader = delegateLoader;
+               ClassLoader methodLoader = delegateMethod.getDeclaringClass().getClassLoader();
+               if (methodLoader != null && ClassLoaders.containsClass(methodLoader, unwrappedValueType))
                {
-                  // https://issues.jboss.org/browse/FORGE-939
-                  parameterValues.add(unwrappedValue);
+                  valueDelegateLoader = methodLoader;
+               }
+
+               ClassLoader valueCallingLoader = callingLoader;
+               if (!ClassLoaders.containsClass(callingLoader, unwrappedValueType))
+               {
+                  valueCallingLoader = unwrappedValueType.getClassLoader();
+               }
+
+               // If it is a class, use the delegateLoader loaded version
+
+               if (delegateParameterType.isPrimitive())
+               {
+                  return parameterValue;
+               }
+               else if (delegateParameterType.isEnum())
+               {
+                  return enhanceEnum(methodLoader, parameterValue);
+               }
+               else if (delegateParameterType.isArray())
+               {
+                  Object[] array = (Object[]) unwrappedValue;
+                  Object[] delegateArray = (Object[]) Array.newInstance(delegateParameterType.getComponentType(), array.length);
+                  for (int j = 0; j < array.length; j++)
+                  {
+                     delegateArray[j] = enhanceSingleParamterValue(delegateMethod,
+                              delegateParameterType.getComponentType(), array[j]);
+                  }
+                  return delegateArray;
                }
                else
                {
-                  unwrappedValue = Proxies.unwrap(parameterValue);
-                  Class<?> unwrappedValueType = Proxies.unwrapProxyTypes(unwrappedValue.getClass(), delegateMethod
-                           .getDeclaringClass().getClassLoader(), callingLoader,
-                           delegateLoader, unwrappedValue.getClass()
-                                    .getClassLoader());
-
-                  ClassLoader valueDelegateLoader = delegateLoader;
-                  ClassLoader methodLoader = delegateMethod.getDeclaringClass().getClassLoader();
-                  if (methodLoader != null && ClassLoaders.containsClass(methodLoader, unwrappedValueType))
+                  final Class<?> parameterType = parameterValue.getClass();
+                  if ((!Proxies.isPassthroughType(delegateParameterType)
+                           && Proxies.isLanguageType(delegateParameterType))
+                           || !delegateParameterType.isAssignableFrom(parameterType))
                   {
-                     valueDelegateLoader = methodLoader;
-                  }
+                     Class<?>[] compatibleClassHierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(
+                              valueDelegateLoader, unwrappedValueType);
 
-                  ClassLoader valueCallingLoader = callingLoader;
-                  if (!ClassLoaders.containsClass(callingLoader, unwrappedValueType))
-                  {
-                     valueCallingLoader = unwrappedValueType.getClassLoader();
-                  }
+                     if (compatibleClassHierarchy.length == 0)
+                     {
+                        compatibleClassHierarchy = new Class[] { delegateParameterType };
+                     }
 
-                  // If it is a class, use the delegateLoader loaded version
+                     Object delegateParameterValue = enhance(valueDelegateLoader, valueCallingLoader, parameterValue,
+                              compatibleClassHierarchy);
 
-                  if (delegateParameterType.isPrimitive())
-                  {
-                     parameterValues.add(parameterValue);
-                  }
-                  else if (delegateParameterType.isEnum())
-                  {
-                     parameterValues.add(enhanceEnum(methodLoader, parameterValue));
+                     return delegateParameterValue;
                   }
                   else
                   {
-                     final Class<?> parameterType = parameterValue.getClass();
-                     if ((!Proxies.isPassthroughType(delegateParameterType) && Proxies
-                              .isLanguageType(delegateParameterType))
-                              || !delegateParameterType.isAssignableFrom(parameterType))
-                     {
-                        Class<?>[] compatibleClassHierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(
-                                 valueDelegateLoader, unwrappedValueType);
-                        if (compatibleClassHierarchy.length == 0)
-                           compatibleClassHierarchy = new Class[] { delegateParameterType };
-                        Object delegateParameterValue = enhance(valueDelegateLoader, valueCallingLoader,
-                                 parameterValue,
-                                 compatibleClassHierarchy);
-                        parameterValues.add(delegateParameterValue);
-                     }
-                     else
-                     {
-                        parameterValues.add(unwrappedValue);
-                     }
+                     return unwrappedValue;
                   }
                }
             }
          }
       }
-      return parameterValues;
+      return null;
    }
 
-   private List<Class<?>> convertParameterTypes(final Method method) throws ClassNotFoundException
+   private List<Class<?>> translateParameterTypes(final Method method) throws ClassNotFoundException
    {
       List<Class<?>> parameterTypes = new ArrayList<Class<?>>();
       for (int i = 0; i < method.getParameterTypes().length; i++)
