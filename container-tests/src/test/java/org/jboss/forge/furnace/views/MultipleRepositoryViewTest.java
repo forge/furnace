@@ -9,6 +9,7 @@ package org.jboss.forge.furnace.views;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.jboss.forge.addon.manager.AddonManager;
 import org.jboss.forge.addon.manager.impl.AddonManagerImpl;
@@ -58,7 +59,7 @@ public class MultipleRepositoryViewTest
    }
 
    @Test
-   public void testAddonsSharedIfSubgraphEquivalent() throws IOException, InterruptedException
+   public void testAddonsSharedIfSubgraphEquivalent() throws IOException, InterruptedException, TimeoutException
    {
       Furnace furnace = ForgeFactory.getInstance(Furnace.class.getClassLoader());
       AddonRepository left = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
@@ -123,7 +124,7 @@ public class MultipleRepositoryViewTest
 
    @Test
    @Ignore("FORGE-770")
-   public void testAddonsDuplicatedIfSubgraphDiffers() throws IOException, InterruptedException
+   public void testAddonsDuplicatedIfSubgraphDiffers() throws IOException, InterruptedException, TimeoutException
    {
       Furnace furnace = ForgeFactory.getInstance(Furnace.class.getClassLoader());
       AddonRepository left = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir1);

@@ -9,6 +9,7 @@ package org.jboss.forge.furnace.views;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.jboss.forge.addon.convert.ConverterFactory;
 import org.jboss.forge.addon.manager.AddonManager;
@@ -58,7 +59,7 @@ public class MultipleRepositoryTest
    }
 
    @Test
-   public void testAddonsCanReferenceDependenciesInOtherRepositories() throws IOException, InterruptedException
+   public void testAddonsCanReferenceDependenciesInOtherRepositories() throws IOException, InterruptedException, TimeoutException
    {
       Furnace furnace = ForgeFactory.getInstance(Furnace.class.getClassLoader());
       AddonRepository left = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir1);

@@ -14,37 +14,36 @@ import org.jboss.forge.furnace.exception.ContainerException;
 
 /**
  * Listens for actions in a Furnace container
- *
- * Listeners should be registered using the Service Provider mechanism
- *
- * @see ServiceLoader
+ * 
+ * Listeners should be registered using the {@link ServiceLoader} mechanism.
+ * 
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
- *
+ * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
 public interface ContainerLifecycleListener
 {
    /**
     * Called before the Furnace container starts
     */
-   public void beforeStart(Furnace forge) throws ContainerException;
+   public void beforeStart(Furnace furnace) throws ContainerException;
 
    /**
     * Called before the Furnace container scans configuration files
     */
-   public void beforeConfigurationScan(Furnace forge) throws ContainerException;
+   public void beforeConfigurationScan(Furnace furnace) throws ContainerException;
 
    /**
     * Called after the Furnace container scans configuration files
     */
-   public void afterConfigurationScan(Furnace forge) throws ContainerException;
+   public void afterConfigurationScan(Furnace furnace) throws ContainerException;
 
    /**
     * Called before the Furnace container stops
     */
-   public void beforeStop(Furnace forge) throws ContainerException;
+   public void beforeStop(Furnace furnace) throws ContainerException;
 
    /**
     * Called after Furnace container stops
     */
-   public void afterStop(Furnace forge) throws ContainerException;
+   public void afterStop(Furnace furnace) throws ContainerException;
 }

@@ -51,45 +51,19 @@ public class Addons
       }
    }
 
-   public static void waitUntilStarted(Addon addon, int quantity, TimeUnit unit)
+   public static void waitUntilStarted(Addon addon, int quantity, TimeUnit unit) throws TimeoutException
    {
-      try
+      long start = System.currentTimeMillis();
+      while (!addon.getStatus().isStarted())
       {
-         long start = System.currentTimeMillis();
-         while (!addon.getStatus().isStarted())
+         if (System.currentTimeMillis() > (start + TimeUnit.MILLISECONDS.convert(quantity, unit)))
          {
-            if (System.currentTimeMillis() > (start + TimeUnit.MILLISECONDS.convert(quantity, unit)))
-            {
-               throw new TimeoutException("Timeout expired waiting for [" + addon + "] to start.");
-            }
-            Thread.sleep(10);
+            throw new TimeoutException("Timeout expired waiting for [" + addon + "] to start.");
          }
-      }
-      catch (RuntimeException re)
-      {
-         throw re;
-      }
-      catch (Exception e)
-      {
-         throw new ContainerException("Addon [" + addon + "] was not started.", e);
-      }
-   }
 
-   public static void waitUntilStopped(Addon addon, int quantity, TimeUnit unit)
-   {
-      if (addon != null)
-      {
          try
          {
-            long start = System.currentTimeMillis();
-            while (addon.getStatus().isStarted())
-            {
-               if (System.currentTimeMillis() > (start + TimeUnit.MILLISECONDS.convert(quantity, unit)))
-               {
-                  throw new TimeoutException("Timeout expired waiting for [" + addon + "] to stop.");
-               }
-               Thread.sleep(10);
-            }
+            Thread.sleep(10);
          }
          catch (RuntimeException re)
          {
@@ -97,7 +71,35 @@ public class Addons
          }
          catch (Exception e)
          {
-            throw new ContainerException("Addon [" + addon + "] was not stopped.", e);
+            throw new ContainerException("Addon [" + addon + "] was not started.", e);
+         }
+      }
+   }
+
+   public static void waitUntilStopped(Addon addon, int quantity, TimeUnit unit) throws TimeoutException
+   {
+      if (addon != null)
+      {
+         long start = System.currentTimeMillis();
+         while (addon.getStatus().isStarted())
+         {
+            if (System.currentTimeMillis() > (start + TimeUnit.MILLISECONDS.convert(quantity, unit)))
+            {
+               throw new TimeoutException("Timeout expired waiting for [" + addon + "] to stop.");
+            }
+
+            try
+            {
+               Thread.sleep(10);
+            }
+            catch (RuntimeException re)
+            {
+               throw re;
+            }
+            catch (Exception e)
+            {
+               throw new ContainerException("Addon [" + addon + "] was not stopped.", e);
+            }
          }
       }
    }

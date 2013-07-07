@@ -1,13 +1,13 @@
 package org.jboss.forge.furnace.services;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.enterprise.inject.spi.InjectionPoint;
 
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonRegistry;
-import org.jboss.forge.furnace.services.ExportedInstance;
-import org.jboss.forge.furnace.services.ServiceRegistry;
 import org.jboss.forge.furnace.util.AddonFilters;
 import org.jboss.forge.furnace.util.Addons;
 import org.jboss.forge.furnace.util.Assert;
@@ -61,25 +61,30 @@ public class ExportedInstanceLazyLoader implements ForgeProxy
       Object result = null;
       for (Addon addon : registry.getAddons(AddonFilters.allLoaded()))
       {
-         if (ClassLoaders.containsClass(addon.getClassLoader(), serviceType))
+         try
          {
-            Addons.waitUntilStarted(addon);
-            if (!addon.getStatus().isFailed())
+            Addons.waitUntilStarted(addon, 500, TimeUnit.MILLISECONDS);
+         }
+         catch (TimeoutException e)
+         {
+            // TODO for now do nothing, but figure out how to better handle waiting services.
+         }
+
+         if (ClassLoaders.containsClass(addon.getClassLoader(), serviceType) && addon.getStatus().isStarted())
+         {
+            ServiceRegistry serviceRegistry = addon.getServiceRegistry();
+            if (serviceRegistry.hasService(serviceType))
             {
-               ServiceRegistry serviceRegistry = addon.getServiceRegistry();
-               if (serviceRegistry.hasService(serviceType))
-               {
-                  ExportedInstance<?> instance = serviceRegistry.getExportedInstance(serviceType);
-                  Assert.notNull(instance, "Exported Instance of [" + serviceType.getName()
-                           + "] not found in originating ServiceRegistry [" + addon.getId() + "].");
-                  if (instance instanceof ExportedInstanceImpl)
-                     // FIXME remove the need for this implementation coupling
-                     result = ((ExportedInstanceImpl<?>) instance).get(new LocalServiceInjectionPoint(injectionPoint,
-                              serviceType));
-                  else
-                     result = instance.get();
-                  break;
-               }
+               ExportedInstance<?> instance = serviceRegistry.getExportedInstance(serviceType);
+               Assert.notNull(instance, "Exported Instance of [" + serviceType.getName()
+                        + "] not found in originating ServiceRegistry [" + addon.getId() + "].");
+               if (instance instanceof ExportedInstanceImpl)
+                  // FIXME remove the need for this implementation coupling
+                  result = ((ExportedInstanceImpl<?>) instance).get(new LocalServiceInjectionPoint(injectionPoint,
+                           serviceType));
+               else
+                  result = instance.get();
+               break;
             }
          }
       }
