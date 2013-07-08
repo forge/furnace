@@ -17,7 +17,7 @@ import org.jgrapht.traverse.DepthFirstIterator;
 
 public class OptimizedAddonGraph extends AddonGraph<OptimizedAddonGraph>
 {
-   DirectedGraph<AddonVertex, AddonDependencyEdge> graph = new SimpleDirectedGraph<AddonVertex, AddonDependencyEdge>(
+   private DirectedGraph<AddonVertex, AddonDependencyEdge> graph = new SimpleDirectedGraph<AddonVertex, AddonDependencyEdge>(
             AddonDependencyEdge.class);
    private AddonView view;
 
@@ -86,6 +86,11 @@ public class OptimizedAddonGraph extends AddonGraph<OptimizedAddonGraph>
       {
          throw new IllegalStateException("Cycle detected in Addon graph: " + detector.findCycles());
       }
+
+//      for (AddonVertex vertex : graph.vertexSet())
+//      {
+//         vertex.addView(view);
+//      }
    }
 
    private void replaceVertex(AddonVertex original, AddonVertex replacement)
@@ -114,12 +119,6 @@ public class OptimizedAddonGraph extends AddonGraph<OptimizedAddonGraph>
    public DirectedGraph<AddonVertex, AddonDependencyEdge> getGraph()
    {
       return graph;
-   }
-
-   @Override
-   protected void enhanceNewVertex(AddonVertex vertex)
-   {
-      vertex.addView(view);
    }
 
    public AddonView getAddonView()

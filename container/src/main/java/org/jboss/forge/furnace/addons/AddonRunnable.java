@@ -36,6 +36,8 @@ import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.jboss.weld.resources.spi.ResourceLoader;
 
+import com.google.common.util.concurrent.Callables;
+
 /**
  * Loads an {@link Addon}
  */
@@ -43,6 +45,7 @@ public final class AddonRunnable implements Runnable
 {
    private static final Logger logger = Logger.getLogger(AddonRunnable.class.getName());
 
+   boolean shutdownRequested = false;
    private Furnace furnace;
    private Addon addon;
    private AddonContainerStartup container;
@@ -72,6 +75,7 @@ public final class AddonRunnable implements Runnable
 
    public void shutdown()
    {
+      shutdownRequested = true;
       try
       {
          logger.info("< Stopping container [" + addon.getId() + "] [" + addon.getRepository().getRootDirectory()
@@ -240,7 +244,10 @@ public final class AddonRunnable implements Runnable
          catch (Exception e)
          {
             addon.getFuture().cancel(false);
-            throw e;
+            if (!shutdownRequested)
+               throw e;
+            else
+               return Callables.returning(null);
          }
       }
    }

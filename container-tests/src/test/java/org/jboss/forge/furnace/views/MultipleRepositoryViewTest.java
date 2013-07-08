@@ -31,7 +31,6 @@ import org.jboss.forge.furnace.util.Files;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -123,7 +122,6 @@ public class MultipleRepositoryViewTest
    }
 
    @Test
-   @Ignore("FORGE-770")
    public void testAddonsDuplicatedIfSubgraphDiffers() throws IOException, InterruptedException, TimeoutException
    {
       Furnace furnace = ForgeFactory.getInstance(Furnace.class.getClassLoader());
@@ -139,37 +137,37 @@ public class MultipleRepositoryViewTest
       AddonId resources = AddonId.from("org.jboss.forge.addon:resources", "2.0.0.Alpha5");
       AddonId dependencies = AddonId.from("org.jboss.forge.addon:dependencies", "2.0.0.Alpha5");
 
-      AddonId facets6 = AddonId.from("org.jboss.forge.addon:facets", "2.0.0.Alpha6");
+      AddonId convert6 = AddonId.from("org.jboss.forge.addon:convert", "2.0.0.Alpha6");
 
       Assert.assertFalse(left.isDeployed(dependencies));
       Assert.assertFalse(left.isDeployed(resources));
       Assert.assertFalse(left.isDeployed(facets));
-      Assert.assertFalse(left.isDeployed(facets6));
       Assert.assertFalse(left.isDeployed(convert));
+      Assert.assertFalse(left.isDeployed(convert6));
       Assert.assertFalse(right.isDeployed(dependencies));
       Assert.assertFalse(right.isDeployed(resources));
       Assert.assertFalse(right.isDeployed(facets));
-      Assert.assertFalse(right.isDeployed(facets6));
       Assert.assertFalse(right.isDeployed(convert));
+      Assert.assertFalse(right.isDeployed(convert6));
 
       manager.install(facets).perform(left);
       manager.install(convert).perform(left);
       manager.install(resources).perform(left);
       manager.install(dependencies).perform(left);
 
-      manager.install(facets6).perform(right);
+      manager.install(convert6).perform(right);
 
       Assert.assertTrue(left.isDeployed(facets));
       Assert.assertTrue(left.isDeployed(convert));
       Assert.assertTrue(left.isDeployed(resources));
       Assert.assertTrue(left.isDeployed(dependencies));
-      Assert.assertFalse(left.isDeployed(facets6));
+      Assert.assertFalse(left.isDeployed(convert6));
 
       Assert.assertFalse(right.isDeployed(facets));
       Assert.assertFalse(right.isDeployed(convert));
       Assert.assertFalse(right.isDeployed(resources));
       Assert.assertFalse(right.isDeployed(dependencies));
-      Assert.assertTrue(right.isDeployed(facets6));
+      Assert.assertTrue(right.isDeployed(convert6));
 
       ConfigurationScanListener listener = new ConfigurationScanListener();
       ListenerRegistration<ContainerLifecycleListener> registration = furnace.addContainerLifecycleListener(listener);
@@ -183,7 +181,7 @@ public class MultipleRepositoryViewTest
       Addons.waitUntilStarted(registry.getAddon(resources), 10, TimeUnit.SECONDS);
       AddonRegistry leftRegistry = furnace.getAddonRegistry(left);
 
-      Addon addon = leftRegistry.getAddon(facets);
+      Addon addon = leftRegistry.getAddon(convert);
       Assert.assertNotNull(addon);
 
       registration.removeListener();

@@ -6,7 +6,6 @@ import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonLifecycleManager;
 import org.jboss.forge.furnace.addons.AddonView;
-import org.jgrapht.DirectedGraph;
 import org.jgrapht.event.TraversalListenerAdapter;
 import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.traverse.DepthFirstIterator;
@@ -38,6 +37,42 @@ public class MasterGraphChangeHandler
 
    private void initGraph()
    {
+      if (lastMasterGraph != null)
+      {
+         /*
+          * Propagate forward any addons that were removed, but still need to be shut down. This prevents duplicate
+          * Addon objects from being registered in the lifecycle manager.
+          */
+         for (AddonVertex last : lastMasterGraph.getGraph().vertexSet())
+         {
+            boolean found = false;
+            Set<AddonVertex> vertices = graph.getGraph().vertexSet();
+            for (AddonVertex vertex : vertices)
+            {
+               if (last.getName().equals(vertex.getName()))
+               {
+                  for (AddonView view : vertex.getViews())
+                  {
+                     if (last.getViews().contains(view))
+                     {
+                        found = true;
+                        break;
+                     }
+                  }
+               }
+
+               if (found)
+                  break;
+            }
+
+            if (!found && !last.getAddon().getStatus().isMissing())
+            {
+               graph.getGraph().addVertex(last);
+               last.setDirty(true);
+            }
+         }
+      }
+
       DepthFirstIterator<AddonVertex, AddonDependencyEdge> iterator = new DepthFirstIterator<AddonVertex, AddonDependencyEdge>(
                graph.getGraph());
 
@@ -49,7 +84,28 @@ public class MasterGraphChangeHandler
             AddonVertex vertex = event.getVertex();
             AddonView view = vertex.getViews().iterator().next();
             AddonId addonId = vertex.getAddonId();
-            Addon addon = lifecycleManager.getAddon(view, addonId);
+
+            Addon addon = null;
+            if (lastMasterGraph != null)
+            {
+               for (AddonVertex last : lastMasterGraph.getGraph().vertexSet())
+               {
+                  if (last.getAddon().getId().equals(addonId) && last.getViews().contains(view))
+                  {
+                     addon = last.getAddon();
+                     break;
+                  }
+               }
+
+               if (addon == null)
+               {
+
+               }
+            }
+
+            if (addon == null)
+               addon = lifecycleManager.getAddon(view, addonId);
+
             vertex.setAddon(addon);
          };
       });
@@ -83,41 +139,23 @@ public class MasterGraphChangeHandler
                   vertex.setDirty(true);
             }
 
-            if (!isSubgraphEquivalent(vertex))
-            {
-               /*
-                * If the dependency set of this addon has changed since the last graph, then it is dirty
-                */
-               vertex.setDirty(true);
-            }
-         };
-
-         private boolean isSubgraphEquivalent(AddonVertex vertex)
-         {
-            boolean result = true;
             if (lastMasterGraph != null)
             {
-               AddonVertex oldVertex = lastMasterGraph.getVertex(vertex.getName(), vertex.getVersion());
-               if (oldVertex != null)
+               boolean equivalent = false;
+               Set<AddonVertex> lastVertices = lastMasterGraph.getVertices(vertex.getName(), vertex.getVersion());
+               for (AddonVertex lastVertex : lastVertices)
                {
-                  DirectedGraph<AddonVertex, AddonDependencyEdge> lastGraph = lastMasterGraph.getGraph();
-                  Set<AddonDependencyEdge> outgoing = lastGraph.outgoingEdgesOf(oldVertex);
-
-                  for (AddonDependencyEdge lastEdge : outgoing)
+                  if (graph.isSubtreeEquivalent(vertex, lastMasterGraph.getGraph(), lastVertex))
                   {
-                     AddonVertex lastTarget = lastGraph.getEdgeTarget(lastEdge);
-                     AddonVertex target = graph.getVertex(lastTarget.getName(), lastTarget.getVersion());
-                     AddonDependencyEdge edge = graph.getGraph().getEdge(vertex, target);
-                     if (edge == null || !isSubgraphEquivalent(target))
-                     {
-                        result = false;
-                        break;
-                     }
+                     equivalent = true;
+                     break;
                   }
                }
+
+               if (!equivalent)
+                  vertex.setDirty(true);
             }
-            return result;
-         }
+         };
       });
 
       while (iterator.hasNext())
@@ -156,8 +194,23 @@ public class MasterGraphChangeHandler
             public void vertexFinished(VertexTraversalEvent<AddonVertex> event)
             {
                AddonVertex lastVertex = event.getVertex();
-               if (graph.getVertex(lastVertex.getName(), lastVertex.getVersion()) == null)
+               boolean exists = false;
+               for (AddonVertex vertex : graph.getVertices(lastVertex.getName(), lastVertex.getVersion()))
+               {
+                  for (AddonView view : lastVertex.getViews())
+                  {
+                     if (vertex.getViews().contains(view))
+                     {
+                        exists = true;
+                        break;
+                     }
+                  }
+               }
+
+               if (!exists)
+               {
                   lifecycleManager.stopAddon(lastVertex.getAddon());
+               }
             };
          });
 

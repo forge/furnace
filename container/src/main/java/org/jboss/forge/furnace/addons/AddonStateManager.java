@@ -77,9 +77,14 @@ public class AddonStateManager
    public Set<AddonView> getViewsOf(Addon addon)
    {
       Set<AddonView> result = new HashSet<AddonView>();
-      AddonVertex vertex = graph.getVertex(addon.getId().getName(), addon.getId().getVersion());
-      if (vertex != null)
-         result.addAll(vertex.getViews());
+      for (AddonVertex vertex : graph.getGraph().vertexSet())
+      {
+         if (addon.equals(vertex.getAddon()))
+         {
+            result.addAll(vertex.getViews());
+            break;
+         }
+      }
       return result;
    }
 

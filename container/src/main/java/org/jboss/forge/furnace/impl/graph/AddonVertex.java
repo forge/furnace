@@ -1,5 +1,6 @@
 package org.jboss.forge.furnace.impl.graph;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,9 +12,16 @@ import org.jboss.forge.furnace.versions.Version;
 
 public class AddonVertex
 {
+   /*
+    * Key fields must be immutable in order for JGraphT to function properly
+    */
    private String name;
    private Version version;
    private Set<AddonView> views = new HashSet<AddonView>();
+   
+   /*
+    * Mutable fields
+    */
    private Addon addon;
    private boolean dirty;
 
@@ -23,6 +31,16 @@ public class AddonVertex
       Assert.notNull(version, "Version must not be null.");
       this.name = name;
       this.version = version;
+   }
+
+   public AddonVertex(AddonVertex source, AddonView view)
+   {
+      this.name = source.name;
+      this.version = source.version;
+      this.views.addAll(source.getViews());
+      this.views.add(view);
+      this.addon = source.addon;
+      this.dirty = source.dirty;
    }
 
    public Addon getAddon()
@@ -55,14 +73,9 @@ public class AddonVertex
       return dirty;
    }
 
-   public void addView(AddonView view)
-   {
-      this.views.add(view);
-   }
-
    public Set<AddonView> getViews()
    {
-      return views;
+      return Collections.unmodifiableSet(views);
    }
 
    public AddonId getAddonId()
@@ -77,6 +90,7 @@ public class AddonVertex
       int result = 1;
       result = prime * result + ((name == null) ? 0 : name.hashCode());
       result = prime * result + ((version == null) ? 0 : version.hashCode());
+      result = prime * result + ((views == null) ? 0 : views.hashCode());
       return result;
    }
 
@@ -103,6 +117,13 @@ public class AddonVertex
             return false;
       }
       else if (!version.equals(other.version))
+         return false;
+      if (views == null)
+      {
+         if (other.views != null)
+            return false;
+      }
+      else if (!views.equals(other.views))
          return false;
       return true;
    }

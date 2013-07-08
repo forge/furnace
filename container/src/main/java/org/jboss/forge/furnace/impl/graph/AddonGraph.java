@@ -42,10 +42,7 @@ public abstract class AddonGraph<T extends AddonGraph<T>>
    protected void addLocalVertex(AddonVertex vertex)
    {
       getGraph().addVertex(vertex);
-      enhanceNewVertex(vertex);
    }
-
-   protected abstract void enhanceNewVertex(AddonVertex vertex);
 
    @Override
    public String toString()
