@@ -6,7 +6,7 @@ import org.jboss.forge.furnace.addons.AddonView;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.event.TraversalListenerAdapter;
 import org.jgrapht.event.VertexTraversalEvent;
-import org.jgrapht.traverse.DepthFirstIterator;
+import org.jgrapht.traverse.BreadthFirstIterator;
 
 public class PrintGraphTraversalListener extends TraversalListenerAdapter<AddonVertex, AddonDependencyEdge>
 {
@@ -32,61 +32,50 @@ public class PrintGraphTraversalListener extends TraversalListenerAdapter<AddonV
    }
 
    @Override
-   public void vertexTraversed(VertexTraversalEvent<AddonVertex> event)
+   public void vertexFinished(VertexTraversalEvent<AddonVertex> event)
    {
       AddonVertex vertex = event.getVertex();
-
-      try
+      if (depth == 0)
       {
-         Iterator<AddonDependencyEdge> dependencyIterator = graph.outgoingEdgesOf(vertex).iterator();
-         if (dependencyIterator.hasNext() || depth == 0)
-         {
-            if (depth == 0)
-            {
-               builder.append("\n");
-               builder.append(count++).append(": ").append(vertex.getName()).append(":")
-                        .append(vertex.getVersion() == null ? MISSING : vertex.getVersion());
+         builder.append("\n");
+         builder.append(count++).append(": ").append(vertex.getName()).append(":")
+                  .append(vertex.getVersion() == null ? MISSING : vertex.getVersion());
 
-               appendViews(vertex);
+         appendViews(vertex);
 
-               builder.append("\n");
-            }
-
-            while (dependencyIterator.hasNext())
-            {
-               AddonDependencyEdge edge = dependencyIterator.next();
-               AddonVertex dependency = graph.getEdgeTarget(edge);
-
-               indent();
-               if (dependencyIterator.hasNext())
-                  builder.append("  +- ");
-               else
-                  builder.append("  \\- ");
-
-               builder.append(dependency.getName()).append(":").append(edge.getVersionRange()).append(" -> ");
-               builder.append(dependency.getVersion() == null ? MISSING : dependency.getVersion());
-
-               if (edge.isExported())
-               {
-                  builder.append(" (E)");
-               }
-               appendViews(dependency);
-               builder.append("\n");
-
-               DepthFirstIterator<AddonVertex, AddonDependencyEdge> iterator = new DepthFirstIterator<AddonVertex, AddonDependencyEdge>(
-                        graph, dependency);
-
-               iterator.addTraversalListener(new PrintGraphTraversalListener(graph, builder, depth + 1,
-                        dependencyIterator.hasNext()));
-
-               while (iterator.hasNext())
-                  iterator.next();
-            }
-         }
+         builder.append("\n");
       }
-      catch (RuntimeException e)
+
+      Iterator<AddonDependencyEdge> dependencyIterator = graph.outgoingEdgesOf(vertex).iterator();
+      while (dependencyIterator.hasNext())
       {
-         throw e;
+         AddonDependencyEdge edge = dependencyIterator.next();
+         AddonVertex dependency = graph.getEdgeTarget(edge);
+
+         indent();
+         if (dependencyIterator.hasNext())
+            builder.append("  +- ");
+         else
+            builder.append("  \\- ");
+
+         builder.append(dependency.getName()).append(":").append(edge.getVersionRange()).append(" -> ");
+         builder.append(dependency.getVersion() == null ? MISSING : dependency.getVersion());
+
+         if (edge.isExported())
+         {
+            builder.append(" (E)");
+         }
+         appendViews(dependency);
+         builder.append("\n");
+
+         BreadthFirstIterator<AddonVertex, AddonDependencyEdge> iterator = new BreadthFirstIterator<AddonVertex, AddonDependencyEdge>(
+                  graph, dependency);
+
+         iterator.addTraversalListener(new PrintGraphTraversalListener(graph, builder, depth + 1,
+                  dependencyIterator.hasNext()));
+
+         while (iterator.hasNext())
+            iterator.next();
       }
    }
 
@@ -115,5 +104,11 @@ public class PrintGraphTraversalListener extends TraversalListenerAdapter<AddonV
          else
             builder.append(" ");
       }
+   }
+
+   @Override
+   public String toString()
+   {
+      return builder.toString();
    }
 }

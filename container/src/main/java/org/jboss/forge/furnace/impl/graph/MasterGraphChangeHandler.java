@@ -75,38 +75,60 @@ public class MasterGraphChangeHandler
 
       DepthFirstIterator<AddonVertex, AddonDependencyEdge> iterator = new DepthFirstIterator<AddonVertex, AddonDependencyEdge>(
                graph.getGraph());
-
       iterator.addTraversalListener(new TraversalListenerAdapter<AddonVertex, AddonDependencyEdge>()
       {
          @Override
          public void vertexFinished(VertexTraversalEvent<AddonVertex> event)
          {
             AddonVertex vertex = event.getVertex();
-            AddonView view = vertex.getViews().iterator().next();
-            AddonId addonId = vertex.getAddonId();
-
-            Addon addon = null;
-            if (lastMasterGraph != null)
+            if (vertex.getAddon() == null)
             {
-               for (AddonVertex last : lastMasterGraph.getGraph().vertexSet())
+               AddonView view = vertex.getViews().iterator().next();
+               AddonId addonId = vertex.getAddonId();
+
+               Addon addon = null;
+               if (lastMasterGraph != null)
                {
-                  if (last.getAddon().getId().equals(addonId) && last.getViews().contains(view))
+                  for (AddonVertex last : lastMasterGraph.getGraph().vertexSet())
                   {
-                     addon = last.getAddon();
-                     break;
+                     if (last.getAddon().getId().equals(addonId) && last.getViews().contains(view))
+                     {
+                        addon = last.getAddon();
+                        break;
+                     }
                   }
                }
 
-               if (addon == null)
-               {
-
-               }
+               vertex.setAddon(addon);
             }
+         };
+      });
 
-            if (addon == null)
-               addon = lifecycleManager.getAddon(view, addonId);
+      while (iterator.hasNext())
+         iterator.next();
 
-            vertex.setAddon(addon);
+      iterator = new DepthFirstIterator<AddonVertex, AddonDependencyEdge>(graph.getGraph());
+      iterator.addTraversalListener(new TraversalListenerAdapter<AddonVertex, AddonDependencyEdge>()
+      {
+         @Override
+         public void vertexFinished(VertexTraversalEvent<AddonVertex> event)
+         {
+            AddonVertex vertex = event.getVertex();
+            if (vertex.getAddon() == null)
+            {
+               AddonView view = vertex.getViews().iterator().next();
+               AddonId addonId = vertex.getAddonId();
+
+               Addon addon = null;
+               Set<Addon> orphans = lifecycleManager.getOrphanAddons(addonId);
+               if (!orphans.isEmpty())
+                  addon = orphans.iterator().next();
+
+               if (addon == null)
+                  addon = lifecycleManager.getAddon(view, addonId);
+
+               vertex.setAddon(addon);
+            }
          };
       });
 

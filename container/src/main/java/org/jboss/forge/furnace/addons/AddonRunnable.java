@@ -247,7 +247,10 @@ public final class AddonRunnable implements Runnable
             if (!shutdownRequested)
                throw e;
             else
+            {
+               logger.log(Level.WARNING, "Error encountered after addon startup was aborted:", e);
                return Callables.returning(null);
+            }
          }
       }
    }

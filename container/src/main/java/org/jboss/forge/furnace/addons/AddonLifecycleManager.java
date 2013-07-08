@@ -69,6 +69,26 @@ public class AddonLifecycleManager
       return getAddon(views.iterator().next(), id);
    }
 
+   public Set<Addon> getOrphanAddons(final AddonId id)
+   {
+      return lock.performLocked(LockMode.READ, new Callable<Set<Addon>>()
+      {
+         @Override
+         public Set<Addon> call() throws Exception
+         {
+            Set<Addon> result = new HashSet<Addon>();
+            for (Addon addon : addons)
+            {
+               if (addon.getId().equals(id) && stateManager.getViewsOf(addon).isEmpty())
+               {
+                  result.add(addon);
+               }
+            }
+            return result;
+         }
+      });
+   }
+
    public Addon getAddon(final AddonView view, final AddonId id)
    {
       Assert.notNull(id, "AddonId must not be null.");
@@ -146,8 +166,8 @@ public class AddonLifecycleManager
 
                master.merge(graph);
 
-               System.out.println(" ------------ MASTER GRAPH v" + i++ + "------------ ");
-               System.out.println(master);
+               logger.log(Level.FINE, " ------------ MASTER GRAPH v" + i++ + "------------ ");
+               logger.log(Level.INFO, master.toString());
             }
 
             MasterGraph last = stateManager.getCurrentGraph();
