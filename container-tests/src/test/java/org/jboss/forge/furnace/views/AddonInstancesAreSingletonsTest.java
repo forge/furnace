@@ -7,8 +7,6 @@
 
 package org.jboss.forge.furnace.views;
 
-import java.io.File;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -18,7 +16,6 @@ import javax.inject.Inject;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.addon.manager.AddonManager;
-import org.jboss.forge.addon.manager.InstallRequest;
 import org.jboss.forge.arquillian.AddonDependency;
 import org.jboss.forge.arquillian.Dependencies;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
@@ -28,10 +25,7 @@ import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
-import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.util.Addons;
-import org.jboss.forge.furnace.versions.SingleVersion;
-import org.jboss.forge.furnace.versions.SingleVersionRange;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.junit.Assert;
 import org.junit.Test;
@@ -69,9 +63,6 @@ public class AddonInstancesAreSingletonsTest
    private AddonManager addonManager;
 
    @Inject
-   private AddonRepository repository;
-
-   @Inject
    private Furnace furnace;
 
    @Test
@@ -88,30 +79,7 @@ public class AddonInstancesAreSingletonsTest
          @Override
          public Addon call() throws Exception
          {
-            InstallRequest request = addonManager.install(exampleId);
-            Assert.assertEquals(0, request.getRequiredAddons().size());
-            Assert.assertEquals(1, request.getOptionalAddons().size());
-            request.perform();
-
-            Assert.assertTrue(repository.isEnabled(exampleId));
-            Assert.assertEquals(2, repository.getAddonResources(exampleId).size());
-            Assert.assertTrue(repository.getAddonResources(exampleId).contains(
-                     new File(repository.getAddonBaseDir(exampleId), "commons-lang-2.6.jar")));
-            Assert.assertTrue(repository.getAddonResources(exampleId).contains(
-                     new File(repository.getAddonBaseDir(exampleId), "example-2.0.0-SNAPSHOT-forge-addon.jar")));
-
-            Set<AddonDependencyEntry> dependencies = repository.getAddonDependencies(exampleId);
-            Assert.assertEquals(1, dependencies.size());
-            AddonDependencyEntry dependency = dependencies.toArray(new AddonDependencyEntry[dependencies.size()])[0];
-            Assert.assertEquals("org.jboss.forge.addon:example2", dependency.getName());
-            Assert.assertEquals(new SingleVersionRange(new SingleVersion("2.0.0-SNAPSHOT")),
-                     dependency.getVersionRange());
-            Assert.assertTrue(dependency.isOptional());
-            Assert.assertFalse(dependency.isExported());
-
-            Assert.assertTrue(registry.getAddon(AddonId.from("org.jboss.forge.addon:example2", "2.0.0-SNAPSHOT"))
-                     .getStatus().isMissing());
-
+            addonManager.install(exampleId).perform();
             return registry.getAddon(exampleId);
          }
       });
