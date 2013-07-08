@@ -11,11 +11,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.jboss.forge.furnace.FurnaceImpl;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.impl.AddonRepositoryImpl;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
-import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.repositories.MutableAddonRepository;
 import org.jboss.forge.furnace.versions.SingleVersion;
 import org.junit.Assert;
@@ -66,8 +64,10 @@ public class AddonRepositoryImplTest
    @Test
    public void testAddonDirNaming() throws Exception
    {
-      AddonRepository repository = AddonRepositoryImpl.forDirectory(new FurnaceImpl(),
-               File.createTempFile("addonDir", "test"));
+      File temp = File.createTempFile("addonDir", "test");
+      temp.deleteOnExit();
+      MutableAddonRepository repository = AddonRepositoryImpl.forDirectory(new FurnaceImpl(), temp);
+
       File dir = repository.getAddonBaseDir(AddonId.from("123#$%456", "!@#789*-0"));
       Assert.assertEquals("123-456-789-0", dir.getName());
    }
@@ -75,8 +75,9 @@ public class AddonRepositoryImplTest
    @Test
    public void testDeployAddonEntryNoDependencies() throws Exception
    {
-      MutableAddonRepository repository = AddonRepositoryImpl.forDirectory(new FurnaceImpl(),
-               File.createTempFile("addonDir", "test"));
+      File temp = File.createTempFile("addonDir", "test");
+      temp.deleteOnExit();
+      MutableAddonRepository repository = AddonRepositoryImpl.forDirectory(new FurnaceImpl(), temp);
 
       AddonId addon = AddonId.from("1", "2");
       ArrayList<File> resourceJars = new ArrayList<File>();
@@ -98,8 +99,9 @@ public class AddonRepositoryImplTest
    @Test
    public void testDeployAddonEntryNoDependenciesOrResources() throws Exception
    {
-      MutableAddonRepository repository = AddonRepositoryImpl.forDirectory(new FurnaceImpl(),
-               File.createTempFile("addonDir", "test"));
+      File temp = File.createTempFile("addonDir", "test");
+      temp.deleteOnExit();
+      MutableAddonRepository repository = AddonRepositoryImpl.forDirectory(new FurnaceImpl(), temp);
 
       AddonId addon = AddonId.from("1", "2");
 
@@ -117,8 +119,9 @@ public class AddonRepositoryImplTest
    @Test
    public void testDeployAddonEntrySingleDependency() throws Exception
    {
-      MutableAddonRepository repository = AddonRepositoryImpl.forDirectory(new FurnaceImpl(),
-               File.createTempFile("addonDir", "test"));
+      File temp = File.createTempFile("addonDir", "test");
+      temp.deleteOnExit();
+      MutableAddonRepository repository = AddonRepositoryImpl.forDirectory(new FurnaceImpl(), temp);
 
       AddonId addon = AddonId.from("1", "2");
       AddonDependencyEntry dependency = AddonDependencyEntry.create("nm", "ver", false, true);
@@ -131,8 +134,9 @@ public class AddonRepositoryImplTest
    @Test
    public void testDeployAddonEntryMultipleDependencies() throws Exception
    {
-      MutableAddonRepository repository = AddonRepositoryImpl.forDirectory(new FurnaceImpl(),
-               File.createTempFile("addonDir", "test"));
+      File temp = File.createTempFile("addonDir", "test");
+      temp.deleteOnExit();
+      MutableAddonRepository repository = AddonRepositoryImpl.forDirectory(new FurnaceImpl(), temp);
 
       AddonId addon = AddonId.from("1", "2");
       AddonDependencyEntry dependency0 = AddonDependencyEntry.create("nm1", "ver", true, false);

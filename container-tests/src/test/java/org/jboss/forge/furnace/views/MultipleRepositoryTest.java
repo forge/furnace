@@ -39,8 +39,8 @@ import org.junit.Test;
  */
 public class MultipleRepositoryTest
 {
-   static File repodir1;
-   static File repodir2;
+   File repodir1;
+   File repodir2;
 
    @Before
    public void init() throws IOException
@@ -59,7 +59,8 @@ public class MultipleRepositoryTest
    }
 
    @Test
-   public void testAddonsCanReferenceDependenciesInOtherRepositories() throws IOException, InterruptedException, TimeoutException
+   public void testAddonsCanReferenceDependenciesInOtherRepositories() throws IOException, InterruptedException,
+            TimeoutException
    {
       Furnace furnace = ForgeFactory.getInstance(Furnace.class.getClassLoader());
       AddonRepository left = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
@@ -140,7 +141,15 @@ public class MultipleRepositoryTest
       Assert.assertTrue(left.isDeployed(resources));
       Assert.assertTrue(right.isDeployed(resources));
 
+      ConfigurationScanListener listener = new ConfigurationScanListener();
+      ListenerRegistration<ContainerLifecycleListener> registration = furnace.addContainerLifecycleListener(listener);
+
       furnace.startAsync();
+
+      while (!listener.isConfigurationScanned())
+         Thread.sleep(100);
+
+      registration.removeListener();
 
       Addons.waitUntilStarted(furnace.getAddonRegistry().getAddon(resources), 10, TimeUnit.SECONDS);
       Addons.waitUntilStarted(furnace.getAddonRegistry().getAddon(facets), 10, TimeUnit.SECONDS);

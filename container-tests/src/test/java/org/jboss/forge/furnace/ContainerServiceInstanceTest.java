@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
+@Ignore
 @RunWith(Arquillian.class)
 public class ContainerServiceInstanceTest
 {
@@ -41,7 +42,6 @@ public class ContainerServiceInstanceTest
    private Instance<ExportedInterface> instanceInterfaceInstance;
 
    @Test
-   @Ignore
    public void testRegisteredServices()
    {
       Assert.assertNotNull(instanceInterfaceInstance.get());

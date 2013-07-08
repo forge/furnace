@@ -38,8 +38,8 @@ import org.junit.Test;
  */
 public class MultipleRepositoryViewTest
 {
-   static File repodir1;
-   static File repodir2;
+   File repodir1;
+   File repodir2;
 
    @Before
    public void init() throws IOException
