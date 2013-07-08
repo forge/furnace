@@ -58,36 +58,28 @@ public class ExportedInstanceLazyLoader implements ForgeProxy
    private Object loadObject() throws Exception
    {
       Object result = null;
-      for (Addon addon : registry.getAddons(AddonFilters.allLoaded()))
+      for (Addon addon : registry.getAddons(AddonFilters.allStarted()))
       {
-         try
+         if (ClassLoaders.containsClass(addon.getClassLoader(), serviceType))
          {
-            Addons.waitUntilStarted(addon, 1, TimeUnit.SECONDS);
-            if (ClassLoaders.containsClass(addon.getClassLoader(), serviceType) && addon.getStatus().isStarted())
+            ServiceRegistry serviceRegistry = addon.getServiceRegistry();
+            if (serviceRegistry.hasService(serviceType))
             {
-               ServiceRegistry serviceRegistry = addon.getServiceRegistry();
-               if (serviceRegistry.hasService(serviceType))
+               ExportedInstance<?> instance = serviceRegistry.getExportedInstance(serviceType);
+               if (instance != null)
                {
-                  ExportedInstance<?> instance = serviceRegistry.getExportedInstance(serviceType);
-                  if (instance != null)
-                  {
-                     if (instance instanceof ExportedInstanceImpl)
-                        // FIXME remove the need for this implementation coupling
-                        result = ((ExportedInstanceImpl<?>) instance).get(new LocalServiceInjectionPoint(
-                                 injectionPoint,
-                                 serviceType));
-                     else
-                        result = instance.get();
+                  if (instance instanceof ExportedInstanceImpl)
+                     // FIXME remove the need for this implementation coupling
+                     result = ((ExportedInstanceImpl<?>) instance).get(new LocalServiceInjectionPoint(
+                              injectionPoint,
+                              serviceType));
+                  else
+                     result = instance.get();
 
-                     if (result != null)
-                        break;
-                  }
+                  if (result != null)
+                     break;
                }
             }
-         }
-         catch (TimeoutException e)
-         {
-            // TODO for now, just give up after waiting for too long because we don't want to block forever.
          }
       }
 
