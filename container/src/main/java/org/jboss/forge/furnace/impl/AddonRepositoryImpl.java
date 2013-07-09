@@ -13,6 +13,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -118,7 +119,7 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
    }
 
    @Override
-   public boolean deploy(final AddonId addon, final List<AddonDependencyEntry> dependencies, final List<File> resources)
+   public boolean deploy(final AddonId addon, final Collection<AddonDependencyEntry> dependencies, final Collection<File> resources)
    {
       return lock.performLocked(LockMode.WRITE, new Callable<Boolean>()
       {

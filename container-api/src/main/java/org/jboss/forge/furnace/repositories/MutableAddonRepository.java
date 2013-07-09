@@ -7,7 +7,7 @@
 package org.jboss.forge.furnace.repositories;
 
 import java.io.File;
-import java.util.List;
+import java.util.Collection;
 
 import javax.inject.Inject;
 
@@ -24,7 +24,7 @@ import org.jboss.forge.furnace.addons.AddonId;
  */
 public interface MutableAddonRepository extends AddonRepository
 {
-   public boolean deploy(AddonId addon, List<AddonDependencyEntry> dependencies, List<File> resourceJars);
+   public boolean deploy(AddonId addon, Collection<AddonDependencyEntry> dependencies, Collection<File> resourceJars);
 
    public boolean disable(final AddonId addon);
 
