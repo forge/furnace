@@ -13,7 +13,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -119,7 +118,7 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
    }
 
    @Override
-   public boolean deploy(final AddonId addon, final Collection<AddonDependencyEntry> dependencies, final Collection<File> resources)
+   public boolean deploy(final AddonId addon, final Iterable<AddonDependencyEntry> dependencies, final Iterable<File> resources)
    {
       return lock.performLocked(LockMode.WRITE, new Callable<Boolean>()
       {
@@ -130,7 +129,7 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
             File descriptor = getAddonDescriptor(addon);
             try
             {
-               if (resources != null && !resources.isEmpty())
+               if (resources != null && resources.iterator().hasNext())
                {
                   for (File resource : resources)
                   {
