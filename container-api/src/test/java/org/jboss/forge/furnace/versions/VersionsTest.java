@@ -6,8 +6,6 @@
  */
 package org.jboss.forge.furnace.versions;
 
-import static org.junit.Assert.*;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -51,6 +49,15 @@ public class VersionsTest
       Assert.assertEquals(new SingleVersion("7"), intersection.getMax());
       Assert.assertTrue(intersection.isMinInclusive());
       Assert.assertFalse(intersection.isMaxInclusive());
+   }
+
+   @Test
+   public void testVersionSnapshot() throws Exception
+   {
+      Version nonSnapshot = new SingleVersion("1.1.1");
+      Assert.assertFalse(Versions.isSnapshot(nonSnapshot));
+      Version snapshot = new SingleVersion("1.1.1-SNAPSHOT");
+      Assert.assertTrue(Versions.isSnapshot(snapshot));
    }
 
 }

@@ -23,6 +23,7 @@ import org.jboss.forge.furnace.util.Assert;
 public class Versions
 {
    private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(\\.|-)(.*)");
+   private static final String SNAPSHOT_SUFFIX = "-SNAPSHOT";
 
    /**
     * This method only returns true if:
@@ -234,5 +235,16 @@ public class Versions
       }
 
       return new DefaultVersionRange(min, minInclusive, max, maxInclusive);
+   }
+
+   /**
+    * Returns if the version specified is a SNAPSHOT
+    * 
+    * @param version cannot be null
+    * @return true if the version is a SNAPSHOT, false otherwise
+    */
+   public static boolean isSnapshot(Version version)
+   {
+      return version.toString().endsWith(SNAPSHOT_SUFFIX);
    }
 }
