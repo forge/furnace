@@ -6,6 +6,7 @@
  */
 package org.jboss.forge.furnace.addons;
 
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,6 +28,7 @@ import org.jboss.forge.furnace.modules.AddonResourceLoader;
 import org.jboss.forge.furnace.modules.ModularURLScanner;
 import org.jboss.forge.furnace.modules.ModularWeld;
 import org.jboss.forge.furnace.modules.ModuleScanResult;
+import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.services.ServiceRegistry;
 import org.jboss.forge.furnace.util.Addons;
 import org.jboss.forge.furnace.util.Assert;
@@ -185,7 +187,7 @@ public final class AddonRunnable implements Runnable
 
                AddonRegistryProducer addonRegistryProducer = BeanManagerUtils.getContextualInstance(manager,
                         AddonRegistryProducer.class);
-               addonRegistryProducer.setRegistry(furnace.getAddonRegistry());
+               addonRegistryProducer.setRegistry(furnace.getAddonRegistry(getRepositories()));
 
                ContainerServiceExtension extension = BeanManagerUtils.getContextualInstance(manager,
                         ContainerServiceExtension.class);
@@ -262,6 +264,12 @@ public final class AddonRunnable implements Runnable
       int result = 1;
       result = prime * result + ((addon == null) ? 0 : addon.hashCode());
       return result;
+   }
+
+   public AddonRepository[] getRepositories()
+   {
+      Set<AddonRepository> repositories = stateManager.getViewsOf(addon).iterator().next().getRepositories();
+      return repositories.toArray(new AddonRepository[] {});
    }
 
    @Override
