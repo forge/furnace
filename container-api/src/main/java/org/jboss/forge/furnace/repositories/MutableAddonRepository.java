@@ -8,14 +8,11 @@ package org.jboss.forge.furnace.repositories;
 
 import java.io.File;
 
-import javax.inject.Inject;
-
+import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonId;
 
 /**
- * Used to perform Addon installation/registration operations. May be obtained using CDI injection:
- * <p>
- * <code>@{@link Inject} private {@link MutableAddonRepository} repository;</code>
+ * Used to perform {@link Addon} installation/registration operations. May be obtained using CDI injection:
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * @author <a href="mailto:koen.aers@gmail.com">Koen Aers</a>

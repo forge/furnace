@@ -112,7 +112,7 @@ public final class OperatingSystemUtils
       String result = filename;
       if (result != null)
       {
-         result = result.replaceAll("[/?<>\\\\:*|\"]", "_");
+         result = result.replaceAll("[^a-zA-Z0-9]+", "-").replaceAll("^-+", "");
       }
       return result;
    }

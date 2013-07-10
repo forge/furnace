@@ -48,28 +48,5 @@
          <artifactId>jboss-logmanager</artifactId>
       </dependency>
 
-      <dependency>
-         <groupId>org.jboss.weld.se</groupId>
-         <artifactId>weld-se-core</artifactId>
-         <exclusions>
-            <exclusion>
-               <groupId>javax.el</groupId>
-               <artifactId>javax.el-api</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency>
-      <dependency>
-         <groupId>org.jboss.weld</groupId>
-         <artifactId>weld-core</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.jboss.weld</groupId>
-         <artifactId>weld-spi</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-jdk14</artifactId>
-      </dependency>
-
    </dependencies>
 </project>

@@ -103,4 +103,20 @@ public class ClassLoaders
          throw new ContainerException("Could not locate class [" + type.getName() + "] in Loader [" + loader + "]", e);
       }
    }
+
+   public static boolean ownsClass(ClassLoader loader, Class<?> type)
+   {
+      Assert.notNull(loader, "Class loader to inspect must not be null.");
+      Assert.notNull(type, "Class to find must not be null.");
+
+      try
+      {
+         Class<?> clazz = loader.loadClass(type.getName());
+         return clazz.equals(type) && clazz.getClassLoader().equals(loader);
+      }
+      catch (ClassNotFoundException e)
+      {
+         return false;
+      }
+   }
 }

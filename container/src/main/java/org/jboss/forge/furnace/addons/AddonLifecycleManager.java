@@ -189,7 +189,7 @@ public class AddonLifecycleManager
          {
             for (Addon addon : addons)
             {
-               new StopAddonCallable(stateManager, addon).call();
+               new StopAddonCallable(loader.getAddonModuleLoader(), stateManager, addon).call();
             }
 
             List<Runnable> waiting = executor.shutdownNow();
@@ -301,7 +301,7 @@ public class AddonLifecycleManager
 
    public void stopAddon(Addon addon)
    {
-      Callables.call(new StopAddonCallable(stateManager, addon));
+      Callables.call(new StopAddonCallable(loader.getAddonModuleLoader(), stateManager, addon));
    }
 
 }

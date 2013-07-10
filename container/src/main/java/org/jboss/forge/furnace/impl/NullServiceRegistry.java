@@ -3,8 +3,6 @@ package org.jboss.forge.furnace.impl;
 import java.util.Collections;
 import java.util.Set;
 
-import javax.enterprise.inject.Typed;
-
 import org.jboss.forge.furnace.services.ExportedInstance;
 import org.jboss.forge.furnace.services.ServiceRegistry;
 
@@ -13,7 +11,6 @@ import org.jboss.forge.furnace.services.ServiceRegistry;
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-@Typed()
 public class NullServiceRegistry implements ServiceRegistry
 {
 

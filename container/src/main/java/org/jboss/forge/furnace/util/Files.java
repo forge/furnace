@@ -227,7 +227,6 @@ public final class Files
     * @param destFile the validated destination file, must not be <code>null</code>
     * @throws IOException if an error occurs
     */
-   @SuppressWarnings("resource")
    private static void doCopyFile(File srcFile, File destFile) throws IOException
    {
       if (destFile.exists() && destFile.isDirectory())

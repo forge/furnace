@@ -6,39 +6,23 @@
  */
 package org.jboss.forge.furnace.addons;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.enterprise.inject.spi.BeanManager;
-
 import org.jboss.forge.furnace.Furnace;
-import org.jboss.forge.furnace.event.PostStartup;
-import org.jboss.forge.furnace.event.PreShutdown;
 import org.jboss.forge.furnace.exception.ContainerException;
-import org.jboss.forge.furnace.impl.AddonProducer;
-import org.jboss.forge.furnace.impl.AddonRegistryProducer;
-import org.jboss.forge.furnace.impl.AddonRepositoryProducer;
-import org.jboss.forge.furnace.impl.ContainerServiceExtension;
-import org.jboss.forge.furnace.impl.FurnaceProducer;
-import org.jboss.forge.furnace.impl.ServiceRegistryImpl;
-import org.jboss.forge.furnace.impl.ServiceRegistryProducer;
-import org.jboss.forge.furnace.modules.AddonResourceLoader;
-import org.jboss.forge.furnace.modules.ModularURLScanner;
-import org.jboss.forge.furnace.modules.ModularWeld;
-import org.jboss.forge.furnace.modules.ModuleScanResult;
+import org.jboss.forge.furnace.lifecycle.AddonLifecycleProvider;
 import org.jboss.forge.furnace.repositories.AddonRepository;
-import org.jboss.forge.furnace.services.ServiceRegistry;
 import org.jboss.forge.furnace.util.Addons;
-import org.jboss.forge.furnace.util.Assert;
-import org.jboss.forge.furnace.util.BeanManagerUtils;
 import org.jboss.forge.furnace.util.ClassLoaders;
-import org.jboss.weld.environment.se.Weld;
-import org.jboss.weld.environment.se.WeldContainer;
-import org.jboss.weld.resources.spi.ResourceLoader;
-
-import com.google.common.util.concurrent.Callables;
+import org.jboss.forge.furnace.util.Iterators;
 
 /**
  * Loads an {@link Addon}
@@ -50,19 +34,11 @@ public final class AddonRunnable implements Runnable
    boolean shutdownRequested = false;
    private Furnace furnace;
    private Addon addon;
-   private AddonContainerStartup container;
-
-   private Callable<Object> shutdownCallable = new Callable<Object>()
-   {
-      @Override
-      public Object call() throws Exception
-      {
-         return null;
-      }
-   };
 
    private AddonLifecycleManager lifecycleManager;
    private AddonStateManager stateManager;
+
+   private Entry<Addon, AddonLifecycleProvider> lifecycleProvider;
 
    public AddonRunnable(Furnace furnace,
             AddonLifecycleManager lifecycleManager,
@@ -75,17 +51,100 @@ public final class AddonRunnable implements Runnable
       this.addon = addon;
    }
 
+   @Override
+   public void run()
+   {
+      Thread currentThread = Thread.currentThread();
+      String name = currentThread.getName();
+      currentThread.setName(addon.getId().toCoordinates());
+      try
+      {
+         logger.info("> Starting container [" + addon.getId() + "] [" + addon.getRepository().getRootDirectory() + "]");
+         long start = System.currentTimeMillis();
+
+         lifecycleProvider = detectLifecycleProvider();
+         if (lifecycleProvider != null)
+         {
+            ClassLoaders.executeIn(addon.getClassLoader(), new Callable<Void>()
+            {
+               @Override
+               public Void call() throws Exception
+               {
+                  AddonLifecycleProvider provider = lifecycleProvider.getValue();
+                  provider.initialize(furnace, furnace.getAddonRegistry(getRepositories()), lifecycleProvider.getKey());
+                  provider.start(addon);
+                  stateManager.setServiceRegistry(addon, provider.getServiceRegistry(addon));
+
+                  for (AddonDependency dependency : addon.getDependencies())
+                  {
+                     if (dependency.getDependency().getStatus().isLoaded())
+                        Addons.waitUntilStarted(dependency.getDependency());
+                  }
+
+                  provider.postStartup(addon);
+                  return null;
+               }
+            });
+         }
+
+         logger.info(">> Started container [" + addon.getId() + "] - " + (System.currentTimeMillis() - start) + "ms");
+
+      }
+      catch (Throwable e)
+      {
+         addon.getFuture().cancel(false);
+
+         logger.log(Level.WARNING, "Failed to start addon [" + addon.getId() + "] with classloader ["
+                  + stateManager.getClassLoaderOf(addon)
+                  + "]", e);
+
+         if (!shutdownRequested)
+            throw new RuntimeException(e);
+      }
+      finally
+      {
+         lifecycleManager.finishedStarting(addon);
+         currentThread.setName(name);
+      }
+   }
+
+   protected AddonRepository[] getRepositories()
+   {
+      Set<AddonRepository> repositories = stateManager.getViewsOf(addon).iterator().next().getRepositories();
+      return repositories.toArray(new AddonRepository[] {});
+   }
+
    public void shutdown()
    {
       shutdownRequested = true;
       try
       {
-         logger.info("< Stopping container [" + addon.getId() + "] [" + addon.getRepository().getRootDirectory()
-                  + "]");
+         logger.info("< Stopping container [" + addon.getId() + "] [" + addon.getRepository().getRootDirectory() + "]");
          long start = System.currentTimeMillis();
-         ClassLoaders.executeIn(addon.getClassLoader(), shutdownCallable);
-         logger.info("<< Stopped container [" + addon.getId() + "] - "
-                  + (System.currentTimeMillis() - start) + "ms");
+
+         if (lifecycleProvider != null)
+         {
+            ClassLoaders.executeIn(addon.getClassLoader(), new Callable<Void>()
+            {
+               @Override
+               public Void call() throws Exception
+               {
+                  AddonLifecycleProvider provider = lifecycleProvider.getValue();
+                  try
+                  {
+                     provider.postStartup(addon);
+                  }
+                  catch (Throwable e)
+                  {
+                     logger.log(Level.SEVERE, "Failed to execute pre-shutdown task for [" + addon + "]", e);
+                  }
+                  provider.stop(addon);
+                  return null;
+               }
+            });
+         }
+
+         logger.info("<< Stopped container [" + addon.getId() + "] - " + (System.currentTimeMillis() - start) + "ms");
       }
       catch (RuntimeException e)
       {
@@ -99,162 +158,76 @@ public final class AddonRunnable implements Runnable
       }
    }
 
-   @Override
-   public void run()
+   private Entry<Addon, AddonLifecycleProvider> detectLifecycleProvider()
    {
-      Thread currentThread = Thread.currentThread();
-      String name = currentThread.getName();
-      currentThread.setName(addon.getId().toCoordinates());
-      try
+      final Map<Addon, AddonLifecycleProvider> lifecycleProviderMap = new HashMap<Addon, AddonLifecycleProvider>();
+      for (AddonDependency d : addon.getDependencies())
       {
-         logger.info("> Starting container [" + addon.getId() + "] [" + addon.getRepository().getRootDirectory()
-                  + "]");
-         long start = System.currentTimeMillis();
-         container = new AddonContainerStartup();
-         shutdownCallable = ClassLoaders.executeIn(addon.getClassLoader(), container);
-         logger.info(">> Started container [" + addon.getId() + "] - "
-                  + (System.currentTimeMillis() - start) + "ms");
-
-         if (container.postStartupTask != null)
-            ClassLoaders.executeIn(addon.getClassLoader(), container.postStartupTask);
-      }
-      catch (Throwable e)
-      {
-         logger.log(Level.SEVERE, "Failed to start addon [" + addon.getId() + "] with classloader ["
-                  + stateManager.getClassLoaderOf(addon)
-                  + "]", e);
-         throw new RuntimeException(e);
-      }
-      finally
-      {
-         lifecycleManager.finishedStarting(addon);
-         currentThread.setName(name);
-      }
-   }
-
-   public Addon getAddon()
-   {
-      return addon;
-   }
-
-   public class AddonContainerStartup implements Callable<Callable<Object>>
-   {
-      private Callable<Void> postStartupTask;
-
-      @Override
-      public Callable<Object> call() throws Exception
-      {
-         try
+         final Addon dependency = d.getDependency();
+         if (dependency.getStatus().isLoaded())
          {
-            ResourceLoader resourceLoader = new AddonResourceLoader(addon);
-            ModularURLScanner scanner = new ModularURLScanner(resourceLoader, "META-INF/beans.xml");
-            ModuleScanResult scanResult = scanner.scan();
-
-            Callable<Object> shutdownCallback = null;
-
-            if (scanResult.getDiscoveredResourceUrls().isEmpty())
+            final ClassLoader classLoader = dependency.getClassLoader();
+            try
             {
-               /*
-                * This is an import-only addon and does not require weld, nor provide remote services.
-                */
-               shutdownCallback = new Callable<Object>()
-               {
-                  @Override
-                  public Object call() throws Exception
-                  {
-                     return null;
-                  }
-               };
-            }
-            else
-            {
-               final Weld weld = new ModularWeld(scanResult);
-               WeldContainer container;
-               container = weld.initialize();
-
-               final BeanManager manager = container.getBeanManager();
-               Assert.notNull(manager, "BeanManager was null");
-
-               AddonRepositoryProducer repositoryProducer = BeanManagerUtils.getContextualInstance(manager,
-                        AddonRepositoryProducer.class);
-               repositoryProducer.setRepository(addon.getRepository());
-
-               FurnaceProducer forgeProducer = BeanManagerUtils.getContextualInstance(manager, FurnaceProducer.class);
-               forgeProducer.setForge(furnace);
-
-               AddonProducer addonProducer = BeanManagerUtils.getContextualInstance(manager, AddonProducer.class);
-               addonProducer.setAddon(addon);
-
-               AddonRegistryProducer addonRegistryProducer = BeanManagerUtils.getContextualInstance(manager,
-                        AddonRegistryProducer.class);
-               addonRegistryProducer.setRegistry(furnace.getAddonRegistry(getRepositories()));
-
-               ContainerServiceExtension extension = BeanManagerUtils.getContextualInstance(manager,
-                        ContainerServiceExtension.class);
-               ServiceRegistryProducer serviceRegistryProducer = BeanManagerUtils.getContextualInstance(manager,
-                        ServiceRegistryProducer.class);
-               serviceRegistryProducer.setServiceRegistry(new ServiceRegistryImpl(furnace.getLockManager(), addon,
-                        manager, extension));
-
-               ServiceRegistry registry = BeanManagerUtils.getContextualInstance(manager, ServiceRegistry.class);
-               Assert.notNull(registry, "Service registry was null.");
-               stateManager.setServiceRegistry(addon, registry);
-
-               logger.info("Services loaded from addon [" + addon.getId() + "] -  " + registry.getExportedTypes());
-
-               shutdownCallback = new Callable<Object>()
-               {
-                  @Override
-                  public Object call() throws Exception
-                  {
-                     try
-                     {
-                        manager.fireEvent(new PreShutdown());
-                     }
-                     catch (Exception e)
-                     {
-                        logger.log(Level.SEVERE, "Failed to execute pre-Shutdown event.", e);
-                     }
-                     finally
-                     {
-                     }
-
-                     weld.shutdown();
-                     return null;
-                  }
-               };
-
-               postStartupTask = new Callable<Void>()
+               ClassLoaders.executeIn(classLoader, new Callable<Void>()
                {
                   @Override
                   public Void call() throws Exception
                   {
-                     for (AddonDependency dependency : addon.getDependencies())
-                     {
-                        if (dependency.getDependency().getStatus().isLoaded())
-                           Addons.waitUntilStarted(dependency.getDependency());
-                     }
+                     ServiceLoader<AddonLifecycleProvider> serviceLoader = ServiceLoader.load(
+                              AddonLifecycleProvider.class, classLoader);
 
-                     manager.fireEvent(new PostStartup());
+                     Iterator<AddonLifecycleProvider> iterator = serviceLoader.iterator();
+                     if (serviceLoader != null && iterator.hasNext())
+                     {
+                        AddonLifecycleProvider provider = iterator.next();
+                        if (ClassLoaders.ownsClass(classLoader, provider.getClass()))
+                        {
+                           lifecycleProviderMap.put(dependency, (AddonLifecycleProvider) provider);
+                        }
+
+                        if (iterator.hasNext())
+                        {
+                           throw new ContainerException("Expected only one [" + AddonLifecycleProvider.class.getName()
+                                    + "] but found multiple. Remove all but one redundant container implementations: " +
+                                    Iterators.asList(serviceLoader));
+                        }
+                     }
                      return null;
                   }
-               };
+               });
             }
-
-            return shutdownCallback;
-         }
-         catch (Exception e)
-         {
-            addon.getFuture().cancel(false);
-            if (!shutdownRequested)
-               throw e;
-            else
+            catch (Throwable e)
             {
-               logger.log(Level.WARNING, "Error encountered after addon startup was aborted:", e);
-               return Callables.returning(null);
+               // FIXME Figure out why ServiceLoader is trying to load things from the wrong ClassLoader
+               logger.log(Level.FINEST, "ServiceLoader misbehaved when loading AddonLifecycleProvider instances.", e);
             }
          }
       }
+
+      Entry<Addon, AddonLifecycleProvider> result = null;
+      if (!lifecycleProviderMap.isEmpty())
+      {
+         if (lifecycleProviderMap.size() == 1)
+         {
+            result = lifecycleProviderMap.entrySet().iterator().next();
+         }
+         else
+         {
+            throw new ContainerException("Multiple [" + AddonLifecycleProvider.class.getName()
+                     + "] found in Addon [" + addon.getId() + "], but only one is allowed. Redundant container "
+                     + "implementations must be removed before this addon can be started."
+                     + "\n" + "YOU MUST REMOVE ALL BUT ONE OF THE FOLLOWING DEPENDENCIES:"
+                     + "\n" + lifecycleProviderMap.keySet());
+         }
+      }
+      return result;
+   }
+
+   @Override
+   public String toString()
+   {
+      return addon.toString();
    }
 
    @Override
@@ -264,12 +237,6 @@ public final class AddonRunnable implements Runnable
       int result = 1;
       result = prime * result + ((addon == null) ? 0 : addon.hashCode());
       return result;
-   }
-
-   public AddonRepository[] getRepositories()
-   {
-      Set<AddonRepository> repositories = stateManager.getViewsOf(addon).iterator().next().getRepositories();
-      return repositories.toArray(new AddonRepository[] {});
    }
 
    @Override

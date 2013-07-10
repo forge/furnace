@@ -24,9 +24,7 @@ import org.jboss.forge.furnace.addons.AddonView;
 import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.impl.AddonRepositoryImpl;
 import org.jboss.forge.furnace.modules.providers.FurnaceContainerSpec;
-import org.jboss.forge.furnace.modules.providers.JGraphTClasspathSpec;
 import org.jboss.forge.furnace.modules.providers.SystemClasspathSpec;
-import org.jboss.forge.furnace.modules.providers.WeldClasspathSpec;
 import org.jboss.forge.furnace.modules.providers.XPathJDKClasspathSpec;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.furnace.repositories.AddonRepository;
@@ -145,17 +143,10 @@ public class AddonModuleLoader extends ModuleLoader
             {
                Builder builder = ModuleSpec.build(id);
 
-               // Set up the ClassPath for this addon Module
-
-               // TODO Reduce visibility of Weld and JGrapht to Forge Module only.
                builder.addDependency(DependencySpec.createModuleDependencySpec(SystemClasspathSpec.ID));
                builder.addDependency(DependencySpec.createModuleDependencySpec(XPathJDKClasspathSpec.ID));
                builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(),
                         PathFilters.rejectAll(), null, FurnaceContainerSpec.ID, false));
-               builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(),
-                        PathFilters.rejectAll(), null, JGraphTClasspathSpec.ID, false));
-               builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(),
-                        PathFilters.rejectAll(), null, WeldClasspathSpec.ID, false));
 
                builder.addDependency(DependencySpec.createLocalDependencySpec(PathFilters.acceptAll(),
                         PathFilters.acceptAll()));

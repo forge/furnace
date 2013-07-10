@@ -22,8 +22,6 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.enterprise.inject.Typed;
-
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.lock.LockManager;
@@ -50,7 +48,6 @@ import org.jboss.forge.parser.xml.XMLParserException;
  * @author <a href="mailto:koen.aers@gmail.com">Koen Aers</a>
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  */
-@Typed()
 public final class AddonRepositoryImpl implements MutableAddonRepository
 {
 
@@ -118,7 +115,8 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
    }
 
    @Override
-   public boolean deploy(final AddonId addon, final Iterable<AddonDependencyEntry> dependencies, final Iterable<File> resources)
+   public boolean deploy(final AddonId addon, final Iterable<AddonDependencyEntry> dependencies,
+            final Iterable<File> resources)
    {
       return lock.performLocked(LockMode.WRITE, new Callable<Boolean>()
       {
@@ -276,8 +274,7 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
          @Override
          public File call() throws Exception
          {
-
-            File addonDir = new File(getRootDirectory(), found.toCoordinates().replaceAll("[^a-zA-Z0-9]+", "-"));
+            File addonDir = new File(getRootDirectory(), OperatingSystemUtils.getSafeFilename(found.toCoordinates()));
             return addonDir;
          }
       });

@@ -51,15 +51,10 @@
       <forge.release.version>${project.version}</forge.release.version>
       <version.arquillian>1.0.4.Final</version.arquillian>
       <version.arquillian.container>1.0.0.CR5</version.arquillian.container>
-      <version.cdi>1.1</version.cdi>
       <version.javassist>1</version.javassist>
-      <version.jboss.spec>3.0.2.Final</version.jboss.spec>
       <version.jboss.modules>3</version.jboss.modules>
       <version.junit>4.11</version.junit>
       <version.org.jboss.logmanager.jboss-logmanager>1.4.1.Final</version.org.jboss.logmanager.jboss-logmanager>
-      <version.slf4j>1.6.1</version.slf4j>
-      <version.weld>2.0.1.Final</version.weld>
-      <version.weld.spi>2.0.Final</version.weld.spi>
       <version.xmlparser>1.0.0.Final</version.xmlparser>
    </properties>
 
@@ -148,42 +143,11 @@
             <scope>test</scope>
          </dependency>
 
-         <!-- SLF4J Logging API -->
-         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${version.slf4j}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
-            <version>${version.slf4j}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-ext</artifactId>
-            <version>${version.slf4j}</version>
-         </dependency>
-
          <!-- JBoss Logging dependencies -->
          <dependency>
             <groupId>org.jboss.logmanager</groupId>
             <artifactId>jboss-logmanager</artifactId>
             <version>${version.org.jboss.logmanager.jboss-logmanager}</version>
-         </dependency>
-
-         <!-- CDI dependencies -->
-         <dependency>
-            <groupId>org.jboss.spec</groupId>
-            <artifactId>jboss-javaee-6.0</artifactId>
-            <version>${version.jboss.spec}</version>
-            <type>pom</type>
-            <scope>import</scope>
-         </dependency>
-         <dependency>
-            <groupId>javax.enterprise</groupId>
-            <artifactId>cdi-api</artifactId>
-            <version>${version.cdi}</version>
          </dependency>
 
          <!-- Test Dependencies -->
@@ -192,23 +156,6 @@
             <artifactId>junit</artifactId>
             <version>${version.junit}</version>
             <scope>test</scope>
-         </dependency>
-
-         <!-- Weld -->
-         <dependency>
-            <groupId>org.jboss.weld</groupId>
-            <artifactId>weld-core</artifactId>
-            <version>${version.weld}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.jboss.weld</groupId>
-            <artifactId>weld-spi</artifactId>
-            <version>${version.weld.spi}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.jboss.weld.se</groupId>
-            <artifactId>weld-se-core</artifactId>
-            <version>${version.weld}</version>
          </dependency>
       </dependencies>
    </dependencyManagement>

@@ -11,15 +11,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import javax.inject.Inject;
-
+import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.versions.Version;
 
 /**
- * Used to perform Addon installation/registration operations. May be obtained using CDI injection:
- * <p>
- * <code>@{@link Inject} private {@link AddonRepository} repository;</code>
+ * Used to perform {@link Addon} installation/registration operations.
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * @author <a href="mailto:koen.aers@gmail.com">Koen Aers</a>

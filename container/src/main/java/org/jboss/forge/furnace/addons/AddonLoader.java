@@ -37,6 +37,7 @@ public class AddonLoader
 
       if (addon.getStatus().isMissing())
       {
+         stateManager.cancel(addon);
          loader.releaseAddonModule(addon);
          Set<AddonRepository> repositories =
                   stateManager.getViewsOf(addon).iterator().next().getRepositories();
@@ -75,7 +76,7 @@ public class AddonLoader
                   try
                   {
                      Module module = loader.loadAddonModule(addon);
-                     stateManager.setState(addon, new AddonState(dependencies, repository, module));
+                     stateManager.setState(addon, new AddonState(dependencies, repository, module.getClassLoader()));
                   }
                   catch (RuntimeException e)
                   {
@@ -103,9 +104,9 @@ public class AddonLoader
          AddonId dependencyId = stateManager.resolveAddonId(views, entry.getName());
 
          Addon dependency = null;
-         if(dependencyId != null)
+         if (dependencyId != null)
             dependency = lifecycleManager.getAddon(views.iterator().next(), dependencyId);
-         
+
          if (dependency == null || dependency.getStatus().isMissing())
          {
             if (!entry.isOptional())
@@ -122,5 +123,10 @@ public class AddonLoader
          }
       }
       return result;
+   }
+
+   public AddonModuleLoader getAddonModuleLoader()
+   {
+      return loader;
    }
 }

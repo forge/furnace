@@ -11,21 +11,17 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.enterprise.inject.Stereotype;
-import javax.inject.Qualifier;
-
 /**
  * Utility class for common @{@link Annotation} operations.
  * <p/>
- *
+ * 
  * @author <a href="mailto:lincolnbaxter@gmail.com>Lincoln Baxter, III</a>
  */
 public class Annotations
 {
    /**
-    * Discover if a Method <b>m</b> has been annotated with <b>type</b>. This also discovers annotations defined through
-    * a @{@link Stereotype}.
-    *
+    * Discover if a Method <b>m</b> has been annotated with <b>type</b>.
+    * 
     * @param m The method to inspect.
     * @param type The targeted annotation class
     * @return True if annotation is present either on the method itself, or on the declaring class of the method.
@@ -82,7 +78,7 @@ public class Annotations
    /**
     * Discover if a Class <b>c</b> has been annotated with <b>type</b>. This also discovers annotations defined through
     * a @{@link Stereotype}.
-    *
+    * 
     * @param c The class to inspect.
     * @param type The targeted annotation class
     * @return True if annotation is present either on class, false if the annotation is not present.
@@ -95,7 +91,7 @@ public class Annotations
    /**
     * Inspect method <b>m</b> for a specific <b>type</b> of annotation. This also discovers annotations defined through
     * a @ {@link Stereotype}.
-    *
+    * 
     * @param m The method to inspect.
     * @param type The targeted annotation class
     * @return The annotation instance found on this method or enclosing class, or null if no matching annotation was
@@ -126,7 +122,7 @@ public class Annotations
    /**
     * Inspect annotation <b>a</b> for a specific <b>type</b> of annotation. This also discovers annotations defined
     * through a @ {@link Stereotype}.
-    *
+    * 
     * @param m The method to inspect.
     * @param type The targeted annotation class
     * @return The annotation instance found on this method or enclosing class, or null if no matching annotation was
@@ -181,7 +177,7 @@ public class Annotations
    /**
     * Inspect class <b>c</b> for a specific <b>type</b> of annotation. This also discovers annotations defined through a @
     * {@link Stereotype}.
-    *
+    * 
     * @param c The class to inspect.
     * @param type The targeted annotation class
     * @return The annotation instance found on this class, or null if no matching annotation was found.
@@ -234,21 +230,5 @@ public class Annotations
          return result;
       }
       return null;
-   }
-
-   /**
-    * Returns the annotation qualifiers from a type
-    */
-   public static Annotation[] getQualifiersFrom(final Class<?> c)
-   {
-      Set<Annotation> annotations = new HashSet<Annotation>();
-      for (Annotation annotation : c.getAnnotations())
-      {
-         if (annotation.annotationType().isAnnotationPresent(Qualifier.class))
-         {
-            annotations.add(annotation);
-         }
-      }
-      return annotations.toArray(new Annotation[annotations.size()]);
    }
 }

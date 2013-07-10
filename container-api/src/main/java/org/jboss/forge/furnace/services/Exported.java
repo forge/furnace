@@ -13,17 +13,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import javax.enterprise.inject.Vetoed;
-import javax.inject.Inject;
+import org.jboss.forge.furnace.addons.Addon;
 
 /**
- * Specifies that the target type should be exported to dependent containers, and that it may be imported via
- * {@link Inject} annotation.
- *
- * ATTENTION: You MUST add @Exported to all the injectable types (including any interfaces).
- *
- * If any subtype isn't meant to be published, please add a {@link Vetoed} annotation to your subtype.
- *
+ * Specifies that the target type should be added to this {@link Addon}'s {@link ServiceRegistry}, and made available
+ * publicly.
+ * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
 @Documented
