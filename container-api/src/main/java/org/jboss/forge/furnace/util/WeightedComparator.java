@@ -14,13 +14,9 @@ import java.util.Comparator;
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * 
  */
-public class WeightedComparator implements Comparator<Weighted>
+public enum WeightedComparator implements Comparator<Weighted>
 {
-   public static final Comparator<Weighted> INSTANCE = new WeightedComparator();
-
-   private WeightedComparator()
-   {
-   }
+   INSTANCE;
 
    @Override
    public int compare(final Weighted left, final Weighted right)
@@ -29,7 +25,9 @@ public class WeightedComparator implements Comparator<Weighted>
       {
          return 0;
       }
-      return ((Integer) left.priority()).compareTo(right.priority());
+      int thisVal = left.priority();
+      int anotherVal = right.priority();
+      return (thisVal < anotherVal ? -1 : (thisVal == anotherVal ? 0 : 1));
    }
 
 }
