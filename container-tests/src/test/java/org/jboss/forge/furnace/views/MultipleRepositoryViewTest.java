@@ -83,11 +83,11 @@ public class MultipleRepositoryViewTest
       Assert.assertFalse(right.isDeployed(facets6));
       Assert.assertFalse(right.isDeployed(convert));
 
-      manager.install(facets).perform(left);
-      manager.install(convert).perform(left);
+      manager.deploy(facets, left).perform();
+      manager.deploy(convert, left).perform();
 
-      manager.install(resources).perform(right);
-      manager.install(facets6).perform(right);
+      manager.deploy(resources, right).perform();
+      manager.deploy(facets6, right).perform();
 
       Assert.assertFalse(left.isDeployed(resources));
       Assert.assertFalse(right.isDeployed(convert));
@@ -150,12 +150,12 @@ public class MultipleRepositoryViewTest
       Assert.assertFalse(right.isDeployed(convert));
       Assert.assertFalse(right.isDeployed(convert6));
 
-      manager.install(facets).perform(left);
-      manager.install(convert).perform(left);
-      manager.install(resources).perform(left);
-      manager.install(dependencies).perform(left);
+      manager.deploy(facets, left).perform();
+      manager.deploy(convert, left).perform();
+      manager.deploy(resources, left).perform();
+      manager.deploy(dependencies, left).perform();
 
-      manager.install(convert6).perform(right);
+      manager.deploy(convert6, right).perform();
 
       Assert.assertTrue(left.isDeployed(facets));
       Assert.assertTrue(left.isDeployed(convert));
