@@ -262,6 +262,9 @@ public class AddonModuleLoader extends ModuleLoader
    {
       ModuleIdentifier id = moduleCache.getModuleId(addon);
       moduleJarFileCache.closeJarFileReferences(id);
+      Module loadedModule = findLoadedModuleLocal(id);
+      if (loadedModule != null)
+         unloadModuleLocal(loadedModule);
       moduleCache.clear(addon);
    }
 

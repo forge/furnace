@@ -31,7 +31,7 @@ public final class AddonRunnable implements Runnable
 {
    private static final Logger logger = Logger.getLogger(AddonRunnable.class.getName());
 
-   boolean shutdownRequested = false;
+   private boolean shutdownRequested = false;
    private Furnace furnace;
    private Addon addon;
 
@@ -40,9 +40,7 @@ public final class AddonRunnable implements Runnable
 
    private Entry<Addon, AddonLifecycleProvider> lifecycleProvider;
 
-   public AddonRunnable(Furnace furnace,
-            AddonLifecycleManager lifecycleManager,
-            AddonStateManager stateManager,
+   public AddonRunnable(Furnace furnace, AddonLifecycleManager lifecycleManager, AddonStateManager stateManager,
             Addon addon)
    {
       this.lifecycleManager = lifecycleManager;
@@ -105,6 +103,7 @@ public final class AddonRunnable implements Runnable
       {
          lifecycleManager.finishedStarting(addon);
          currentThread.setName(name);
+         currentThread.setContextClassLoader(null);
       }
    }
 
@@ -155,6 +154,10 @@ public final class AddonRunnable implements Runnable
       {
          logger.log(Level.SEVERE, "Failed to shut down addon " + addon.getId(), e);
          throw new ContainerException("Failed to shut down addon " + addon.getId(), e);
+      }
+      finally
+      {
+         Thread.currentThread().setContextClassLoader(null);
       }
    }
 

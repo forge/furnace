@@ -180,6 +180,23 @@ public class AddonLifecycleManager
       });
    }
 
+   public void loadAddon(Addon addon)
+   {
+      try
+      {
+         loader.loadAddon(addon);
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
+   }
+
+   public void stopAddon(Addon addon)
+   {
+      Callables.call(new StopAddonCallable(loader.getAddonModuleLoader(), stateManager, addon));
+   }
+
    public void stopAll()
    {
       lock.performLocked(LockMode.WRITE, new Callable<Void>()
@@ -189,12 +206,12 @@ public class AddonLifecycleManager
          {
             for (Addon addon : addons)
             {
-               new StopAddonCallable(loader.getAddonModuleLoader(), stateManager, addon).call();
+               stopAddon(addon);
             }
 
             List<Runnable> waiting = executor.shutdownNow();
             if (waiting != null && !waiting.isEmpty())
-               logger.info("(" + waiting.size() + ") addons were aborted while loading.");
+               logger.info("(" + waiting.size() + ") addons were aborted while loading due to forced shutdown.");
             starting.set(-1);
             return null;
          }
@@ -285,23 +302,6 @@ public class AddonLifecycleManager
       }
 
       return builder.toString();
-   }
-
-   public void loadAddon(Addon addon)
-   {
-      try
-      {
-         loader.loadAddon(addon);
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-      }
-   }
-
-   public void stopAddon(Addon addon)
-   {
-      Callables.call(new StopAddonCallable(loader.getAddonModuleLoader(), stateManager, addon));
    }
 
 }

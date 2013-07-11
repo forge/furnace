@@ -184,7 +184,10 @@ public class AddonStateManager
       if (future != null && !future.isDone())
          result = future.cancel(true);
 
-      setState(addon, null);
+      if (future.isDone())
+         result = true;
+
+      reset(addon);
 
       return result;
    }

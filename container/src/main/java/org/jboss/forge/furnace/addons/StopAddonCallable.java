@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.addons.Addon;
+import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.modules.AddonModuleLoader;
 import org.jboss.forge.furnace.util.Assert;
 
@@ -41,12 +42,14 @@ public class StopAddonCallable implements Callable<Void>
    {
       try
       {
-         stateManager.cancel(addon);
+         boolean shutdown = stateManager.cancel(addon);
          loader.releaseAddonModule(addon);
+         if (!shutdown)
+            throw new ContainerException("Future task could not be cancelled.");
       }
       catch (Exception e)
       {
-         logger.log(Level.WARNING, "Failed to shut down addon " + addon, e);
+         logger.log(Level.WARNING, "Failed to shut down addon [" + addon + "]", e);
       }
       return null;
    }
