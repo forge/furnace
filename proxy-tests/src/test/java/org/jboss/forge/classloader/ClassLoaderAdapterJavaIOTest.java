@@ -13,6 +13,8 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.forge.arquillian.AddonDependency;
+import org.jboss.forge.arquillian.Dependencies;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
 import org.jboss.forge.classloader.mock.JavaIOFactory;
 import org.jboss.forge.furnace.addons.AddonId;
@@ -29,12 +31,16 @@ import org.junit.runner.RunWith;
 public class ClassLoaderAdapterJavaIOTest
 {
    @Deployment(order = 3)
+   @Dependencies({
+            @AddonDependency(name = "org.jboss.forge.furnace:container-cdi", version = "2.0.0-SNAPSHOT")
+   })
    public static ForgeArchive getDeployment()
    {
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
                .addBeansXML()
                .addClasses(JavaIOFactory.class)
                .addAsAddonDependencies(
+                        AddonDependencyEntry.create("org.jboss.forge.furnace:container-cdi", "2.0.0-SNAPSHOT"),
                         AddonDependencyEntry.create("dep", "1")
                );
 

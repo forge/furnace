@@ -11,6 +11,8 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.forge.arquillian.AddonDependency;
+import org.jboss.forge.arquillian.Dependencies;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonRegistry;
@@ -26,13 +28,19 @@ import org.junit.runner.RunWith;
 public class SidewaysProxyAnonymousCollisionTest
 {
    @Deployment(order = 3)
+   @Dependencies({
+            @AddonDependency(name = "org.jboss.forge.furnace:container-cdi", version = "2.0.0-SNAPSHOT")
+   })
    public static ForgeArchive getDeploymentA()
    {
       ForgeArchive archive = ShrinkWrap
                .create(ForgeArchive.class)
                .addBeansXML()
                .addClasses(Context.class, ContextImpl.class, ContextValue.class, Action.class, Action1.class,
-                        Payload.class, Payload1.class, Extra.class, AbstractExtra.class, ContextValueImpl.class);
+                        Payload.class, Payload1.class, Extra.class, AbstractExtra.class, ContextValueImpl.class)
+               .addAsAddonDependencies(
+                        AddonDependencyEntry.create("org.jboss.forge.furnace:container-cdi", "2.0.0-SNAPSHOT")
+               );
 
       return archive;
    }
