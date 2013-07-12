@@ -147,9 +147,6 @@ public class AddonModuleLoader extends ModuleLoader
                builder.addDependency(DependencySpec.createModuleDependencySpec(XPathJDKClasspathSpec.ID));
                builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(),
                         PathFilters.rejectAll(), null, FurnaceContainerSpec.ID, false));
-
-               builder.addDependency(DependencySpec.createLocalDependencySpec(PathFilters.acceptAll(),
-                        PathFilters.acceptAll()));
                try
                {
                   addAddonDependencies(views, repository, found, builder);
@@ -160,6 +157,9 @@ public class AddonModuleLoader extends ModuleLoader
                   logger.warning(e.getMessage());
                   return null;
                }
+
+               builder.addDependency(DependencySpec.createLocalDependencySpec(PathFilters.acceptAll(),
+                        PathFilters.acceptAll()));
 
                addLocalResources(repository, found, builder, id);
 
@@ -207,29 +207,44 @@ public class AddonModuleLoader extends ModuleLoader
             throws ContainerException
    {
       Set<AddonDependencyEntry> addons = repository.getAddonDependencies(found);
+
       for (AddonDependencyEntry dependency : addons)
       {
-         AddonId addonId = stateManager.resolveAddonId(views, dependency.getName());
-         ModuleIdentifier moduleId = null;
-         if (addonId != null)
-         {
-            Addon addon = lifecycleManager.getAddon(views, addonId);
-            moduleId = findCompatibleInstalledModule(addonId);
-            if (moduleId != null)
-            {
-               builder.addDependency(DependencySpec.createModuleDependencySpec(
-                        PathFilters.not(PathFilters.getMetaInfFilter()),
-                        dependency.isExported() ? PathFilters.acceptAll() : PathFilters.rejectAll(),
-                        this,
-                        moduleCache.getModuleId(addon),
-                        dependency.isOptional()));
-            }
-         }
-
-         if (!dependency.isOptional() && (addonId == null || moduleId == null))
-            throw new ContainerException("Dependency [" + dependency + "] could not be loaded for addon [" + found
-                     + "]");
+         /*
+          * Containers should always take precedence at runtime.
+          */
+         if (dependency.getName().startsWith("org.jboss.forge.furnace:container"))
+            addAddonDependency(views, found, builder, dependency);
       }
+      for (AddonDependencyEntry dependency : addons)
+      {
+         if (!dependency.getName().startsWith("org.jboss.forge.furnace:container"))
+            addAddonDependency(views, found, builder, dependency);
+      }
+   }
+
+   private void addAddonDependency(Set<AddonView> views, AddonId found, Builder builder, AddonDependencyEntry dependency)
+   {
+      AddonId addonId = stateManager.resolveAddonId(views, dependency.getName());
+      ModuleIdentifier moduleId = null;
+      if (addonId != null)
+      {
+         Addon addon = lifecycleManager.getAddon(views, addonId);
+         moduleId = findCompatibleInstalledModule(addonId);
+         if (moduleId != null)
+         {
+            builder.addDependency(DependencySpec.createModuleDependencySpec(
+                     PathFilters.not(PathFilters.getMetaInfFilter()),
+                     dependency.isExported() ? PathFilters.acceptAll() : PathFilters.rejectAll(),
+                     this,
+                     moduleCache.getModuleId(addon),
+                     dependency.isOptional()));
+         }
+      }
+
+      if (!dependency.isOptional() && (addonId == null || moduleId == null))
+         throw new ContainerException("Dependency [" + dependency + "] could not be loaded for addon [" + found
+                  + "]");
    }
 
    private ModuleIdentifier findCompatibleInstalledModule(AddonId addonId)

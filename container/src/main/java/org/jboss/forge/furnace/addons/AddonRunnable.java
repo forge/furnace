@@ -145,12 +145,7 @@ public final class AddonRunnable implements Runnable
 
          logger.info("<< Stopped container [" + addon.getId() + "] - " + (System.currentTimeMillis() - start) + "ms");
       }
-      catch (RuntimeException e)
-      {
-         logger.log(Level.SEVERE, "Failed to shut down addon " + addon.getId(), e);
-         throw e;
-      }
-      catch (Exception e)
+      catch (Throwable e)
       {
          logger.log(Level.SEVERE, "Failed to shut down addon " + addon.getId(), e);
          throw new ContainerException("Failed to shut down addon " + addon.getId(), e);

@@ -399,12 +399,12 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
    @Override
    public File getRootDirectory()
    {
-      return lock.performLocked(LockMode.READ, new Callable<File>()
+      if (!addonDir.exists() || !addonDir.isDirectory())
       {
-         @Override
-         public File call() throws Exception
+         lock.performLocked(LockMode.READ, new Callable<File>()
          {
-            if (!addonDir.exists() || !addonDir.isDirectory())
+            @Override
+            public File call() throws Exception
             {
                addonDir.delete();
                System.gc();
@@ -412,10 +412,11 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
                {
                   throw new RuntimeException("Could not create Addon Directory [" + addonDir + "]");
                }
+               return addonDir;
             }
-            return addonDir;
-         }
-      });
+         });
+      }
+      return addonDir;
    }
 
    private File getRepositoryRegistryFile()

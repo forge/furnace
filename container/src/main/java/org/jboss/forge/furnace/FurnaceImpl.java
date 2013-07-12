@@ -38,6 +38,11 @@ import org.jboss.modules.log.StreamModuleLogger;
  */
 public class FurnaceImpl implements Furnace
 {
+   {
+      if (System.getProperty("modules.ignore.jdk.factory") == null)
+         System.setProperty("modules.ignore.jdk.factory", "true");
+   }
+
    private static Logger logger = Logger.getLogger(FurnaceImpl.class.getName());
 
    private volatile boolean alive = false;
