@@ -149,17 +149,28 @@ public class AddonModuleLoader extends ModuleLoader
                         PathFilters.rejectAll(), null, FurnaceContainerSpec.ID, false));
                try
                {
+                  addContainerDependencies(views, repository, found, builder);
                   addAddonDependencies(views, repository, found, builder);
                }
                catch (ContainerException e)
                {
-                  // TODO implement proper fault handling. For now, abort.
                   logger.warning(e.getMessage());
                   return null;
                }
 
                builder.addDependency(DependencySpec.createLocalDependencySpec(PathFilters.acceptAll(),
                         PathFilters.acceptAll()));
+
+               try
+               {
+                  addContainerDependencies(views, repository, found, builder);
+                  addAddonDependencies(views, repository, found, builder);
+               }
+               catch (ContainerException e)
+               {
+                  logger.warning(e.getMessage());
+                  return null;
+               }
 
                addLocalResources(repository, found, builder, id);
 
@@ -203,11 +214,11 @@ public class AddonModuleLoader extends ModuleLoader
       }
    }
 
-   private void addAddonDependencies(Set<AddonView> views, AddonRepository repository, AddonId found, Builder builder)
+   private void addContainerDependencies(Set<AddonView> views, AddonRepository repository, AddonId found,
+            Builder builder)
             throws ContainerException
    {
       Set<AddonDependencyEntry> addons = repository.getAddonDependencies(found);
-
       for (AddonDependencyEntry dependency : addons)
       {
          /*
@@ -216,6 +227,12 @@ public class AddonModuleLoader extends ModuleLoader
          if (dependency.getName().startsWith("org.jboss.forge.furnace:container"))
             addAddonDependency(views, found, builder, dependency);
       }
+   }
+
+   private void addAddonDependencies(Set<AddonView> views, AddonRepository repository, AddonId found, Builder builder)
+            throws ContainerException
+   {
+      Set<AddonDependencyEntry> addons = repository.getAddonDependencies(found);
       for (AddonDependencyEntry dependency : addons)
       {
          if (!dependency.getName().startsWith("org.jboss.forge.furnace:container"))
