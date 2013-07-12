@@ -36,7 +36,6 @@ public class FurnaceContainerSpec extends AbstractModuleSpecProvider
       paths.add("javassist/util");
       paths.add("javassist/util/proxy");
 
-      paths.add("org/jboss/forge");
       paths.add("org/jboss/forge/furnace");
       paths.add("org/jboss/forge/furnace/addons");
       paths.add("org/jboss/forge/furnace/event");
@@ -53,12 +52,8 @@ public class FurnaceContainerSpec extends AbstractModuleSpecProvider
       paths.add("org/jboss/forge/furnace/util");
       paths.add("org/jboss/forge/furnace/util/cdi");
       paths.add("org/jboss/forge/furnace/versions");
-      paths.add("org/jboss/forge/parser");
-      paths.add("org/jboss/forge/parser/xml");
-      paths.add("org/jboss/forge/parser/xml/query");
-      paths.add("org/jboss/forge/parser/xml/util");
+
       paths.add("org/jboss/forge/proxy");
-      paths.add("org/jboss/forge/test");
 
       paths.add("org/jboss/logmanager");
       paths.add("org/jboss/logmanager/config");
