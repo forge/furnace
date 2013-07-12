@@ -23,12 +23,12 @@ public class AddonLoader
    private AddonStateManager stateManager;
    private AddonModuleLoader loader;
 
-   public AddonLoader(Furnace furnace, AddonLifecycleManager lifecycleManager, AddonStateManager stateManager)
+   public AddonLoader(Furnace furnace, AddonLifecycleManager lifecycleManager, AddonStateManager stateManager, AddonModuleLoader loader)
    {
       this.lock = furnace.getLockManager();
       this.lifecycleManager = lifecycleManager;
       this.stateManager = stateManager;
-      this.loader = new AddonModuleLoader(furnace, lifecycleManager, stateManager);
+      this.loader = loader;
    }
 
    public void loadAddon(Addon addon)

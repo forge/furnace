@@ -25,6 +25,7 @@ import org.jboss.forge.furnace.impl.graph.MasterGraphChangeHandler;
 import org.jboss.forge.furnace.impl.graph.OptimizedAddonGraph;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.lock.LockMode;
+import org.jboss.forge.furnace.modules.AddonModuleLoader;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.util.AddonFilters;
 import org.jboss.forge.furnace.util.Assert;
@@ -48,6 +49,8 @@ public class AddonLifecycleManager
    private final AtomicInteger starting = new AtomicInteger(-1);
    private final ExecutorService executor = Executors.newCachedThreadPool();
 
+   private AddonModuleLoader moduleLoader;
+
    public AddonLifecycleManager(FurnaceImpl furnace)
    {
       Assert.notNull(furnace, "Furnace instance must not be null.");
@@ -55,7 +58,9 @@ public class AddonLifecycleManager
       this.furnace = furnace;
       this.lock = furnace.getLockManager();
       this.stateManager = new AddonStateManager(lock);
-      this.loader = new AddonLoader(furnace, this, stateManager);
+      this.moduleLoader = new AddonModuleLoader(furnace, this, stateManager);
+      this.stateManager.setModuleLoader(moduleLoader);
+      this.loader = new AddonLoader(furnace, this, stateManager, moduleLoader);
 
       logger.log(Level.FINE, "Instantiated AddonRTegistryImpl: " + this);
    }
@@ -194,7 +199,7 @@ public class AddonLifecycleManager
 
    public void stopAddon(Addon addon)
    {
-      Callables.call(new StopAddonCallable(loader.getAddonModuleLoader(), stateManager, addon));
+      Callables.call(new StopAddonCallable(stateManager, addon));
    }
 
    public void stopAll()

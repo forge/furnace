@@ -92,12 +92,13 @@ public final class AddonRunnable implements Runnable
       {
          addon.getFuture().cancel(false);
 
-         logger.log(Level.WARNING, "Failed to start addon [" + addon.getId() + "] with classloader ["
+         Level level = Level.FINEST;
+         if (!shutdownRequested)
+            level = Level.SEVERE;
+
+         logger.log(level, "Failed to start addon [" + addon.getId() + "] with classloader ["
                   + stateManager.getClassLoaderOf(addon)
                   + "]", e);
-
-         if (!shutdownRequested)
-            throw new RuntimeException(e);
       }
       finally
       {
@@ -148,7 +149,6 @@ public final class AddonRunnable implements Runnable
       catch (Throwable e)
       {
          logger.log(Level.SEVERE, "Failed to shut down addon " + addon.getId(), e);
-         throw new ContainerException("Failed to shut down addon " + addon.getId(), e);
       }
       finally
       {
