@@ -89,7 +89,7 @@ public class AddonState
 
    public void setServiceRegistry(ServiceRegistry registry)
    {
-      this.registry = registry;
+      this.registry = (registry != null ? registry : new NullServiceRegistry());
    }
 
 }
