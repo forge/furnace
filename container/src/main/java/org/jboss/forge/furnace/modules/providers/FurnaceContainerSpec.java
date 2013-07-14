@@ -54,21 +54,6 @@ public class FurnaceContainerSpec extends AbstractModuleSpecProvider
       paths.add("org/jboss/forge/furnace/versions");
 
       paths.add("org/jboss/forge/proxy");
-
-      paths.add("org/jboss/logmanager");
-      paths.add("org/jboss/logmanager/config");
-      paths.add("org/jboss/logmanager/errormanager");
-      paths.add("org/jboss/logmanager/filters");
-      paths.add("org/jboss/logmanager/formatters");
-      paths.add("org/jboss/logmanager/handlers");
-
-      paths.add("org/jboss/modules");
-      paths.add("org/jboss/modules/filter");
-      paths.add("org/jboss/modules/log");
-      paths.add("org/jboss/modules/management");
-      paths.add("org/jboss/modules/ref");
-
-      paths.add("META-INF/services");
    }
 
    @Override
