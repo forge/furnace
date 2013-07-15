@@ -6,10 +6,9 @@
  */
 package org.jboss.forge.furnace.addons;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.List;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -19,6 +18,7 @@ import java.util.logging.Logger;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.lifecycle.AddonLifecycleProvider;
+import org.jboss.forge.furnace.lifecycle.ControlType;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.util.Addons;
 import org.jboss.forge.furnace.util.ClassLoaders;
@@ -29,6 +29,7 @@ import org.jboss.forge.furnace.util.Iterators;
  */
 public final class AddonRunnable implements Runnable
 {
+
    private static final Logger logger = Logger.getLogger(AddonRunnable.class.getName());
 
    private boolean shutdownRequested = false;
@@ -38,7 +39,7 @@ public final class AddonRunnable implements Runnable
    private AddonLifecycleManager lifecycleManager;
    private AddonStateManager stateManager;
 
-   private Entry<Addon, AddonLifecycleProvider> lifecycleProvider;
+   private AddonLifecycleProviderEntry lifecycleProviderEntry;
 
    public AddonRunnable(Furnace furnace, AddonLifecycleManager lifecycleManager, AddonStateManager stateManager,
             Addon addon)
@@ -60,18 +61,19 @@ public final class AddonRunnable implements Runnable
          logger.info("> Starting container [" + addon.getId() + "] [" + addon.getRepository().getRootDirectory() + "]");
          long start = System.currentTimeMillis();
 
-         lifecycleProvider = detectLifecycleProvider();
-         if (lifecycleProvider != null)
+         lifecycleProviderEntry = detectLifecycleProvider();
+         if (lifecycleProviderEntry != null)
          {
+            final AddonLifecycleProvider lifecycleProvider = lifecycleProviderEntry.getProvider();
             ClassLoaders.executeIn(addon.getClassLoader(), new Callable<Void>()
             {
                @Override
                public Void call() throws Exception
                {
-                  AddonLifecycleProvider provider = lifecycleProvider.getValue();
-                  provider.initialize(furnace, furnace.getAddonRegistry(getRepositories()), lifecycleProvider.getKey());
-                  provider.start(addon);
-                  stateManager.setServiceRegistry(addon, provider.getServiceRegistry(addon));
+                  lifecycleProvider.initialize(furnace, furnace.getAddonRegistry(getRepositories()),
+                           lifecycleProviderEntry.getAddon());
+                  lifecycleProvider.start(addon);
+                  stateManager.setServiceRegistry(addon, lifecycleProvider.getServiceRegistry(addon));
 
                   for (AddonDependency dependency : addon.getDependencies())
                   {
@@ -79,7 +81,7 @@ public final class AddonRunnable implements Runnable
                         Addons.waitUntilStarted(dependency.getDependency());
                   }
 
-                  provider.postStartup(addon);
+                  lifecycleProvider.postStartup(addon);
                   return null;
                }
             });
@@ -122,23 +124,23 @@ public final class AddonRunnable implements Runnable
          logger.info("< Stopping container [" + addon.getId() + "] [" + addon.getRepository().getRootDirectory() + "]");
          long start = System.currentTimeMillis();
 
-         if (lifecycleProvider != null)
+         if (lifecycleProviderEntry != null)
          {
+            final AddonLifecycleProvider lifecycleProvider = lifecycleProviderEntry.getProvider();
             ClassLoaders.executeIn(addon.getClassLoader(), new Callable<Void>()
             {
                @Override
                public Void call() throws Exception
                {
-                  AddonLifecycleProvider provider = lifecycleProvider.getValue();
                   try
                   {
-                     provider.postStartup(addon);
+                     lifecycleProvider.postStartup(addon);
                   }
                   catch (Throwable e)
                   {
                      logger.log(Level.SEVERE, "Failed to execute pre-shutdown task for [" + addon + "]", e);
                   }
-                  provider.stop(addon);
+                  lifecycleProvider.stop(addon);
                   return null;
                }
             });
@@ -156,70 +158,137 @@ public final class AddonRunnable implements Runnable
       }
    }
 
-   private Entry<Addon, AddonLifecycleProvider> detectLifecycleProvider()
+   private AddonLifecycleProviderEntry detectLifecycleProvider()
    {
-      final Map<Addon, AddonLifecycleProvider> lifecycleProviderMap = new HashMap<Addon, AddonLifecycleProvider>();
-      for (AddonDependency d : addon.getDependencies())
-      {
-         final Addon dependency = d.getDependency();
-         if (dependency.getStatus().isLoaded())
-         {
-            final ClassLoader classLoader = dependency.getClassLoader();
-            try
-            {
-               ClassLoaders.executeIn(classLoader, new Callable<Void>()
-               {
-                  @Override
-                  public Void call() throws Exception
-                  {
-                     ServiceLoader<AddonLifecycleProvider> serviceLoader = ServiceLoader.load(
-                              AddonLifecycleProvider.class, classLoader);
-
-                     Iterator<AddonLifecycleProvider> iterator = serviceLoader.iterator();
-                     if (serviceLoader != null && iterator.hasNext())
-                     {
-                        AddonLifecycleProvider provider = iterator.next();
-                        if (ClassLoaders.ownsClass(classLoader, provider.getClass()))
-                        {
-                           lifecycleProviderMap.put(dependency, (AddonLifecycleProvider) provider);
-                        }
-
-                        if (iterator.hasNext())
-                        {
-                           throw new ContainerException("Expected only one [" + AddonLifecycleProvider.class.getName()
-                                    + "] but found multiple. Remove all but one redundant container implementations: " +
-                                    Iterators.asList(serviceLoader));
-                        }
-                     }
-                     return null;
-                  }
-               });
-            }
-            catch (Throwable e)
-            {
-               // FIXME Figure out why ServiceLoader is trying to load things from the wrong ClassLoader
-               logger.log(Level.FINEST, "ServiceLoader misbehaved when loading AddonLifecycleProvider instances.", e);
-            }
-         }
-      }
-
-      Entry<Addon, AddonLifecycleProvider> result = null;
-      if (!lifecycleProviderMap.isEmpty())
-      {
-         if (lifecycleProviderMap.size() == 1)
-         {
-            result = lifecycleProviderMap.entrySet().iterator().next();
-         }
-         else
-         {
-            throw new ContainerException("Multiple [" + AddonLifecycleProvider.class.getName()
-                     + "] found in Addon [" + addon.getId() + "], but only one is allowed. Redundant container "
-                     + "implementations must be removed before this addon can be started."
-                     + "\n" + "YOU MUST REMOVE ALL BUT ONE OF THE FOLLOWING DEPENDENCIES:"
-                     + "\n" + lifecycleProviderMap.keySet());
-         }
-      }
+      AddonLifecycleProviderEntry result = null;
+      result = detectLifecycleProviderLocal();
+      if (result == null)
+         result = detectLifecycleProviderDependencies();
       return result;
+   }
+
+   private AddonLifecycleProviderEntry detectLifecycleProviderLocal()
+   {
+      AddonLifecycleProviderEntry result = null;
+      final ClassLoader classLoader = addon.getClassLoader();
+      try
+      {
+         result = ClassLoaders.executeIn(classLoader, new Callable<AddonLifecycleProviderEntry>()
+         {
+            @Override
+            public AddonLifecycleProviderEntry call() throws Exception
+            {
+               AddonLifecycleProviderEntry result = null;
+
+               ServiceLoader<AddonLifecycleProvider> serviceLoader = ServiceLoader.load(
+                        AddonLifecycleProvider.class, classLoader);
+
+               Iterator<AddonLifecycleProvider> iterator = serviceLoader.iterator();
+               if (serviceLoader != null && iterator.hasNext())
+               {
+                  AddonLifecycleProvider provider = iterator.next();
+
+                  if (ClassLoaders.ownsClass(classLoader, provider.getClass()))
+                  {
+                     if (ControlType.ALL.equals(provider.getControlType()))
+                     {
+                        result = new AddonLifecycleProviderEntry(addon, provider);
+                     }
+                     if (ControlType.SELF.equals(provider.getControlType()))
+                     {
+                        result = new AddonLifecycleProviderEntry(addon, provider);
+                     }
+
+                     if (result != null && iterator.hasNext())
+                     {
+                        throw new ContainerException("Expected only one [" + AddonLifecycleProvider.class.getName()
+                                 + "] but found multiple. Remove all but one redundant container implementations: " +
+                                 Iterators.asList(serviceLoader));
+                     }
+                  }
+               }
+               return result;
+            }
+         });
+      }
+      catch (Throwable e)
+      {
+         // FIXME Figure out why ServiceLoader is trying to load things from the wrong ClassLoader
+         logger.log(Level.FINEST, "ServiceLoader misbehaved when loading AddonLifecycleProvider instances.", e);
+      }
+
+      return result;
+   }
+
+   private AddonLifecycleProviderEntry detectLifecycleProviderDependencies()
+   {
+      List<AddonLifecycleProviderEntry> results = new ArrayList<AddonRunnable.AddonLifecycleProviderEntry>();
+
+      for (AddonDependency addonDependency : addon.getDependencies())
+      {
+         final Addon dependency = addonDependency.getDependency();
+         final ClassLoader classLoader = dependency.getClassLoader();
+         try
+         {
+            AddonLifecycleProviderEntry entry = ClassLoaders.executeIn(classLoader,
+                     new Callable<AddonLifecycleProviderEntry>()
+                     {
+                        @Override
+                        public AddonLifecycleProviderEntry call() throws Exception
+                        {
+                           AddonLifecycleProviderEntry result = null;
+
+                           ServiceLoader<AddonLifecycleProvider> serviceLoader = ServiceLoader.load(
+                                    AddonLifecycleProvider.class, classLoader);
+
+                           Iterator<AddonLifecycleProvider> iterator = serviceLoader.iterator();
+                           if (serviceLoader != null && iterator.hasNext())
+                           {
+                              AddonLifecycleProvider provider = iterator.next();
+                              if (ClassLoaders.ownsClass(classLoader, provider.getClass()))
+                              {
+                                 if (ControlType.ALL.equals(provider.getControlType()))
+                                 {
+                                    result = new AddonLifecycleProviderEntry(dependency, provider);
+                                 }
+                                 if (ControlType.DEPENDENTS.equals(provider.getControlType()))
+                                 {
+                                    result = new AddonLifecycleProviderEntry(dependency, provider);
+                                 }
+
+                                 if (result != null && iterator.hasNext())
+                                 {
+                                    throw new ContainerException(
+                                             "Expected only one ["
+                                                      + AddonLifecycleProvider.class.getName()
+                                                      + "] but found multiple. Remove all but one redundant container implementations: "
+                                                      +
+                                                      Iterators.asList(serviceLoader));
+                                 }
+                              }
+                           }
+                           return result;
+                        }
+                     });
+
+            if (entry != null)
+               results.add(entry);
+         }
+         catch (Throwable e)
+         {
+            // FIXME Figure out why ServiceLoader is trying to load things from the wrong ClassLoader
+            logger.log(Level.FINEST, "ServiceLoader misbehaved when loading AddonLifecycleProvider instances.", e);
+         }
+      }
+
+      if (results.size() > 1)
+      {
+         throw new ContainerException("Expected only one [" + AddonLifecycleProvider.class.getName()
+                  + "] but found multiple. Remove all but one redundant container implementations: " +
+                  results);
+      }
+
+      return results.isEmpty() ? null : results.get(0);
    }
 
    @Override
@@ -255,5 +324,33 @@ public final class AddonRunnable implements Runnable
       else if (!addon.equals(other.addon))
          return false;
       return true;
+   }
+
+   private class AddonLifecycleProviderEntry
+   {
+      private AddonLifecycleProvider provider;
+      private Addon addon;
+
+      public AddonLifecycleProviderEntry(Addon addon, AddonLifecycleProvider value)
+      {
+         this.provider = value;
+         this.addon = addon;
+      }
+
+      public AddonLifecycleProvider getProvider()
+      {
+         return provider;
+      }
+
+      public Addon getAddon()
+      {
+         return addon;
+      }
+
+      @Override
+      public String toString()
+      {
+         return "[" + addon + " -> " + provider + "]";
+      }
    }
 }

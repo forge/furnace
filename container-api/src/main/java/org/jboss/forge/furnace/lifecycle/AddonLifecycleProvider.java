@@ -49,4 +49,9 @@ public interface AddonLifecycleProvider
     */
    void preShutdown(Addon addon) throws Exception;
 
+   /**
+    * Return the {@link ControlType} for this {@link AddonLifecycleProvider} instance.
+    */
+   public ControlType getControlType();
+
 }
