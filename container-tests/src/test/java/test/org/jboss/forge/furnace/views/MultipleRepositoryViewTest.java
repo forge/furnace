@@ -13,9 +13,8 @@ import java.util.concurrent.TimeoutException;
 
 import org.jboss.forge.addon.manager.AddonManager;
 import org.jboss.forge.addon.manager.impl.AddonManagerImpl;
-import org.jboss.forge.addon.maven.dependencies.FileResourceFactory;
-import org.jboss.forge.addon.maven.dependencies.MavenContainer;
-import org.jboss.forge.addon.maven.dependencies.MavenDependencyResolver;
+import org.jboss.forge.addon.manager.spi.AddonDependencyResolver;
+import org.jboss.forge.addon.maven.addon.MavenAddonDependencyResolver;
 import org.jboss.forge.arquillian.ConfigurationScanListener;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
@@ -64,9 +63,8 @@ public class MultipleRepositoryViewTest
       AddonRepository left = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
       AddonRepository right = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir2);
 
-      MavenDependencyResolver resolver = new MavenDependencyResolver(new FileResourceFactory(),
-               new MavenContainer());
-      AddonManager manager = new AddonManagerImpl(furnace, resolver);
+      AddonDependencyResolver resolver = new MavenAddonDependencyResolver();
+      AddonManager manager = new AddonManagerImpl(furnace, resolver, false);
 
       AddonId facets = AddonId.from("org.jboss.forge.addon:facets", "2.0.0.Alpha5");
       AddonId convert = AddonId.from("org.jboss.forge.addon:convert", "2.0.0.Alpha5");
@@ -128,9 +126,8 @@ public class MultipleRepositoryViewTest
       AddonRepository left = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
       AddonRepository right = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir2);
 
-      MavenDependencyResolver resolver = new MavenDependencyResolver(new FileResourceFactory(),
-               new MavenContainer());
-      AddonManager manager = new AddonManagerImpl(furnace, resolver);
+      AddonDependencyResolver resolver = new MavenAddonDependencyResolver();
+      AddonManager manager = new AddonManagerImpl(furnace, resolver, false);
 
       AddonId facets = AddonId.from("org.jboss.forge.addon:facets", "2.0.0.Alpha5");
       AddonId convert = AddonId.from("org.jboss.forge.addon:convert", "2.0.0.Alpha5");
