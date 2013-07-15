@@ -26,4 +26,11 @@ public class AddonDependencyEdge extends DefaultEdge
    {
       return versionRange;
    }
+
+   @Override
+   public String toString()
+   {
+      return "[exported=" + exported + ", versionRange=" + versionRange + "]";
+   }
+
 }

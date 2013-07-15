@@ -1,5 +1,8 @@
 package org.jboss.forge.furnace.impl.graph;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -9,6 +12,8 @@ import org.jboss.forge.furnace.versions.Version;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.event.TraversalListenerAdapter;
 import org.jgrapht.event.VertexTraversalEvent;
+import org.jgrapht.ext.DOTExporter;
+import org.jgrapht.ext.IntegerNameProvider;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.traverse.DepthFirstIterator;
 
@@ -193,6 +198,22 @@ public class MasterGraph
          iterator.next();
 
       return builder.toString();
+   }
+
+   public void toDOT(File file)
+   {
+      try
+      {
+         DOTExporter<AddonVertex, AddonDependencyEdge> exporter = new DOTExporter<AddonVertex, AddonDependencyEdge>(
+                  new IntegerNameProvider<AddonVertex>(),
+                  new AddonVertexNameProvider(),
+                  new AddonDependencyEdgeNameProvider());
+
+         exporter.export(new FileWriter(file), graph);
+      }
+      catch (IOException e)
+      {
+      }
    }
 
 }
