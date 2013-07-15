@@ -76,7 +76,6 @@ public final class Files
             System.gc(); // ensure no lingering handles that would prevent deletion
          }
 
-         file.deleteOnExit(); // be paranoid
          result = file.delete();
       }
       return result;
@@ -104,14 +103,12 @@ public final class Files
             }
             else
             {
-               sf.deleteOnExit(); // be paranoid
                if (!sf.delete())
                   result = false;
             }
          }
       }
 
-      file.deleteOnExit(); // be paranoid
       return file.delete() && result;
    }
 
