@@ -306,7 +306,8 @@ public class ClassLoaderAdapterCallback implements MethodHandler
          {
             Object unwrappedValue = Proxies.unwrapOnce(parameterValue);
             if (delegateParameterType.isAssignableFrom(unwrappedValue.getClass())
-                     && !Proxies.isLanguageType(unwrappedValue.getClass()))
+                     && !Proxies.isLanguageType(unwrappedValue.getClass())
+                     && !isEquals(delegateMethod))
             {
                // https://issues.jboss.org/browse/FORGE-939
                return unwrappedValue;
@@ -345,7 +346,8 @@ public class ClassLoaderAdapterCallback implements MethodHandler
                else if (delegateParameterType.isArray())
                {
                   Object[] array = (Object[]) unwrappedValue;
-                  Object[] delegateArray = (Object[]) Array.newInstance(delegateParameterType.getComponentType(), array.length);
+                  Object[] delegateArray = (Object[]) Array.newInstance(delegateParameterType.getComponentType(),
+                           array.length);
                   for (int j = 0; j < array.length; j++)
                   {
                      delegateArray[j] = enhanceSingleParamterValue(delegateMethod,
@@ -358,7 +360,8 @@ public class ClassLoaderAdapterCallback implements MethodHandler
                   final Class<?> parameterType = parameterValue.getClass();
                   if ((!Proxies.isPassthroughType(delegateParameterType)
                            && Proxies.isLanguageType(delegateParameterType))
-                           || !delegateParameterType.isAssignableFrom(parameterType))
+                           || !delegateParameterType.isAssignableFrom(parameterType)
+                           || isEquals(delegateMethod))
                   {
                      Class<?>[] compatibleClassHierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(
                               valueDelegateLoader, unwrappedValueType);
@@ -382,6 +385,16 @@ public class ClassLoaderAdapterCallback implements MethodHandler
          }
       }
       return null;
+   }
+
+   private static boolean isEquals(Method method)
+   {
+      if (boolean.class.equals(method.getReturnType())
+               && "equals".equals(method.getName())
+               && method.getParameterTypes().length == 1
+               && Object.class.equals(method.getParameterTypes()[0]))
+         return true;
+      return false;
    }
 
    private List<Class<?>> translateParameterTypes(final Method method) throws ClassNotFoundException
@@ -452,7 +465,8 @@ public class ClassLoaderAdapterCallback implements MethodHandler
                      public boolean isHandled(Method method)
                      {
                         if (!method.getDeclaringClass().getName().contains("java.lang")
-                                 || ("toString".equals(method.getName()) && method.getParameterTypes().length == 0))
+                                 || ("toString".equals(method.getName()) && method.getParameterTypes().length == 0)
+                                 || isEquals(method))
                            return true;
                         return false;
                      }
