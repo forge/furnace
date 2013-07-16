@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.forge.furnace.addons.AddonView;
+import org.jboss.forge.furnace.util.Streams;
 import org.jboss.forge.furnace.versions.SingleVersion;
 import org.jboss.forge.furnace.versions.Version;
 import org.jgrapht.DirectedGraph;
@@ -200,8 +201,10 @@ public class MasterGraph
       return builder.toString();
    }
 
+   @SuppressWarnings("resource")
    public void toDOT(File file)
    {
+      FileWriter fw = null;
       try
       {
          DOTExporter<AddonVertex, AddonDependencyEdge> exporter = new DOTExporter<AddonVertex, AddonDependencyEdge>(
@@ -209,10 +212,17 @@ public class MasterGraph
                   new AddonVertexNameProvider(),
                   new AddonDependencyEdgeNameProvider());
 
-         exporter.export(new FileWriter(file), graph);
+         fw = new FileWriter(file);
+         exporter.export(fw, graph);
+         fw.flush();
       }
       catch (IOException e)
       {
+         e.printStackTrace();
+      }
+      finally
+      {
+         Streams.closeQuietly(fw);
       }
    }
 
