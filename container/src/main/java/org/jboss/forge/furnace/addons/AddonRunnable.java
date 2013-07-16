@@ -230,49 +230,40 @@ public final class AddonRunnable implements Runnable
          final ClassLoader classLoader = dependency.getClassLoader();
          try
          {
-            AddonLifecycleProviderEntry entry = ClassLoaders.executeIn(classLoader,
-                     new Callable<AddonLifecycleProviderEntry>()
-                     {
-                        @Override
-                        public AddonLifecycleProviderEntry call() throws Exception
-                        {
-                           AddonLifecycleProviderEntry result = null;
+            AddonLifecycleProviderEntry result = null;
 
-                           ServiceLoader<AddonLifecycleProvider> serviceLoader = ServiceLoader.load(
-                                    AddonLifecycleProvider.class, classLoader);
+            ServiceLoader<AddonLifecycleProvider> serviceLoader = ServiceLoader.load(
+                     AddonLifecycleProvider.class, classLoader);
 
-                           Iterator<AddonLifecycleProvider> iterator = serviceLoader.iterator();
-                           if (serviceLoader != null && iterator.hasNext())
-                           {
-                              AddonLifecycleProvider provider = iterator.next();
-                              if (ClassLoaders.ownsClass(classLoader, provider.getClass()))
-                              {
-                                 if (ControlType.ALL.equals(provider.getControlType()))
-                                 {
-                                    result = new AddonLifecycleProviderEntry(dependency, provider);
-                                 }
-                                 if (ControlType.DEPENDENTS.equals(provider.getControlType()))
-                                 {
-                                    result = new AddonLifecycleProviderEntry(dependency, provider);
-                                 }
+            Iterator<AddonLifecycleProvider> iterator = serviceLoader.iterator();
+            if (serviceLoader != null && iterator.hasNext())
+            {
+               AddonLifecycleProvider provider = iterator.next();
+               if (ClassLoaders.ownsClass(classLoader, provider.getClass()))
+               {
+                  if (ControlType.ALL.equals(provider.getControlType()))
+                  {
+                     result = new AddonLifecycleProviderEntry(dependency, provider);
+                  }
+                  if (ControlType.DEPENDENTS.equals(provider.getControlType()))
+                  {
+                     result = new AddonLifecycleProviderEntry(dependency, provider);
+                  }
 
-                                 if (result != null && iterator.hasNext())
-                                 {
-                                    throw new ContainerException(
-                                             "Expected only one ["
-                                                      + AddonLifecycleProvider.class.getName()
-                                                      + "] but found multiple. Remove all but one redundant container implementations: "
-                                                      +
-                                                      Iterators.asList(serviceLoader));
-                                 }
-                              }
-                           }
-                           return result;
-                        }
-                     });
+                  if (result != null && iterator.hasNext())
+                  {
+                     throw new ContainerException(
+                              "Expected only one ["
+                                       + AddonLifecycleProvider.class.getName()
+                                       + "] but found multiple. Remove all but one redundant container implementations: "
+                                       +
+                                       Iterators.asList(serviceLoader));
+                  }
+               }
+            }
 
-            if (entry != null)
-               results.add(entry);
+            if (result != null)
+               results.add(result);
          }
          catch (Throwable e)
          {

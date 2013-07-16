@@ -31,6 +31,8 @@ public abstract class AbstractModuleSpecProvider implements ModuleSpecProvider
       {
          Builder builder = ModuleSpec.build(id);
          builder.addDependency(DependencySpec.createClassLoaderDependencySpec(PathFilters.acceptAll(),
+                  PathFilters.acceptAll(), AbstractModuleSpecProvider.class.getClassLoader(), getPaths()));
+         builder.addDependency(DependencySpec.createClassLoaderDependencySpec(PathFilters.acceptAll(),
                   PathFilters.acceptAll(), ClassLoader.getSystemClassLoader(), getPaths()));
 
          configure(loader, builder);
