@@ -10,14 +10,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.forge.addon.manager.AddonManager;
-import org.jboss.forge.addon.manager.impl.AddonManagerImpl;
-import org.jboss.forge.addon.manager.impl.request.ConfigurationScanListener;
-import org.jboss.forge.addon.manager.spi.AddonDependencyResolver;
 import org.jboss.forge.addon.maven.addon.MavenAddonDependencyResolver;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonId;
+import org.jboss.forge.furnace.manager.AddonManager;
+import org.jboss.forge.furnace.manager.impl.AddonManagerImpl;
+import org.jboss.forge.furnace.manager.impl.request.ConfigurationScanListener;
+import org.jboss.forge.furnace.manager.spi.AddonDependencyResolver;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 import org.jboss.forge.furnace.se.FurnaceFactory;
 import org.jboss.forge.furnace.spi.ContainerLifecycleListener;
