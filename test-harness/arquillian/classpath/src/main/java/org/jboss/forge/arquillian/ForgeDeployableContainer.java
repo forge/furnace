@@ -10,9 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -38,6 +36,7 @@ import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.manager.AddonManager;
 import org.jboss.forge.furnace.manager.impl.AddonManagerImpl;
+import org.jboss.forge.furnace.manager.maven.addon.MavenAddonDependencyResolver;
 import org.jboss.forge.furnace.manager.spi.AddonDependencyResolver;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 import org.jboss.forge.furnace.repositories.MutableAddonRepository;
@@ -132,12 +131,7 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
       else if (archive instanceof ForgeRemoteAddon)
       {
          ForgeRemoteAddon remoteAddon = (ForgeRemoteAddon) archive;
-         Iterator<AddonDependencyResolver> resolvers = ServiceLoader.load(AddonDependencyResolver.class).iterator();
-         if (!resolvers.hasNext())
-         {
-            throw new IllegalStateException("No Addon Resolver found");
-         }
-         AddonDependencyResolver resolver = resolvers.next();
+         AddonDependencyResolver resolver = new MavenAddonDependencyResolver();
          AddonManager addonManager = new AddonManagerImpl(runnable.furnace, resolver, false);
 
          addonManager.install(remoteAddon.getAddonId()).perform();
