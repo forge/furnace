@@ -1,0 +1,135 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <parent>
+      <groupId>org.jboss.forge.furnace</groupId>
+      <artifactId>furnace-manager-resolver-parent</artifactId>
+      <version>2.0.0-SNAPSHOT</version>
+   </parent>
+   <artifactId>furnace-manager-resolver-maven</artifactId>
+   <name>Furnace - Manager Maven Resolver</name>
+   <properties>
+      <aether.version>0.9.0.M2</aether.version>
+      <maven.version>3.1.0</maven.version>
+   </properties>
+
+   <dependencies>
+      <dependency>
+         <groupId>org.jboss.forge</groupId>
+         <artifactId>xml-parser</artifactId>
+         <version>1.0.0.Final</version>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.forge.furnace</groupId>
+         <artifactId>furnace-manager</artifactId>
+         <scope>test</scope>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.forge.furnace</groupId>
+         <artifactId>furnace</artifactId>
+         <scope>test</scope>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.forge.furnace</groupId>
+         <artifactId>furnace-manager-spi</artifactId>
+      </dependency>
+
+      <!-- Aether -->
+      <dependency>
+         <groupId>org.apache.maven</groupId>
+         <artifactId>maven-aether-provider</artifactId>
+         <version>${maven.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.eclipse.aether</groupId>
+         <artifactId>aether-connector-file</artifactId>
+         <version>${aether.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.eclipse.aether</groupId>
+         <artifactId>aether-connector-wagon</artifactId>
+         <version>${aether.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.apache.maven.wagon</groupId>
+         <artifactId>wagon-http-lightweight</artifactId>
+         <version>2.4</version>
+      </dependency>
+      <dependency>
+         <groupId>org.apache.maven.wagon</groupId>
+         <artifactId>wagon-file</artifactId>
+         <version>2.4</version>
+      </dependency>
+      <dependency>
+         <groupId>org.apache.maven</groupId>
+         <artifactId>maven-settings-builder</artifactId>
+         <version>${maven.version}</version>
+      </dependency>
+   </dependencies>
+
+   <build>
+      <testResources>
+         <testResource>
+            <directory>src/test/resources</directory>
+            <filtering>true</filtering>
+         </testResource>
+      </testResources>
+      <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-resources-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>default-testResources</id>
+                  <phase>process-test-resources</phase>
+                  <goals>
+                     <goal>testResources</goal>
+                  </goals>
+                  <configuration>
+                     <nonFilteredFileExtensions>
+                        <nonFilteredFileExtension>jar</nonFilteredFileExtension>
+                     </nonFilteredFileExtensions>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>copy-repository</id>
+                  <phase>process-test-resources</phase>
+                  <goals>
+                     <goal>copy-resources</goal>
+                  </goals>
+                  <configuration>
+                     <outputDirectory>${basedir}/target/repository</outputDirectory>
+                     <resources>
+                        <resource>
+                           <directory>${basedir}/src/test/resources/repository</directory>
+                           <filtering>false</filtering>
+                        </resource>
+                     </resources>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>copy-settings</id>
+                  <phase>process-test-resources</phase>
+                  <goals>
+                     <goal>copy-resources</goal>
+                  </goals>
+                  <configuration>
+                     <outputDirectory>${basedir}/target/settings/profiles</outputDirectory>
+                     <resources>
+                        <resource>
+                           <directory>${basedir}/src/test/resources/profiles</directory>
+                           <filtering>true</filtering>
+                        </resource>
+                     </resources>
+                     <escapeString>\</escapeString>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+      </plugins>
+   </build>
+
+</project>

@@ -1,0 +1,127 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+
+   <parent>
+      <groupId>org.jboss.forge.furnace</groupId>
+      <artifactId>furnace-parent</artifactId>
+      <version>2.0.0-SNAPSHOT</version>
+   </parent>
+
+   <groupId>org.jboss.forge.test</groupId>
+   <artifactId>forge-test-parent</artifactId>
+   <version>2.0.0-SNAPSHOT</version>
+   <packaging>pom</packaging>
+
+   <name>Forge - Test Harness Parent</name>
+
+   <licenses>
+      <license>
+         <name>Eclipse Public License version 1.0</name>
+         <url>http://www.eclipse.org/legal/epl-v10.html</url>
+      </license>
+   </licenses>
+
+   <developers>
+      <developer>
+         <id>lincoln</id>
+         <name>Lincoln Baxter, III</name>
+         <email>lincolnbaxter@gmail.com</email>
+      </developer>
+      <developer>
+         <id>gastaldi</id>
+         <name>George Gastaldi</name>
+         <email>gegastaldi@gmail.com</email>
+      </developer>
+   </developers>
+
+   <prerequisites>
+      <maven>3.0</maven>
+   </prerequisites>
+
+   <properties>
+      <version.arquillian>1.1.0.Final</version.arquillian>
+      <version.arquillian.container>1.0.0.CR5</version.arquillian.container>
+      <version.junit>4.11</version.junit>
+   </properties>
+
+   <modules>
+      <module>arquillian</module>
+      <module>test-harness</module>
+   </modules>
+
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>org.jboss.forge.furnace</groupId>
+            <artifactId>furnace</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.forge.furnace</groupId>
+            <artifactId>furnace-api</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.forge.furnace</groupId>
+            <artifactId>furnace-impl</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+
+         <!-- Test Harneses Dependencies -->
+         <dependency>
+            <groupId>org.jboss.forge.test</groupId>
+            <artifactId>forge-test-harness</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.forge.test</groupId>
+            <artifactId>arquillian-forge-classpath</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.forge.test</groupId>
+            <artifactId>arquillian-forge-core</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+         </dependency>
+
+         <!-- Test Dependencies -->
+         <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${version.junit}</version>
+            <scope>test</scope>
+         </dependency>
+
+         <dependency>
+            <groupId>org.jboss.arquillian</groupId>
+            <artifactId>arquillian-bom</artifactId>
+            <version>${version.arquillian}</version>
+            <type>pom</type>
+            <scope>import</scope>
+         </dependency>
+
+         <!-- Forge Dependencies -->
+         <dependency>
+            <groupId>org.jboss.forge.furnace</groupId>
+            <artifactId>furnace-manager</artifactId>
+            <version>${project.version}</version>            
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.forge.furnace</groupId>
+            <artifactId>furnace-manager-api</artifactId>
+            <version>${project.version}</version>            
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.forge.furnace</groupId>
+            <artifactId>furnace-manager-spi</artifactId>
+            <version>${project.version}</version>            
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+
+</project>
+
