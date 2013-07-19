@@ -23,48 +23,6 @@
       <module>resolver</module>
    </modules>
 
-
-   <dependencyManagement>
-      <dependencies>
-         <!-- Module dependencies -->
-         <dependency>
-            <groupId>org.jboss.forge.furnace</groupId>
-            <artifactId>furnace-manager-spi</artifactId>
-            <version>${project.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.jboss.forge.furnace</groupId>
-            <artifactId>furnace-manager-api</artifactId>
-            <version>${project.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.jboss.forge.furnace</groupId>
-            <artifactId>furnace-manager</artifactId>
-            <version>${project.version}</version>
-         </dependency>
-
-         <!-- Furnace dependencies -->
-         <dependency>
-            <groupId>org.jboss.forge.furnace</groupId>
-            <artifactId>furnace-api</artifactId>
-            <version>${project.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.jboss.forge.furnace</groupId>
-            <artifactId>furnace</artifactId>
-            <version>${project.version}</version>
-         </dependency>
-
-         <!-- Test Dependencies -->
-         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-         </dependency>
-      </dependencies>
-   </dependencyManagement>
-
    <dependencies>
       <!-- Furnace Container -->
       <dependency>

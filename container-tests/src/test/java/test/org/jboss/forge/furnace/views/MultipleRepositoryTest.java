@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.jboss.forge.addon.convert.ConverterFactory;
-import org.jboss.forge.addon.maven.addon.MavenAddonDependencyResolver;
 import org.jboss.forge.addon.resource.DirectoryResource;
 import org.jboss.forge.arquillian.ConfigurationScanListener;
 import org.jboss.forge.furnace.Furnace;
@@ -20,6 +19,7 @@ import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.manager.AddonManager;
 import org.jboss.forge.furnace.manager.impl.AddonManagerImpl;
 import org.jboss.forge.furnace.manager.spi.AddonDependencyResolver;
+import org.jboss.forge.furnace.manager.spi.AddonDependencyResolverFactory;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 import org.jboss.forge.furnace.se.FurnaceFactory;
@@ -65,7 +65,7 @@ public class MultipleRepositoryTest
       AddonRepository left = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
       AddonRepository right = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir2);
 
-      AddonDependencyResolver resolver = new MavenAddonDependencyResolver();
+      AddonDependencyResolver resolver = AddonDependencyResolverFactory.createResolver();
       AddonManager manager = new AddonManagerImpl(furnace, resolver, false);
 
       AddonId facets = AddonId.from("org.jboss.forge.addon:facets", "2.0.0-SNAPSHOT");
@@ -112,7 +112,7 @@ public class MultipleRepositoryTest
       AddonRepository left = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
       AddonRepository right = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir2);
 
-      AddonDependencyResolver resolver = new MavenAddonDependencyResolver();
+      AddonDependencyResolver resolver = AddonDependencyResolverFactory.createResolver();
       AddonManager manager = new AddonManagerImpl(furnace, resolver, false);
 
       AddonId facets = AddonId.from("org.jboss.forge.addon:facets", "2.0.0-SNAPSHOT");

@@ -10,7 +10,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -23,7 +25,6 @@ import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
 import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.annotation.Inject;
-import org.jboss.forge.addon.maven.addon.MavenAddonDependencyResolver;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
 import org.jboss.forge.arquillian.archive.ForgeRemoteAddon;
 import org.jboss.forge.arquillian.protocol.ForgeProtocolDescription;
@@ -37,6 +38,7 @@ import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.manager.AddonManager;
 import org.jboss.forge.furnace.manager.impl.AddonManagerImpl;
+import org.jboss.forge.furnace.manager.spi.AddonDependencyResolver;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 import org.jboss.forge.furnace.repositories.MutableAddonRepository;
 import org.jboss.forge.furnace.spi.ContainerLifecycleListener;
@@ -130,7 +132,13 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
       else if (archive instanceof ForgeRemoteAddon)
       {
          ForgeRemoteAddon remoteAddon = (ForgeRemoteAddon) archive;
-         AddonManager addonManager = new AddonManagerImpl(runnable.furnace, new MavenAddonDependencyResolver(), false);
+         Iterator<AddonDependencyResolver> resolvers = ServiceLoader.load(AddonDependencyResolver.class).iterator();
+         if (!resolvers.hasNext())
+         {
+            throw new IllegalStateException("No Addon Resolver found");
+         }
+         AddonDependencyResolver resolver = resolvers.next();
+         AddonManager addonManager = new AddonManagerImpl(runnable.furnace, resolver, false);
 
          addonManager.install(remoteAddon.getAddonId()).perform();
 
