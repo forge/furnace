@@ -73,6 +73,8 @@
             <module>proxy-tests</module>
             <module>se</module>
             <module>se-tests</module>
+            <module>manager</module>
+            <module>test-harness</module>
 
          </modules>
       </profile>
