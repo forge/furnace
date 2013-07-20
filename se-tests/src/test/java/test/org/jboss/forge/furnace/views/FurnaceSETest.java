@@ -7,7 +7,9 @@
 package test.org.jboss.forge.furnace.views;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.forge.furnace.Furnace;
@@ -16,6 +18,7 @@ import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.manager.AddonManager;
 import org.jboss.forge.furnace.manager.impl.AddonManagerImpl;
 import org.jboss.forge.furnace.manager.impl.request.ConfigurationScanListener;
+import org.jboss.forge.furnace.manager.maven.MavenContainer;
 import org.jboss.forge.furnace.manager.maven.addon.MavenAddonDependencyResolver;
 import org.jboss.forge.furnace.manager.spi.AddonDependencyResolver;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
@@ -23,8 +26,10 @@ import org.jboss.forge.furnace.se.FurnaceFactory;
 import org.jboss.forge.furnace.spi.ContainerLifecycleListener;
 import org.jboss.forge.furnace.spi.ListenerRegistration;
 import org.jboss.forge.furnace.util.Addons;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -33,6 +38,28 @@ import org.junit.Test;
 public class FurnaceSETest
 {
    File repodir1;
+
+   @BeforeClass
+   public static void setRemoteRepository() throws IOException
+   {
+      System.setProperty(MavenContainer.ALT_USER_SETTINGS_XML_LOCATION, getAbsolutePath("profiles/settings.xml"));
+      System.setProperty(MavenContainer.ALT_LOCAL_REPOSITORY_LOCATION, "target/the-other-repository");
+   }
+
+   private static String getAbsolutePath(String path) throws FileNotFoundException
+   {
+      URL resource = Thread.currentThread().getContextClassLoader().getResource(path);
+      if (resource == null)
+         throw new FileNotFoundException(path);
+      return resource.getFile();
+   }
+
+   @AfterClass
+   public static void clearRemoteRepository()
+   {
+      System.clearProperty(MavenContainer.ALT_USER_SETTINGS_XML_LOCATION);
+      System.clearProperty(MavenContainer.ALT_LOCAL_REPOSITORY_LOCATION);
+   }
 
    @Before
    public void init() throws IOException
@@ -51,11 +78,11 @@ public class FurnaceSETest
       AddonDependencyResolver resolver = new MavenAddonDependencyResolver();
       AddonManager manager = new AddonManagerImpl(furnace, resolver, false);
 
-      AddonId projects = AddonId.from("org.jboss.forge.addon:projects", "2.0.0-SNAPSHOT");
-      AddonId maven = AddonId.from("org.jboss.forge.addon:maven", "2.0.0-SNAPSHOT");
+      AddonId no_dep = AddonId.from("test:no_dep", "1.0.0.Final");
+      AddonId one_dep = AddonId.from("test:one_dep", "1.0.0.Final");
 
-      manager.install(projects).perform();
-      manager.install(maven).perform();
+      manager.install(no_dep).perform();
+      manager.install(one_dep).perform();
 
       ConfigurationScanListener listener = new ConfigurationScanListener();
       ListenerRegistration<ContainerLifecycleListener> registration = furnace.addContainerLifecycleListener(listener);
@@ -67,7 +94,7 @@ public class FurnaceSETest
 
       registration.removeListener();
 
-      Addon projectsAddon = furnace.getAddonRegistry().getAddon(projects);
+      Addon projectsAddon = furnace.getAddonRegistry().getAddon(no_dep);
       Addons.waitUntilStarted(projectsAddon, 10, TimeUnit.SECONDS);
 
       ClassLoader addonClassLoader = projectsAddon.getClassLoader().loadClass(Addon.class.getName()).getClassLoader();
