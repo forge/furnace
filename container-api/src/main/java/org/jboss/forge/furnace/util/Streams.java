@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 /**
  * Stream utilities.
@@ -47,6 +48,34 @@ public abstract class Streams
       catch (UnsupportedEncodingException e)
       {
          throw new RuntimeException(e);
+      }
+      catch (IOException e)
+      {
+         throw new RuntimeException(e);
+      }
+      return out.toString();
+   }
+
+   /**
+    * Return a {@link String} containing the contents of the given {@link InputStream}
+    */
+   public static String toString(final InputStream stream, Charset charset)
+   {
+      StringBuilder out = new StringBuilder();
+      try
+      {
+         final char[] buffer = new char[0x10000];
+         Reader in = new InputStreamReader(stream, charset);
+         int read;
+         do
+         {
+            read = in.read(buffer, 0, buffer.length);
+            if (read > 0)
+            {
+               out.append(buffer, 0, read);
+            }
+         }
+         while (read >= 0);
       }
       catch (IOException e)
       {
