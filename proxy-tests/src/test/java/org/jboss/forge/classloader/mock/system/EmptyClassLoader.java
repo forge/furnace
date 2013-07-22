@@ -1,4 +1,4 @@
-package org.jboss.forge.classloader.system;
+package org.jboss.forge.classloader.mock.system;
 
 import java.io.IOException;
 import java.io.InputStream;

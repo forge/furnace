@@ -1,4 +1,4 @@
-package org.jboss.forge.classloader.sidewaysproxy;
+package org.jboss.forge.classloader.mock.sidewaysproxy;
 
 public class ContextImpl implements Context
 {

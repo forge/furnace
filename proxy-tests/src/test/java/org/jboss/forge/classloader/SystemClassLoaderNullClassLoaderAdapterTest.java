@@ -5,7 +5,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.jboss.forge.classloader.system;
+package org.jboss.forge.classloader;
 
 import java.util.List;
 
@@ -14,6 +14,8 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.AddonDependency;
 import org.jboss.forge.arquillian.Dependencies;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.classloader.mock.system.ArrayListFactory;
+import org.jboss.forge.classloader.mock.system.EmptyClassLoader;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.proxy.ClassLoaderAdapterBuilder;
 import org.jboss.forge.proxy.Proxies;

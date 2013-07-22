@@ -5,7 +5,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.jboss.forge.classloader.sidewaysproxy;
+package org.jboss.forge.classloader;
 
 import javax.inject.Inject;
 
@@ -14,6 +14,16 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.AddonDependency;
 import org.jboss.forge.arquillian.Dependencies;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.classloader.mock.sidewaysproxy.AbstractExtra;
+import org.jboss.forge.classloader.mock.sidewaysproxy.Action;
+import org.jboss.forge.classloader.mock.sidewaysproxy.Action1;
+import org.jboss.forge.classloader.mock.sidewaysproxy.Context;
+import org.jboss.forge.classloader.mock.sidewaysproxy.ContextImpl;
+import org.jboss.forge.classloader.mock.sidewaysproxy.ContextValue;
+import org.jboss.forge.classloader.mock.sidewaysproxy.ContextValueImpl;
+import org.jboss.forge.classloader.mock.sidewaysproxy.Extra;
+import org.jboss.forge.classloader.mock.sidewaysproxy.Payload;
+import org.jboss.forge.classloader.mock.sidewaysproxy.Payload1;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
