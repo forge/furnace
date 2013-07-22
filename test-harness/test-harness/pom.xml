@@ -7,7 +7,6 @@
       <relativePath>../pom.xml</relativePath>
    </parent>
 
-   <groupId>org.jboss.forge.test</groupId>
    <artifactId>forge-test-harness</artifactId>
    
    <name>Forge - Test Harness</name>
