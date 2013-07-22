@@ -11,12 +11,10 @@ import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.AddonDependency;
-import org.jboss.forge.arquillian.Dependencies;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
 import org.jboss.forge.classloader.mock.system.ArrayListFactory;
 import org.jboss.forge.classloader.mock.system.EmptyClassLoader;
-import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
+import org.jboss.forge.furnace.lifecycle.AddonLifecycleProvider;
 import org.jboss.forge.proxy.ClassLoaderAdapterBuilder;
 import org.jboss.forge.proxy.Proxies;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -34,18 +32,20 @@ public class SystemClassLoaderNullClassLoaderAdapterTest
 {
 
    @Deployment(order = 3)
-   @Dependencies({
-            @AddonDependency(name = "org.jboss.forge.furnace:container-cdi", version = "2.0.0-SNAPSHOT")
-   })
    public static ForgeArchive getDeployment()
    {
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
                .addBeansXML()
-               .addClasses(ArrayListFactory.class,
-                        EmptyClassLoader.class)
-               .addAsAddonDependencies(
-                        AddonDependencyEntry.create("org.jboss.forge.furnace:container-cdi", "2.0.0-SNAPSHOT")
-               );
+               .addClasses(ArrayListFactory.class, EmptyClassLoader.class)
+
+               /*
+                * Lightweight Service Container
+                */
+               .addAsServiceProvider(AddonLifecycleProvider.class, ServiceLoaderLifecycleProvider.class)
+               .addAsServiceProvider(ServiceLoaderLifecycleProvider.SERVICE_REGISTRY_NAME,
+                        ClassLoaderAdapterEnumCollisionsTest.class.getName())
+               .addClasses(ServiceLoaderLifecycleProvider.class, ReflectionExportedInstance.class,
+                        ReflectionServiceRegistry.class);
 
       return archive;
    }

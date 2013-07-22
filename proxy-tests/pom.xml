@@ -42,19 +42,5 @@
          <artifactId>arquillian-forge-classpath</artifactId>
          <scope>test</scope>
       </dependency>
-      <dependency>
-         <groupId>org.jboss.forge.furnace</groupId>
-         <artifactId>container-cdi</artifactId>
-         <classifier>forge-addon</classifier>
-         <version>2.0.0-SNAPSHOT</version>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.jboss.forge.addon</groupId>
-         <artifactId>ui-example</artifactId>
-         <version>${project.version}</version>
-         <classifier>forge-addon</classifier>
-         <scope>test</scope>
-      </dependency>
    </dependencies>
 </project>

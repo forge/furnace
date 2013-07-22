@@ -7,16 +7,13 @@
 
 package org.jboss.forge.classloader;
 
-import javax.inject.Inject;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.AddonDependency;
-import org.jboss.forge.arquillian.Dependencies;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
 import org.jboss.forge.classloader.mock.IterableFactory;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonRegistry;
+import org.jboss.forge.furnace.lifecycle.AddonLifecycleProvider;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.proxy.ClassLoaderAdapterBuilder;
 import org.jboss.forge.proxy.Proxies;
@@ -29,18 +26,23 @@ import org.junit.runner.RunWith;
 public class ClassLoaderIterableProxiedTest
 {
    @Deployment(order = 3)
-   @Dependencies({
-            @AddonDependency(name = "org.jboss.forge.furnace:container-cdi", version = "2.0.0-SNAPSHOT")
-   })
    public static ForgeArchive getDeployment()
    {
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
                .addBeansXML()
                .addClasses(IterableFactory.class)
                .addAsAddonDependencies(
-                        AddonDependencyEntry.create("org.jboss.forge.furnace:container-cdi", "2.0.0-SNAPSHOT"),
                         AddonDependencyEntry.create("dep", "1")
-               );
+               )
+
+               /*
+                * Lightweight Service Container
+                */
+               .addAsServiceProvider(AddonLifecycleProvider.class, ServiceLoaderLifecycleProvider.class)
+               .addAsServiceProvider(ServiceLoaderLifecycleProvider.SERVICE_REGISTRY_NAME,
+                        ClassLoaderAdapterEnumCollisionsTest.class.getName())
+               .addClasses(ServiceLoaderLifecycleProvider.class, ReflectionExportedInstance.class,
+                        ReflectionServiceRegistry.class);
 
       return archive;
    }
@@ -55,12 +57,11 @@ public class ClassLoaderIterableProxiedTest
       return archive;
    }
 
-   @Inject
-   private AddonRegistry registry;
-
    @Test
    public void testIterableTypesAreProxied() throws Exception
    {
+      AddonRegistry registry = ServiceLoaderLifecycleProvider.getFurnace(getClass().getClassLoader())
+               .getAddonRegistry();
       ClassLoader thisLoader = ClassLoaderIterableProxiedTest.class.getClassLoader();
       ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep", "1")).getClassLoader();
 

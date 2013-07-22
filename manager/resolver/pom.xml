@@ -7,9 +7,9 @@
       <version>2.0.0-SNAPSHOT</version>
    </parent>
 
-   <groupId>org.jboss.forge.furnace</groupId>
    <artifactId>furnace-manager-resolver-parent</artifactId>
    <name>Furnace - Manager Resolvers</name>
+
    <packaging>pom</packaging>
    <modules>
       <module>maven</module>
