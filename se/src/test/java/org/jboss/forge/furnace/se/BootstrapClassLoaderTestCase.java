@@ -5,15 +5,15 @@ import java.lang.reflect.Method;
 import java.util.Set;
 
 import org.jboss.forge.furnace.Furnace;
-import org.jboss.forge.furnace.FurnaceImpl;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonRegistry;
+import org.jboss.forge.furnace.impl.FurnaceImpl;
+import org.jboss.forge.furnace.proxy.ClassLoaderAdapterCallback;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 import org.jboss.forge.furnace.se.BootstrapClassLoader;
 import org.jboss.forge.furnace.se.FurnaceFactory;
 import org.jboss.forge.furnace.util.AddonFilters;
-import org.jboss.forge.proxy.ClassLoaderAdapterCallback;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -23,7 +23,7 @@ public class BootstrapClassLoaderTestCase
    public void shouldBeAbleToLoadEnvironment() throws Exception
    {
       final BootstrapClassLoader cl = new BootstrapClassLoader("bootpath");
-      Class<?> bootstrapType = cl.loadClass("org.jboss.forge.furnace.FurnaceImpl");
+      Class<?> bootstrapType = cl.loadClass("org.jboss.forge.furnace.impl.FurnaceImpl");
       Method method = bootstrapType.getMethod("startAsync", new Class<?>[] { ClassLoader.class });
       Object result = method.invoke(bootstrapType.newInstance(), cl);
       Assert.assertEquals(FurnaceImpl.class.getName(), result.getClass().getName());

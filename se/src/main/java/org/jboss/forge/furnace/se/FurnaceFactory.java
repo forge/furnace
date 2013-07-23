@@ -7,7 +7,7 @@
 package org.jboss.forge.furnace.se;
 
 import org.jboss.forge.furnace.Furnace;
-import org.jboss.forge.proxy.ClassLoaderAdapterCallback;
+import org.jboss.forge.furnace.proxy.ClassLoaderAdapterCallback;
 
 public class FurnaceFactory
 {
@@ -16,7 +16,7 @@ public class FurnaceFactory
       try
       {
          final BootstrapClassLoader loader = new BootstrapClassLoader("bootpath");
-         Class<?> bootstrapType = loader.loadClass("org.jboss.forge.furnace.FurnaceImpl");
+         Class<?> bootstrapType = loader.loadClass("org.jboss.forge.furnace.impl.FurnaceImpl");
          return (Furnace) ClassLoaderAdapterCallback.enhance(FurnaceFactory.class.getClassLoader(), loader,
                   bootstrapType.newInstance(), Furnace.class);
       }
@@ -30,7 +30,7 @@ public class FurnaceFactory
    {
       try
       {
-         Class<?> bootstrapType = loader.loadClass("org.jboss.forge.furnace.FurnaceImpl");
+         Class<?> bootstrapType = loader.loadClass("org.jboss.forge.furnace.impl.FurnaceImpl");
          return (Furnace) ClassLoaderAdapterCallback.enhance(FurnaceFactory.class.getClassLoader(), loader,
                   bootstrapType.newInstance(), Furnace.class);
       }

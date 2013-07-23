@@ -12,8 +12,8 @@ import net.sf.cglib.proxy.LazyLoader;
 import org.jboss.forge.classloader.mock.MockFinalResult;
 import org.jboss.forge.classloader.mock.MockService;
 import org.jboss.forge.classloader.mock.Result;
-import org.jboss.forge.proxy.ClassLoaderAdapterCallback;
-import org.jboss.forge.proxy.Proxies;
+import org.jboss.forge.furnace.proxy.ClassLoaderAdapterCallback;
+import org.jboss.forge.furnace.proxy.Proxies;
 import org.junit.Assert;
 import org.junit.Test;
 

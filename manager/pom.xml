@@ -10,7 +10,7 @@
    <artifactId>furnace-manager-parent</artifactId>
    <name>Furnace - Manager Parent</name>
    <packaging>pom</packaging>
-   
+
    <properties>
       <junit.version>4.11</junit.version>
    </properties>
@@ -23,17 +23,36 @@
       <module>resolver</module>
    </modules>
 
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>org.jboss.forge.furnace</groupId>
+            <artifactId>furnace-manager-api</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.forge.furnace</groupId>
+            <artifactId>furnace-manager</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.forge.furnace</groupId>
+            <artifactId>furnace-manager-spi</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.forge.furnace</groupId>
+            <artifactId>furnace-manager-resolver-maven</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+
    <dependencies>
       <!-- Furnace Container -->
       <dependency>
          <groupId>org.jboss.forge.furnace</groupId>
          <artifactId>furnace-api</artifactId>
-         <scope>provided</scope>
-      </dependency>
-      <dependency>
-         <groupId>javax.inject</groupId>
-         <artifactId>javax.inject</artifactId>
-         <version>1</version>
          <scope>provided</scope>
       </dependency>
 

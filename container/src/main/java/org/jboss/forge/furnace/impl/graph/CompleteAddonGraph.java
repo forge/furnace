@@ -8,7 +8,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.jboss.forge.furnace.addons.AddonId;
-import org.jboss.forge.furnace.impl.AddonRepositoryImpl;
+import org.jboss.forge.furnace.impl.addons.AddonRepositoryImpl;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.versions.EmptyVersion;

@@ -6,7 +6,7 @@
  */
 package org.jboss.forge.classloader.mock.collisions;
 
-import org.jboss.forge.proxy.Proxies;
+import org.jboss.forge.furnace.proxy.Proxies;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>

@@ -12,7 +12,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.jboss.forge.furnace.addons.AddonId;
-import org.jboss.forge.furnace.impl.AddonRepositoryImpl;
+import org.jboss.forge.furnace.impl.FurnaceImpl;
+import org.jboss.forge.furnace.impl.addons.AddonRepositoryImpl;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.furnace.repositories.MutableAddonRepository;
 import org.jboss.forge.furnace.versions.SingleVersion;

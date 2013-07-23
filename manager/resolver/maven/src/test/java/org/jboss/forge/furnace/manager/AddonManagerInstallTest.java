@@ -20,6 +20,7 @@ import java.util.ServiceLoader;
 
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
+import org.jboss.forge.furnace.impl.util.Files;
 import org.jboss.forge.furnace.manager.impl.AddonManagerImpl;
 import org.jboss.forge.furnace.manager.maven.MavenContainer;
 import org.jboss.forge.furnace.manager.maven.addon.MavenAddonDependencyResolver;
@@ -29,7 +30,6 @@ import org.jboss.forge.furnace.manager.request.InstallRequest;
 import org.jboss.forge.furnace.manager.request.UpdateRequest;
 import org.jboss.forge.furnace.manager.spi.AddonDependencyResolver;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
-import org.jboss.forge.furnace.util.Files;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;

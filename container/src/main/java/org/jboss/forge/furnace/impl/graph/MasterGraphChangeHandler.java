@@ -4,8 +4,8 @@ import java.util.Set;
 
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonId;
-import org.jboss.forge.furnace.addons.AddonLifecycleManager;
 import org.jboss.forge.furnace.addons.AddonView;
+import org.jboss.forge.furnace.impl.addons.AddonLifecycleManager;
 import org.jgrapht.event.TraversalListenerAdapter;
 import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.traverse.DepthFirstIterator;

@@ -110,11 +110,6 @@
          </dependency>
          <dependency>
             <groupId>org.jboss.forge.furnace</groupId>
-            <artifactId>furnace-manager-api</artifactId>
-            <version>${project.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.jboss.forge.furnace</groupId>
             <artifactId>furnace-manager</artifactId>
             <version>${project.version}</version>
          </dependency>

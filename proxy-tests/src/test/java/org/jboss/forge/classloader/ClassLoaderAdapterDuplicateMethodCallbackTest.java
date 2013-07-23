@@ -8,7 +8,7 @@ package org.jboss.forge.classloader;
 
 import org.jboss.forge.classloader.mock.MockParentInterface1;
 import org.jboss.forge.classloader.mock.MockService2;
-import org.jboss.forge.proxy.ClassLoaderAdapterCallback;
+import org.jboss.forge.furnace.proxy.ClassLoaderAdapterCallback;
 import org.junit.Assert;
 import org.junit.Test;
 

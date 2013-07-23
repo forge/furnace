@@ -10,9 +10,9 @@ import java.lang.reflect.Method;
 
 import org.jboss.forge.classloader.mock.MockResult;
 import org.jboss.forge.classloader.mock.MockService;
-import org.jboss.forge.proxy.ClassLoaderAdapterCallback;
-import org.jboss.forge.proxy.ForgeProxy;
-import org.jboss.forge.proxy.Proxies;
+import org.jboss.forge.furnace.proxy.ClassLoaderAdapterCallback;
+import org.jboss.forge.furnace.proxy.ForgeProxy;
+import org.jboss.forge.furnace.proxy.Proxies;
 import org.junit.Assert;
 import org.junit.Test;
 

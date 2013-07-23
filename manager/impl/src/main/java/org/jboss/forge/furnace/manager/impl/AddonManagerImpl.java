@@ -21,8 +21,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import javax.inject.Inject;
-
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.manager.AddonManager;
@@ -45,7 +43,6 @@ public class AddonManagerImpl implements AddonManager
    private final AddonDependencyResolver resolver;
    private final boolean updateSnapshotDependencies;
 
-   @Inject
    public AddonManagerImpl(final Furnace forge, final AddonDependencyResolver resolver)
    {
       this.furnace = forge;
