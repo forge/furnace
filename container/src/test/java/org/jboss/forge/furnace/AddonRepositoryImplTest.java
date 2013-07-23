@@ -108,7 +108,7 @@ public class AddonRepositoryImplTest
 
       Assert.assertFalse(repository.isDeployed(addon));
       repository.deploy(addon, new ArrayList<AddonDependencyEntry>(), new ArrayList<File>());
-      Assert.assertFalse(repository.isDeployed(addon));
+      Assert.assertTrue(repository.isDeployed(addon));
 
       Assert.assertFalse(repository.isEnabled(addon));
       repository.enable(addon);

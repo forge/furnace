@@ -127,7 +127,7 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
             File descriptor = getAddonDescriptor(addon);
             try
             {
-               if (resources != null && resources.iterator().hasNext())
+               if (resources != null)
                {
                   for (File resource : resources)
                   {
@@ -150,26 +150,29 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
                Node addonXml = getXmlRoot(descriptor);
                Node dependenciesNode = addonXml.getOrCreate(DEPENDENCIES_TAG_NAME);
 
-               for (AddonDependencyEntry dependency : dependencies)
+               if (dependencies != null)
                {
-                  String name = dependency.getName();
-                  Node dep = null;
-                  for (Node node : dependenciesNode.get(DEPENDENCY_TAG_NAME))
+                  for (AddonDependencyEntry dependency : dependencies)
                   {
-                     if (name.equals(node.getAttribute(ATTR_NAME)))
+                     String name = dependency.getName();
+                     Node dep = null;
+                     for (Node node : dependenciesNode.get(DEPENDENCY_TAG_NAME))
                      {
-                        dep = node;
-                        break;
+                        if (name.equals(node.getAttribute(ATTR_NAME)))
+                        {
+                           dep = node;
+                           break;
+                        }
                      }
+                     if (dep == null)
+                     {
+                        dep = dependenciesNode.createChild(DEPENDENCY_TAG_NAME);
+                        dep.attribute(ATTR_NAME, name);
+                     }
+                     dep.attribute(ATTR_VERSION, dependency.getVersionRange());
+                     dep.attribute(ATTR_EXPORT, dependency.isExported());
+                     dep.attribute(ATTR_OPTIONAL, dependency.isOptional());
                   }
-                  if (dep == null)
-                  {
-                     dep = dependenciesNode.createChild(DEPENDENCY_TAG_NAME);
-                     dep.attribute(ATTR_NAME, name);
-                  }
-                  dep.attribute(ATTR_VERSION, dependency.getVersionRange());
-                  dep.attribute(ATTR_EXPORT, dependency.isExported());
-                  dep.attribute(ATTR_OPTIONAL, dependency.isOptional());
                }
 
                FileOutputStream fos = null;
@@ -464,9 +467,8 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
          {
             File addonBaseDir = getAddonBaseDir(addon);
             File addonDescriptorFile = getAddonDescriptorFile(addon);
-            List<File> addonResources = getAddonResources(addon);
 
-            return addonBaseDir.exists() && addonDescriptorFile.exists() && !addonResources.isEmpty();
+            return addonBaseDir.exists() && addonDescriptorFile.exists();
          }
       });
    }
