@@ -177,7 +177,7 @@ public class AddonLifecycleManager
                master.merge(graph);
 
                logger.log(Level.FINE, " ------------ MASTER GRAPH v" + i++ + "------------ ");
-               logger.log(Level.INFO, master.toString());
+               logger.log(Level.FINE, master.toString());
             }
 
             MasterGraph last = stateManager.getCurrentGraph();
