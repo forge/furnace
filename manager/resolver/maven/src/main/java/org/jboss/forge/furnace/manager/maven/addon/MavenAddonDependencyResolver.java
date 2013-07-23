@@ -19,9 +19,7 @@ import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.collection.CollectResult;
-import org.eclipse.aether.collection.DependencyCollectionContext;
 import org.eclipse.aether.collection.DependencyCollectionException;
-import org.eclipse.aether.collection.DependencyTraverser;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -69,28 +67,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
       final String mavenCoords = toMavenCoords(addonId);
       Artifact queryArtifact = new DefaultArtifact(mavenCoords);
-      session.setDependencyTraverser(new DependencyTraverser()
-      {
-         @Override
-         public boolean traverseDependency(Dependency dependency)
-         {
-            Artifact artifact = dependency.getArtifact();
-            boolean isForgeAddon = "forge-addon".equals(artifact.getClassifier());
-            // We don't want to traverse non-addons optional dependencies
-            if (!isForgeAddon && dependency.isOptional())
-            {
-               return false;
-            }
-            boolean shouldRecurse = !"test".equals(dependency.getScope());
-            return shouldRecurse;
-         }
-
-         @Override
-         public DependencyTraverser deriveChildTraverser(DependencyCollectionContext context)
-         {
-            return this;
-         }
-      });
+      session.setDependencyTraverser(new AddonDependencyTraverser());
       session.setDependencySelector(new AddonDependencySelector());
       Dependency dependency = new Dependency(queryArtifact, null);
 
@@ -227,27 +204,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    private DependencyNode traverseAddonGraph(String coords, RepositorySystem system, Settings settings,
             DefaultRepositorySystemSession session)
    {
-      session.setDependencyTraverser(new DependencyTraverser()
-      {
-         @Override
-         public boolean traverseDependency(Dependency dependency)
-         {
-            boolean isForgeAddon = "forge-addon".equals(dependency.getArtifact().getClassifier());
-            // We don't want to traverse non-addons optional dependencies
-            if (!isForgeAddon && dependency.isOptional())
-            {
-               return false;
-            }
-            boolean shouldRecurse = !"test".equals(dependency.getScope());
-            return shouldRecurse;
-         }
-
-         @Override
-         public DependencyTraverser deriveChildTraverser(DependencyCollectionContext context)
-         {
-            return this;
-         }
-      });
+      session.setDependencyTraverser(new AddonDependencyTraverser());
       session.setDependencySelector(new AddonDependencySelector());
       Artifact queryArtifact = new DefaultArtifact(coords);
 

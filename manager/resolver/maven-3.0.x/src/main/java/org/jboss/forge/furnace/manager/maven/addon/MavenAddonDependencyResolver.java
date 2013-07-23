@@ -22,9 +22,7 @@ import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.collection.CollectRequest;
 import org.sonatype.aether.collection.CollectResult;
-import org.sonatype.aether.collection.DependencyCollectionContext;
 import org.sonatype.aether.collection.DependencyCollectionException;
-import org.sonatype.aether.collection.DependencyTraverser;
 import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.graph.DependencyNode;
 import org.sonatype.aether.repository.RemoteRepository;
@@ -46,6 +44,7 @@ import org.sonatype.aether.version.Version;
  */
 public class MavenAddonDependencyResolver implements AddonDependencyResolver
 {
+
    private static final String FORGE_ADDON_CLASSIFIER = "forge-addon";
    private final MavenContainer container = new MavenContainer();
 
@@ -69,28 +68,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
       final String mavenCoords = toMavenCoords(addonId);
       Artifact queryArtifact = new DefaultArtifact(mavenCoords);
-      session.setDependencyTraverser(new DependencyTraverser()
-      {
-         @Override
-         public boolean traverseDependency(Dependency dependency)
-         {
-            Artifact artifact = dependency.getArtifact();
-            boolean isForgeAddon = "forge-addon".equals(artifact.getClassifier());
-            // We don't want to traverse non-addons optional dependencies
-            if (!isForgeAddon && dependency.isOptional())
-            {
-               return false;
-            }
-            boolean shouldRecurse = !"test".equals(dependency.getScope());
-            return shouldRecurse;
-         }
-
-         @Override
-         public DependencyTraverser deriveChildTraverser(DependencyCollectionContext context)
-         {
-            return this;
-         }
-      });
+      session.setDependencyTraverser(new AddonDependencyTraverser());
       session.setDependencySelector(new AddonDependencySelector());
       Dependency dependency = new Dependency(queryArtifact, null);
 
@@ -227,33 +205,13 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    private DependencyNode traverseAddonGraph(String coords, RepositorySystem system, Settings settings,
             DefaultRepositorySystemSession session)
    {
-      session.setDependencyTraverser(new DependencyTraverser()
-      {
-         @Override
-         public boolean traverseDependency(Dependency dependency)
-         {
-            boolean isForgeAddon = "forge-addon".equals(dependency.getArtifact().getClassifier());
-            // We don't want to traverse non-addons optional dependencies
-            if (!isForgeAddon && dependency.isOptional())
-            {
-               return false;
-            }
-            boolean shouldRecurse = !"test".equals(dependency.getScope());
-            return shouldRecurse;
-         }
-
-         @Override
-         public DependencyTraverser deriveChildTraverser(DependencyCollectionContext context)
-         {
-            return this;
-         }
-      });
+      session.setDependencyTraverser(new AddonDependencyTraverser());
       session.setDependencySelector(new AddonDependencySelector());
       Artifact queryArtifact = new DefaultArtifact(coords);
 
       List<RemoteRepository> repositories = MavenRepositories.getRemoteRepositories(container, settings);
       CollectRequest collectRequest = new CollectRequest(new Dependency(queryArtifact, null), repositories);
-      
+
       CollectResult result;
       try
       {
