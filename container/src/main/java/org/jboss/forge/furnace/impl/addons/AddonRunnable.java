@@ -152,7 +152,7 @@ public final class AddonRunnable implements Runnable
       }
       catch (Throwable e)
       {
-         logger.log(Level.SEVERE, "Failed to shut down addon " + addon.getId(), e);
+         logger.log(Level.FINE, "Failed to shut down addon " + addon.getId(), e);
       }
       finally
       {
