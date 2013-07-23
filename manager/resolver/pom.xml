@@ -13,6 +13,7 @@
    <packaging>pom</packaging>
    <modules>
       <module>maven</module>
+      <module>maven-3.0.x</module>
    </modules>
 </project>
 
