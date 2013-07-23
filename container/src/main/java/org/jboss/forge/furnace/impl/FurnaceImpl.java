@@ -71,7 +71,8 @@ public class FurnaceImpl implements Furnace
       if (!AddonRepositoryImpl.hasRuntimeAPIVersion())
          logger.warning("Could not detect Furnace runtime version - " +
                   "loading all addons, but failures may occur if versions are not compatible.");
-      // enableLogging();
+      if (Boolean.getBoolean("furnace.debug"))
+         enableLogging();
    }
 
    @Override
