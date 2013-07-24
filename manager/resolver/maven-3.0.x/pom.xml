@@ -3,7 +3,7 @@
    <parent>
       <groupId>org.jboss.forge.furnace</groupId>
       <artifactId>furnace-manager-resolver-parent</artifactId>
-      <version>2.0.0.Alpha7</version>
+      <version>2.0.0-SNAPSHOT</version>
    </parent>
    <artifactId>furnace-manager-resolver-maven-3.0.x</artifactId>
    <name>Furnace - Manager Maven Resolver</name>
