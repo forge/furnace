@@ -3,15 +3,15 @@
    <modelVersion>4.0.0</modelVersion>
 
    <parent>
-      <artifactId>forge-test-parent</artifactId>
-      <groupId>org.jboss.forge.test</groupId>
+      <artifactId>furnace-test-parent</artifactId>
+      <groupId>org.jboss.forge.furnace.test</groupId>
       <version>2.0.0-SNAPSHOT</version>
       <relativePath>../pom.xml</relativePath>
    </parent>
 
    <packaging>pom</packaging>
    <artifactId>arquillian-forge-parent</artifactId>
-   <name>Forge - Arquillian Container Adapters</name>
+   <name>Furnace - Arquillian Container Adapters</name>
 
    <modules>
       <module>core</module>
