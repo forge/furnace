@@ -134,47 +134,48 @@ public class AddonModuleLoader extends ModuleLoader
       if (addon != null)
       {
          Set<AddonView> views = stateManager.getViewsOf(addon);
+         AddonId found = addon.getId();
          for (AddonRepository repository : views.iterator().next().getRepositories())
          {
-            AddonId found = addon.getId();
-            Addon mappedAddon = moduleCache.getAddon(id);
-
-            if (mappedAddon != null && mappedAddon.getId().equals(found))
+            if (repository.isEnabled(found) && repository.isDeployed(found))
             {
-               Builder builder = ModuleSpec.build(id);
+               Addon mappedAddon = moduleCache.getAddon(id);
 
-               builder.addDependency(DependencySpec.createModuleDependencySpec(SystemClasspathSpec.ID));
-               builder.addDependency(DependencySpec.createModuleDependencySpec(XPathJDKClasspathSpec.ID));
-               builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(),
-                        PathFilters.rejectAll(), null, FurnaceContainerSpec.ID, false));
-               try
+               if (mappedAddon != null && mappedAddon.getId().equals(found))
                {
-                  addContainerDependencies(views, repository, found, builder);
-                  addAddonDependencies(views, repository, found, builder);
-               }
-               catch (ContainerException e)
-               {
-                  logger.warning(e.getMessage());
-                  return null;
-               }
+                  Builder builder = ModuleSpec.build(id);
 
-               builder.addDependency(DependencySpec.createLocalDependencySpec(PathFilters.acceptAll(),
-                        PathFilters.acceptAll()));
+                  builder.addDependency(DependencySpec.createModuleDependencySpec(SystemClasspathSpec.ID));
+                  builder.addDependency(DependencySpec.createModuleDependencySpec(XPathJDKClasspathSpec.ID));
+                  builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(),
+                           PathFilters.rejectAll(), null, FurnaceContainerSpec.ID, false));
+                  try
+                  {
+                     addContainerDependencies(views, repository, found, builder);
+                  }
+                  catch (ContainerException e)
+                  {
+                     logger.warning(e.getMessage());
+                     return null;
+                  }
 
-               try
-               {
-                  addContainerDependencies(views, repository, found, builder);
-                  addAddonDependencies(views, repository, found, builder);
+                  builder.addDependency(DependencySpec.createLocalDependencySpec(PathFilters.acceptAll(),
+                           PathFilters.acceptAll()));
+
+                  try
+                  {
+                     addAddonDependencies(views, repository, found, builder);
+                  }
+                  catch (ContainerException e)
+                  {
+                     logger.warning(e.getMessage());
+                     return null;
+                  }
+
+                  addLocalResources(repository, found, builder, id);
+
+                  return builder.create();
                }
-               catch (ContainerException e)
-               {
-                  logger.warning(e.getMessage());
-                  return null;
-               }
-
-               addLocalResources(repository, found, builder, id);
-
-               return builder.create();
             }
          }
       }
