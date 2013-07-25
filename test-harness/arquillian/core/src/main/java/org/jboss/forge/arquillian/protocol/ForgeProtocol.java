@@ -55,7 +55,7 @@ public class ForgeProtocol implements Protocol<ForgeProtocolConfiguration>
          };
       }
 
-      Collection<Furnace> contexts = metaData.getContexts(Furnace.class);
+      Collection<FurnaceHolder> contexts = metaData.getContexts(FurnaceHolder.class);
       if (contexts.size() == 0)
       {
          throw new IllegalArgumentException(

@@ -15,6 +15,7 @@ import org.jboss.arquillian.test.spi.TestMethodExecutor;
 import org.jboss.arquillian.test.spi.TestResult;
 import org.jboss.arquillian.test.spi.TestResult.Status;
 import org.jboss.forge.arquillian.protocol.ForgeProtocolConfiguration;
+import org.jboss.forge.arquillian.protocol.FurnaceHolder;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonRegistry;
@@ -31,17 +32,17 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
 {
    private Furnace forge;
 
-   public ForgeTestMethodExecutor(ForgeProtocolConfiguration config, final Furnace forge)
+   public ForgeTestMethodExecutor(ForgeProtocolConfiguration config, final FurnaceHolder holder)
    {
       if (config == null)
       {
          throw new IllegalArgumentException("ForgeProtocolConfiguration must be specified");
       }
-      if (forge == null)
+      if (holder == null)
       {
          throw new IllegalArgumentException("Furnace runtime must be provided");
       }
-      this.forge = forge;
+      this.forge = holder.getFurnace();
    }
 
    @Override

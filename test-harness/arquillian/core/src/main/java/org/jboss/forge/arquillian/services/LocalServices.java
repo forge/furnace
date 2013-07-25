@@ -27,7 +27,7 @@ import org.jboss.forge.furnace.util.Streams;
  */
 public class LocalServices implements AddonLifecycleProvider
 {
-   public static final String SERVICE_REGISTRATION_FILE_NAME = "org.jboss.forge.furnace.services.Exported";
+   private static final String SERVICE_REGISTRATION_FILE_NAME = "org.jboss.forge.furnace.services.Exported";
    private Furnace furnace;
    private static Map<ClassLoader, Furnace> started = new ConcurrentHashMap<ClassLoader, Furnace>();
 

@@ -28,6 +28,7 @@ import org.jboss.forge.arquillian.archive.ForgeArchive;
 import org.jboss.forge.arquillian.archive.ForgeRemoteAddon;
 import org.jboss.forge.arquillian.archive.RepositoryForgeArchive;
 import org.jboss.forge.arquillian.protocol.ForgeProtocolDescription;
+import org.jboss.forge.arquillian.protocol.FurnaceHolder;
 import org.jboss.forge.arquillian.util.ShrinkWrapUtil;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
@@ -59,6 +60,7 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
    @Inject
    private Instance<Deployment> deploymentInstance;
 
+   private FurnaceHolder furnaceHolder = new FurnaceHolder();
    private ForgeRunnable runnable;
    private File addonDir;
 
@@ -116,7 +118,7 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
                   "Invalid Archive type. Ensure that your @Deployment method returns type 'ForgeArchive'.");
       }
 
-      return new ProtocolMetaData().addContext(runnable.getForge());
+      return new ProtocolMetaData().addContext(furnaceHolder);
    }
 
    private <T> T waitForConfigurationRescan(Callable<T> action)
@@ -156,11 +158,18 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
          {
             stopContainer();
             initContainer();
+            for (String name : deploymentRepositories.keySet())
+            {
+               runnable.furnace.addRepository(AddonRepositoryMode.MUTABLE,
+                        new File(addonDir, OperatingSystemUtils.getSafeFilename(name)));
+            }
             target = (MutableAddonRepository) runnable.furnace.addRepository(AddonRepositoryMode.MUTABLE,
                      new File(addonDir, OperatingSystemUtils.getSafeFilename(repositoryName)));
             deploymentRepositories.put(repositoryName, target);
             startContainer();
          }
+         else
+            target = deploymentRepositories.get(repositoryName);
       }
       return target;
    }
@@ -293,6 +302,7 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
    private void initContainer()
    {
       runnable = new ForgeRunnable(ClassLoader.getSystemClassLoader());
+      furnaceHolder.setFurnace(runnable.furnace);
       thread = new Thread(runnable, "Arquillian Furnace Runtime");
       repository = (MutableAddonRepository) runnable.furnace.addRepository(AddonRepositoryMode.MUTABLE, addonDir);
    }

@@ -199,6 +199,8 @@ public class ForgeArchiveImpl extends ContainerBase<ForgeArchive> implements For
       return this;
    }
 
+   private static final String SERVICE_REGISTRATION_FILE_NAME = "org.jboss.forge.furnace.services.Exported";
+
    @Override
    public ForgeArchive addAsLocalServices(Class<?>... serviceTypes)
    {
@@ -207,7 +209,7 @@ public class ForgeArchiveImpl extends ContainerBase<ForgeArchive> implements For
                ReflectionServiceRegistry.class);
       for (Class<?> type : serviceTypes)
       {
-         addAsServiceProvider(LocalServices.SERVICE_REGISTRATION_FILE_NAME,
+         addAsServiceProvider(SERVICE_REGISTRATION_FILE_NAME,
                   type.getName());
       }
       return this;

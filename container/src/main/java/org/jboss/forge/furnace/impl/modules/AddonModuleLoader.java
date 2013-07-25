@@ -272,13 +272,16 @@ public class AddonModuleLoader extends ModuleLoader
       Addon addon = currentAddon.get();
       Version runtimeAPIVersion = AddonRepositoryImpl.getRuntimeAPIVersion();
 
-      AddonRepository repository = stateManager.getViewsOf(addon).iterator().next().getRepositories().iterator().next();
-      List<AddonId> enabled = repository.listEnabledCompatibleWithVersion(runtimeAPIVersion);
-      for (AddonId id : enabled)
+      for (AddonRepository repository : stateManager.getViewsOf(addon).iterator().next().getRepositories())
       {
-         if (id.getName().equals(addonId.getName()))
+         List<AddonId> enabled = repository.listEnabledCompatibleWithVersion(runtimeAPIVersion);
+         for (AddonId id : enabled)
          {
-            result = moduleCache.getModuleId(addon);
+            if (id.getName().equals(addonId.getName()))
+            {
+               result = moduleCache.getModuleId(addon);
+               break;
+            }
          }
       }
 
