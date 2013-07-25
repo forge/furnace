@@ -48,4 +48,9 @@ public class ConfigurationScanListener implements ContainerLifecycleListener
       return configurationScanned;
    }
 
+   @Override
+   public String toString()
+   {
+      return "Scan occurred: " + configurationScanned;
+   }
 }

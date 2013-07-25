@@ -14,7 +14,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
 import org.jboss.forge.classloader.mock.system.ArrayListFactory;
 import org.jboss.forge.classloader.mock.system.EmptyClassLoader;
-import org.jboss.forge.furnace.lifecycle.AddonLifecycleProvider;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
 import org.jboss.forge.furnace.proxy.Proxies;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -30,28 +29,18 @@ import org.junit.runner.RunWith;
  */
 public class SystemClassLoaderNullClassLoaderAdapterTest
 {
-
-   @Deployment(order = 3)
+   @Deployment(name = "SCLNCAT", order = 3)
    public static ForgeArchive getDeployment()
    {
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
-               .addBeansXML()
                .addClasses(ArrayListFactory.class, EmptyClassLoader.class)
-
-               /*
-                * Lightweight Service Container
-                */
-               .addAsServiceProvider(AddonLifecycleProvider.class, ServiceLoaderLifecycleProvider.class)
-               .addAsServiceProvider(ServiceLoaderLifecycleProvider.SERVICE_REGISTRY_NAME,
-                        ClassLoaderAdapterEnumCollisionsTest.class.getName())
-               .addClasses(ServiceLoaderLifecycleProvider.class, ReflectionExportedInstance.class,
-                        ReflectionServiceRegistry.class);
+               .addAsLocalServices(SystemClassLoaderNullClassLoaderAdapterTest.class);
 
       return archive;
    }
 
-   @SuppressWarnings("unchecked")
    @Test
+   @SuppressWarnings("unchecked")
    public void testNullSystemClassLoaderDefaultsToFurnaceProxyCL() throws Exception
    {
       ClassLoader thisLoader = SystemClassLoaderNullClassLoaderAdapterTest.class.getClassLoader();

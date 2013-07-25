@@ -13,6 +13,7 @@ import java.util.List;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.classloader.mock.collisions.ClassCreatesInstanceFromClassLoader;
 import org.jboss.forge.classloader.mock.collisions.ClassImplementsInterfaceExtendsInterfaceValue;
 import org.jboss.forge.classloader.mock.collisions.ClassImplementsInterfaceModifiableContext;
@@ -26,7 +27,6 @@ import org.jboss.forge.classloader.mock.collisions.InterfaceWithGetterAndSetter;
 import org.jboss.forge.classloader.mock.collisions.InterfaceWithPassthroughMethod;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonRegistry;
-import org.jboss.forge.furnace.lifecycle.AddonLifecycleProvider;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
 import org.jboss.forge.furnace.proxy.Proxies;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -43,15 +43,7 @@ public class ClassLoaderAdapterCollisionsTest
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
                .addBeansXML()
                .addPackages(true, ClassWithGetterAndSetter.class.getPackage())
-
-               /*
-                * Lightweight Service Container
-                */
-               .addAsServiceProvider(AddonLifecycleProvider.class, ServiceLoaderLifecycleProvider.class)
-               .addAsServiceProvider(ServiceLoaderLifecycleProvider.SERVICE_REGISTRY_NAME,
-                        ClassLoaderAdapterEnumCollisionsTest.class.getName())
-               .addClasses(ServiceLoaderLifecycleProvider.class, ReflectionExportedInstance.class,
-                        ReflectionServiceRegistry.class);
+               .addAsLocalServices(ClassLoaderAdapterCollisionsTest.class);
 
       return archive;
    }
@@ -79,7 +71,7 @@ public class ClassLoaderAdapterCollisionsTest
    @Test
    public void testSimpleAssignmentCollision() throws Exception
    {
-      AddonRegistry registry = ServiceLoaderLifecycleProvider.getFurnace(getClass().getClassLoader())
+      AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
                .getAddonRegistry();
       ClassLoader thisLoader = ClassLoaderAdapterCollisionsTest.class.getClassLoader();
       ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep1", "1")).getClassLoader();
@@ -114,7 +106,7 @@ public class ClassLoaderAdapterCollisionsTest
    @Test
    public void testParameterTypeCollision() throws Exception
    {
-      AddonRegistry registry = ServiceLoaderLifecycleProvider.getFurnace(getClass().getClassLoader())
+      AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
                .getAddonRegistry();
       ClassLoader thisLoader = ClassLoaderAdapterCollisionsTest.class.getClassLoader();
       ClassLoader loader1 = registry.getAddon(AddonId.from("dep1", "1")).getClassLoader();
@@ -148,7 +140,7 @@ public class ClassLoaderAdapterCollisionsTest
    @Test
    public void testParameterTypeCollisionRoundTrip() throws Exception
    {
-      AddonRegistry registry = ServiceLoaderLifecycleProvider.getFurnace(getClass().getClassLoader())
+      AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
                .getAddonRegistry();
       ClassLoader thisLoader = ClassLoaderAdapterCollisionsTest.class.getClassLoader();
       ClassLoader loader1 = registry.getAddon(AddonId.from("dep1", "1")).getClassLoader();
@@ -186,7 +178,7 @@ public class ClassLoaderAdapterCollisionsTest
    @Test
    public void testInterfaceSimpleAssignmentCollision() throws Exception
    {
-      AddonRegistry registry = ServiceLoaderLifecycleProvider.getFurnace(getClass().getClassLoader())
+      AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
                .getAddonRegistry();
       ClassLoader thisLoader = ClassLoaderAdapterCollisionsTest.class.getClassLoader();
       ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep1", "1")).getClassLoader();
@@ -222,7 +214,7 @@ public class ClassLoaderAdapterCollisionsTest
    @Test
    public void testInterfaceParameterTypeCollision() throws Exception
    {
-      AddonRegistry registry = ServiceLoaderLifecycleProvider.getFurnace(getClass().getClassLoader())
+      AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
                .getAddonRegistry();
       ClassLoader thisLoader = ClassLoaderAdapterCollisionsTest.class.getClassLoader();
       ClassLoader loader1 = registry.getAddon(AddonId.from("dep1", "1")).getClassLoader();
@@ -256,7 +248,7 @@ public class ClassLoaderAdapterCollisionsTest
    @Test
    public void testInterfaceParameterTypeCollisionRoundTrip() throws Exception
    {
-      AddonRegistry registry = ServiceLoaderLifecycleProvider.getFurnace(getClass().getClassLoader())
+      AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
                .getAddonRegistry();
       ClassLoader thisLoader = ClassLoaderAdapterCollisionsTest.class.getClassLoader();
       ClassLoader loader1 = registry.getAddon(AddonId.from("dep1", "1")).getClassLoader();
@@ -296,7 +288,7 @@ public class ClassLoaderAdapterCollisionsTest
    @Test
    public void testReturnTypeEnhancementFromThirdPartyLoader() throws Exception
    {
-      AddonRegistry registry = ServiceLoaderLifecycleProvider.getFurnace(getClass().getClassLoader())
+      AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
                .getAddonRegistry();
       ClassLoader thisLoader = ClassLoaderAdapterCollisionsTest.class.getClassLoader();
       ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep1", "1")).getClassLoader();
@@ -329,7 +321,7 @@ public class ClassLoaderAdapterCollisionsTest
    @Test
    public void testReturnTypeNativeAccessAfterParameterTypeEnhancementFromEnhancedClass() throws Exception
    {
-      AddonRegistry registry = ServiceLoaderLifecycleProvider.getFurnace(getClass().getClassLoader())
+      AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
                .getAddonRegistry();
       ClassLoader thisLoader = ClassLoaderAdapterCollisionsTest.class.getClassLoader();
       ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep1", "1")).getClassLoader();

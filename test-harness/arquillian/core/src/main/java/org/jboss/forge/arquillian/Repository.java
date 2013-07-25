@@ -10,15 +10,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 /**
- * Specifies an Addon that must be installed before this Deployment may be performed.
+ * Defines the Addon repository into which this Deployment will be installed.
+ * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public @interface AddonDependency
+public @interface Repository
 {
-   String name();
-
-   /**
-    * Always attempt to run against the latest version by default
-    */
-   String version() default "LATEST";
+   String value();
 }

@@ -12,5 +12,9 @@ public interface ForgeRemoteAddon extends Archive<ForgeRemoteAddon>
 {
    AddonId getAddonId();
 
-   public ForgeRemoteAddon setAddonId(AddonId id);
+   ForgeRemoteAddon setAddonId(AddonId id);
+
+   String getAddonRepository();
+
+   ForgeRemoteAddon setAddonRepository(String repository);
 }

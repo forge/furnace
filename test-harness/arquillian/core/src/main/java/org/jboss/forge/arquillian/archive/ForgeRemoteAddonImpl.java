@@ -27,6 +27,7 @@ import org.jboss.shrinkwrap.impl.base.container.ContainerBase;
 public class ForgeRemoteAddonImpl extends ContainerBase<ForgeRemoteAddon> implements ForgeRemoteAddon
 {
    private AddonId id;
+   private String repository;
 
    @Override
    public AddonId getAddonId()
@@ -38,6 +39,19 @@ public class ForgeRemoteAddonImpl extends ContainerBase<ForgeRemoteAddon> implem
    public ForgeRemoteAddon setAddonId(AddonId id)
    {
       this.id = id;
+      return this;
+   }
+
+   @Override
+   public String getAddonRepository()
+   {
+      return repository;
+   }
+
+   @Override
+   public ForgeRemoteAddon setAddonRepository(String repository)
+   {
+      this.repository = repository;
       return this;
    }
 

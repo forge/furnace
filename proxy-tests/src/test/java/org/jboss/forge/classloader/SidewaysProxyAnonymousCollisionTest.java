@@ -10,6 +10,7 @@ package org.jboss.forge.classloader;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.classloader.mock.sidewaysproxy.AbstractExtra;
 import org.jboss.forge.classloader.mock.sidewaysproxy.Action;
 import org.jboss.forge.classloader.mock.sidewaysproxy.Action1;
@@ -22,7 +23,6 @@ import org.jboss.forge.classloader.mock.sidewaysproxy.Payload;
 import org.jboss.forge.classloader.mock.sidewaysproxy.Payload1;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonRegistry;
-import org.jboss.forge.furnace.lifecycle.AddonLifecycleProvider;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
 import org.jboss.forge.furnace.proxy.Proxies;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
@@ -42,15 +42,7 @@ public class SidewaysProxyAnonymousCollisionTest
                .addBeansXML()
                .addClasses(Context.class, ContextImpl.class, ContextValue.class, Action.class, Action1.class,
                         Payload.class, Payload1.class, Extra.class, AbstractExtra.class, ContextValueImpl.class)
-
-               /*
-                * Lightweight Service Container
-                */
-               .addAsServiceProvider(AddonLifecycleProvider.class, ServiceLoaderLifecycleProvider.class)
-               .addAsServiceProvider(ServiceLoaderLifecycleProvider.SERVICE_REGISTRY_NAME,
-                        ClassLoaderAdapterEnumCollisionsTest.class.getName())
-               .addClasses(ServiceLoaderLifecycleProvider.class, ReflectionExportedInstance.class,
-                        ReflectionServiceRegistry.class);
+               .addAsLocalServices(SidewaysProxyAnonymousCollisionTest.class);
 
       return archive;
    }
@@ -100,7 +92,7 @@ public class SidewaysProxyAnonymousCollisionTest
    @Test
    public void testSidewaysCollision() throws Exception
    {
-      AddonRegistry registry = ServiceLoaderLifecycleProvider.getFurnace(getClass().getClassLoader())
+      AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
                .getAddonRegistry();
       ClassLoader A = this.getClass().getClassLoader();
       ClassLoader B = registry.getAddon(AddonId.from("B", "1")).getClassLoader();

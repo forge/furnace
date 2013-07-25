@@ -4,7 +4,7 @@
  * Licensed under the Eclipse Public License version 1.0, available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.jboss.forge.classloader;
+package org.jboss.forge.arquillian.services;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -25,9 +25,9 @@ import org.jboss.forge.furnace.util.Streams;
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class ServiceLoaderLifecycleProvider implements AddonLifecycleProvider
+public class LocalServices implements AddonLifecycleProvider
 {
-   public static final String SERVICE_REGISTRY_NAME = "org.jboss.forge.furnace.services.Exported";
+   public static final String SERVICE_REGISTRATION_FILE_NAME = "org.jboss.forge.furnace.services.Exported";
    private Furnace furnace;
    private static Map<ClassLoader, Furnace> started = new ConcurrentHashMap<ClassLoader, Furnace>();
 
@@ -57,7 +57,7 @@ public class ServiceLoaderLifecycleProvider implements AddonLifecycleProvider
    @Override
    public ServiceRegistry getServiceRegistry(Addon addon) throws Exception
    {
-      URL resource = addon.getClassLoader().getResource("/META-INF/services/" + SERVICE_REGISTRY_NAME);
+      URL resource = addon.getClassLoader().getResource("/META-INF/services/" + SERVICE_REGISTRATION_FILE_NAME);
       Set<Class<?>> serviceTypes = new HashSet<Class<?>>();
       if (resource != null)
       {

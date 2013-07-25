@@ -21,6 +21,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.jboss.forge.arquillian.services.ReflectionExportedInstance;
+import org.jboss.forge.arquillian.services.ReflectionServiceRegistry;
+import org.jboss.forge.arquillian.services.LocalServices;
+import org.jboss.forge.furnace.lifecycle.AddonLifecycleProvider;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;
@@ -33,7 +37,7 @@ import org.jboss.shrinkwrap.impl.base.container.ContainerBase;
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class ForgeArchiveImpl extends ContainerBase<ForgeArchive> implements ForgeArchive
+public class ForgeArchiveImpl extends ContainerBase<ForgeArchive> implements ForgeArchive, RepositoryForgeArchive
 {
    // -------------------------------------------------------------------------------------||
    // Class Members ----------------------------------------------------------------------||
@@ -73,6 +77,8 @@ public class ForgeArchiveImpl extends ContainerBase<ForgeArchive> implements For
    private static final ArchivePath PATH_SERVICE_PROVIDERS = ArchivePaths.create(PATH_CLASSES, "META-INF/services");
 
    private List<AddonDependencyEntry> addonDependencies = new ArrayList<AddonDependencyEntry>();
+
+   private String repository;
 
    // -------------------------------------------------------------------------------------||
    // Instance Members -------------------------------------------------------------------||
@@ -179,4 +185,32 @@ public class ForgeArchiveImpl extends ContainerBase<ForgeArchive> implements For
       addAsManifestResource(resource, ArchivePaths.create("beans.xml"));
       return this;
    }
+
+   @Override
+   public String getAddonRepository()
+   {
+      return repository;
+   }
+
+   @Override
+   public RepositoryForgeArchive setAddonRepository(String repository)
+   {
+      this.repository = repository;
+      return this;
+   }
+
+   @Override
+   public ForgeArchive addAsLocalServices(Class<?>... serviceTypes)
+   {
+      addAsServiceProvider(AddonLifecycleProvider.class, LocalServices.class);
+      addClasses(LocalServices.class, ReflectionExportedInstance.class,
+               ReflectionServiceRegistry.class);
+      for (Class<?> type : serviceTypes)
+      {
+         addAsServiceProvider(LocalServices.SERVICE_REGISTRATION_FILE_NAME,
+                  type.getName());
+      }
+      return this;
+   }
+
 }

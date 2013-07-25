@@ -16,7 +16,9 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentScenarioGenerator;
 import org.jboss.arquillian.test.spi.TestClass;
 import org.jboss.forge.arquillian.archive.ForgeRemoteAddon;
+import org.jboss.forge.arquillian.archive.RepositoryForgeArchive;
 import org.jboss.forge.furnace.addons.AddonId;
+import org.jboss.forge.furnace.util.Annotations;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
@@ -49,8 +51,12 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
          for (AddonDependency addon : dependency.value())
          {
             AddonId id = AddonId.from(addon.name(), addon.version());
-            DeploymentDescription deploymentDescription = new DeploymentDescription(id.toCoordinates(),
-                     ShrinkWrap.create(ForgeRemoteAddon.class).setAddonId(id));
+            ForgeRemoteAddon remoteAddon = ShrinkWrap.create(ForgeRemoteAddon.class).setAddonId(id);
+
+            if (Annotations.isAnnotationPresent(deploymentMethod, Repository.class))
+               remoteAddon.setAddonRepository(Annotations.getAnnotation(deploymentMethod, Repository.class).value());
+
+            DeploymentDescription deploymentDescription = new DeploymentDescription(id.toCoordinates(), remoteAddon);
             deploymentDescription.shouldBeTestable(false);
             deployments.add(deploymentDescription);
          }
@@ -90,34 +96,42 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
       ProtocolDescription protocol = generateProtocol(deploymentMethod);
 
       Deployment deploymentAnnotation = deploymentMethod.getAnnotation(Deployment.class);
-      DeploymentDescription deployment = null;
+      DeploymentDescription description = null;
       if (Archive.class.isAssignableFrom(deploymentMethod.getReturnType()))
       {
-         deployment = new DeploymentDescription(deploymentAnnotation.name(), invoke(Archive.class, deploymentMethod));
-         deployment.shouldBeTestable(deploymentAnnotation.testable());
+         Archive<?> archive = invoke(Archive.class, deploymentMethod);
+         if (archive instanceof RepositoryForgeArchive)
+         {
+            if (Annotations.isAnnotationPresent(deploymentMethod, Repository.class))
+               ((RepositoryForgeArchive) archive).setAddonRepository(Annotations.getAnnotation(deploymentMethod,
+                        Repository.class).value());
+         }
+         description = new DeploymentDescription(deploymentAnnotation.name(), archive);
+         description.shouldBeTestable(deploymentAnnotation.testable());
       }
       else if (Descriptor.class.isAssignableFrom(deploymentMethod.getReturnType()))
       {
-         deployment = new DeploymentDescription(deploymentAnnotation.name(), invoke(Descriptor.class, deploymentMethod));
-         // deployment.shouldBeTestable(false);
+         description = new DeploymentDescription(deploymentAnnotation.name(),
+                  invoke(Descriptor.class, deploymentMethod));
       }
-      deployment.shouldBeManaged(deploymentAnnotation.managed());
-      deployment.setOrder(deploymentAnnotation.order());
+      description.shouldBeManaged(deploymentAnnotation.managed());
+      description.setOrder(deploymentAnnotation.order());
+
       if (target != null)
       {
-         deployment.setTarget(target);
+         description.setTarget(target);
       }
       if (protocol != null)
       {
-         deployment.setProtocol(protocol);
+         description.setProtocol(protocol);
       }
 
       if (deploymentMethod.isAnnotationPresent(ShouldThrowException.class))
       {
-         deployment.setExpectedException(deploymentMethod.getAnnotation(ShouldThrowException.class).value());
+         description.setExpectedException(deploymentMethod.getAnnotation(ShouldThrowException.class).value());
       }
 
-      return deployment;
+      return description;
    }
 
    /**

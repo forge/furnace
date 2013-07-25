@@ -10,11 +10,11 @@ package org.jboss.forge.classloader;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.classloader.mock.SimpleEnum;
 import org.jboss.forge.classloader.mock.SimpleEnumFactory;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonRegistry;
-import org.jboss.forge.furnace.lifecycle.AddonLifecycleProvider;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
 import org.jboss.forge.furnace.proxy.Proxies;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -32,15 +32,7 @@ public class ClassLoaderAdapterEnumCollisionsTest
                .create(ForgeArchive.class)
                .addBeansXML()
                .addClasses(SimpleEnum.class, SimpleEnumFactory.class)
-               
-               /*
-                * Lightweight Service Container
-                */
-               .addAsServiceProvider(AddonLifecycleProvider.class, ServiceLoaderLifecycleProvider.class)
-               .addAsServiceProvider(ServiceLoaderLifecycleProvider.SERVICE_REGISTRY_NAME,
-                        ClassLoaderAdapterEnumCollisionsTest.class.getName())
-               .addClasses(ServiceLoaderLifecycleProvider.class, ReflectionExportedInstance.class,
-                        ReflectionServiceRegistry.class);
+               .addAsLocalServices(ClassLoaderAdapterEnumCollisionsTest.class);
 
       return archive;
    }
@@ -58,7 +50,7 @@ public class ClassLoaderAdapterEnumCollisionsTest
    @Test
    public void testSimpleEnumCollision() throws Exception
    {
-      AddonRegistry registry = ServiceLoaderLifecycleProvider.getFurnace(getClass().getClassLoader())
+      AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
                .getAddonRegistry();
       ClassLoader thisLoader = ClassLoaderAdapterEnumCollisionsTest.class.getClassLoader();
       ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep", "1")).getClassLoader();

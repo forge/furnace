@@ -42,4 +42,11 @@ public interface ForgeArchive extends Archive<ForgeArchive>, LibraryContainer<Fo
     * Adds an beans.xml file in this archive with the specified content
     */
    ForgeArchive addBeansXML(Asset resource);
+
+   /**
+    * Add a basic service container, using the given service types as services in the deployment.
+    * <p>
+    * <b>WARNING: </b> Cannot be combined with other service containers.
+    */
+   ForgeArchive addAsLocalServices(Class<?>... serviceTypes);
 }

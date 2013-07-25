@@ -9,15 +9,14 @@ package org.jboss.forge.classloader;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.Dependencies;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.classloader.mock.IterableFactory;
 import org.jboss.forge.classloader.mock.MockResult;
 import org.jboss.forge.classloader.mock.Result;
 import org.jboss.forge.classloader.mock.collisions.ClassWithClassAsParameter;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonRegistry;
-import org.jboss.forge.furnace.lifecycle.AddonLifecycleProvider;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilderDelegateLoader;
 import org.jboss.forge.furnace.proxy.Proxies;
@@ -31,9 +30,7 @@ import org.junit.runner.RunWith;
 public class ClassLoaderParameterUnwrappedTest
 {
    @Deployment(order = 3)
-   @Dependencies({
-            })
-            public static ForgeArchive getDeployment()
+   public static ForgeArchive getDeployment()
    {
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
                .addBeansXML()
@@ -42,15 +39,7 @@ public class ClassLoaderParameterUnwrappedTest
                         AddonDependencyEntry.create("dep1", "1"),
                         AddonDependencyEntry.create("dep2", "2")
                )
-
-               /*
-                * Lightweight Service Container
-                */
-               .addAsServiceProvider(AddonLifecycleProvider.class, ServiceLoaderLifecycleProvider.class)
-               .addAsServiceProvider(ServiceLoaderLifecycleProvider.SERVICE_REGISTRY_NAME,
-                        ClassLoaderAdapterEnumCollisionsTest.class.getName())
-               .addClasses(ServiceLoaderLifecycleProvider.class, ReflectionExportedInstance.class,
-                        ReflectionServiceRegistry.class);
+               .addAsLocalServices(ClassLoaderParameterUnwrappedTest.class);
 
       return archive;
    }
@@ -78,7 +67,7 @@ public class ClassLoaderParameterUnwrappedTest
    @Test
    public void testUnwrapClassParameter() throws Exception
    {
-      AddonRegistry registry = ServiceLoaderLifecycleProvider.getFurnace(getClass().getClassLoader())
+      AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
                .getAddonRegistry();
       ClassLoader thisLoader = ClassLoaderParameterUnwrappedTest.class.getClassLoader();
       ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep1", "1")).getClassLoader();
@@ -113,7 +102,7 @@ public class ClassLoaderParameterUnwrappedTest
    @Test
    public void testUnwrapUnknownClassParameter() throws Exception
    {
-      AddonRegistry registry = ServiceLoaderLifecycleProvider.getFurnace(getClass().getClassLoader())
+      AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
                .getAddonRegistry();
       ClassLoader thisLoader = ClassLoaderParameterUnwrappedTest.class.getClassLoader();
       ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep1", "1")).getClassLoader();
