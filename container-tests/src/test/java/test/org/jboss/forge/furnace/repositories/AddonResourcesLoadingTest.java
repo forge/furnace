@@ -9,7 +9,7 @@ package test.org.jboss.forge.furnace.repositories;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.Repository;
+import org.jboss.forge.arquillian.DeployToRepository;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.junit.Test;
@@ -18,8 +18,8 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class AddonResourcesLoadingTest
 {
-   @Repository("1")
    @Deployment(order = 3)
+   @DeployToRepository("1")
    public static ForgeArchive getDeployment()
    {
       ForgeArchive archive = ShrinkWrap

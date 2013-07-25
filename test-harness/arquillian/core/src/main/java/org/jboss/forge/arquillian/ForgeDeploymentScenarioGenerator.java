@@ -53,8 +53,8 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
             AddonId id = AddonId.from(addon.name(), addon.version());
             ForgeRemoteAddon remoteAddon = ShrinkWrap.create(ForgeRemoteAddon.class).setAddonId(id);
 
-            if (Annotations.isAnnotationPresent(deploymentMethod, Repository.class))
-               remoteAddon.setAddonRepository(Annotations.getAnnotation(deploymentMethod, Repository.class).value());
+            if (Annotations.isAnnotationPresent(deploymentMethod, DeployToRepository.class))
+               remoteAddon.setAddonRepository(Annotations.getAnnotation(deploymentMethod, DeployToRepository.class).value());
 
             DeploymentDescription deploymentDescription = new DeploymentDescription(id.toCoordinates(), remoteAddon);
             deploymentDescription.shouldBeTestable(false);
@@ -102,9 +102,9 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
          Archive<?> archive = invoke(Archive.class, deploymentMethod);
          if (archive instanceof RepositoryForgeArchive)
          {
-            if (Annotations.isAnnotationPresent(deploymentMethod, Repository.class))
+            if (Annotations.isAnnotationPresent(deploymentMethod, DeployToRepository.class))
                ((RepositoryForgeArchive) archive).setAddonRepository(Annotations.getAnnotation(deploymentMethod,
-                        Repository.class).value());
+                        DeployToRepository.class).value());
          }
          description = new DeploymentDescription(deploymentAnnotation.name(), archive);
          description.shouldBeTestable(deploymentAnnotation.testable());

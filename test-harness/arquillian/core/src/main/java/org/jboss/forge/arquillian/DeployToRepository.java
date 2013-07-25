@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public @interface Repository
+public @interface DeployToRepository
 {
    String value();
 }
