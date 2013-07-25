@@ -5,7 +5,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.jboss.forge.furnace.manager;
+package org.jboss.forge.furnace.manager.impl;
 
 import static org.hamcrest.CoreMatchers.everyItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -21,7 +21,7 @@ import java.util.ServiceLoader;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.impl.util.Files;
-import org.jboss.forge.furnace.manager.impl.AddonManagerImpl;
+import org.jboss.forge.furnace.manager.AddonManager;
 import org.jboss.forge.furnace.manager.maven.MavenContainer;
 import org.jboss.forge.furnace.manager.maven.addon.MavenAddonDependencyResolver;
 import org.jboss.forge.furnace.manager.request.AddonActionRequest;

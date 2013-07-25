@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2013 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Eclipse Public License version 1.0, available at
  * http://www.eclipse.org/legal/epl-v10.html
@@ -13,12 +13,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashSet;
-import java.util.ServiceLoader;
 import java.util.Set;
 
-import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
-import org.jboss.forge.furnace.manager.impl.AddonManagerImpl;
 import org.jboss.forge.furnace.manager.maven.MavenContainer;
 import org.jboss.forge.furnace.manager.maven.addon.MavenAddonDependencyResolver;
 import org.jboss.forge.furnace.manager.spi.AddonDependencyResolver;
@@ -54,16 +51,12 @@ public class AddonManagerDependencyResolutionTest
       System.clearProperty(MavenContainer.ALT_LOCAL_REPOSITORY_LOCATION);
    }
 
-   private Furnace furnace;
-   private AddonManager addonManager;
    private AddonDependencyResolver resolver;
 
    @Before
    public void setUp() throws IOException
    {
-      furnace = ServiceLoader.load(Furnace.class).iterator().next();
       resolver = new MavenAddonDependencyResolver();
-      addonManager = new AddonManagerImpl(furnace, resolver);
    }
 
    @Test
@@ -71,7 +64,7 @@ public class AddonManagerDependencyResolutionTest
    {
       AddonId addon = AddonId.from("test:one_dep", "1.0.0.Final");
       AddonId addonDep = AddonId.from("test:no_dep", "1.0.0.Final");
-      AddonInfo info = addonManager.info(addon);
+      AddonInfo info = resolver.resolveAddonDependencyHierarchy(addon);
       Assert.assertNotNull(info);
       Assert.assertEquals(1, info.getRequiredAddons().size());
       Assert.assertEquals(addonDep, info.getRequiredAddons().iterator().next().getAddon());
@@ -82,7 +75,7 @@ public class AddonManagerDependencyResolutionTest
    public void testIndirectResolutionInfo() throws Exception
    {
       AddonId addon = AddonId.from("test:indirect_dep", "1.0.0.Final");
-      AddonInfo info = addonManager.info(addon);
+      AddonInfo info = resolver.resolveAddonDependencyHierarchy(addon);
       Assert.assertNotNull(info);
       Set<AddonId> requiredAddons = new HashSet<AddonId>();
       for (AddonInfo ai : info.getRequiredAddons())
@@ -107,7 +100,7 @@ public class AddonManagerDependencyResolutionTest
    public void testResolutionTwoDependencies() throws Exception
    {
       AddonId addon = AddonId.from("test:two_deps", "1.0.0.Final");
-      AddonInfo info = addonManager.info(addon);
+      AddonInfo info = resolver.resolveAddonDependencyHierarchy(addon);
       Assert.assertNotNull(info);
       Set<AddonId> requiredAddons = new HashSet<AddonId>();
       for (AddonInfo ai : info.getRequiredAddons())
@@ -126,7 +119,7 @@ public class AddonManagerDependencyResolutionTest
    public void testResolutionInfoLib() throws Exception
    {
       AddonId addon = AddonId.from("test:one_dep_lib", "1.0.0.Final");
-      AddonInfo info = addonManager.info(addon);
+      AddonInfo info = resolver.resolveAddonDependencyHierarchy(addon);
       Assert.assertNotNull(info);
       Assert.assertTrue(info.getRequiredAddons().isEmpty());
       Assert.assertEquals(2, info.getResources().size());
