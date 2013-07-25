@@ -16,10 +16,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
-import java.util.ServiceLoader;
 
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
+import org.jboss.forge.furnace.impl.FurnaceImpl;
 import org.jboss.forge.furnace.impl.util.Files;
 import org.jboss.forge.furnace.manager.impl.AddonManagerImpl;
 import org.jboss.forge.furnace.manager.maven.MavenContainer;
@@ -70,7 +70,7 @@ public class AddonManagerInstallTest
    @Before
    public void setUp() throws IOException
    {
-      furnace = ServiceLoader.load(Furnace.class).iterator().next();
+      furnace = new FurnaceImpl();
       resolver = new MavenAddonDependencyResolver();
       repository = File.createTempFile("furnace-repo", ".tmp");
       repository.delete();

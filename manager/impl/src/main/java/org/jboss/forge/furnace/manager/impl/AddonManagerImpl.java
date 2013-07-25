@@ -15,11 +15,11 @@ import static org.jboss.forge.furnace.manager.impl.request.AddonActionRequestFac
 import static org.jboss.forge.furnace.manager.impl.request.AddonActionRequestFactory.createUpdateRequest;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
@@ -82,7 +82,7 @@ public class AddonManagerImpl implements AddonManager
       AddonInfo addonInfo = info(addonId);
       List<AddonInfo> allAddons = new LinkedList<AddonInfo>();
       collectRequiredAddons(addonInfo, allAddons);
-      Set<AddonId> installedAddonIds = getInstalledAddons();
+      Map<AddonId, AddonRepository> installedAddonIds = getInstalledAddons();
       List<AddonActionRequest> actions = new ArrayList<AddonActionRequest>();
       for (AddonInfo newAddonInfo : allAddons)
       {
@@ -156,16 +156,24 @@ public class AddonManagerImpl implements AddonManager
     * @return
     */
    private AddonActionRequest createRequest(final AddonInfo addonInfo, final MutableAddonRepository repository,
-            final Collection<AddonId> installedAddons)
+            final Map<AddonId, AddonRepository> installedAddons)
    {
       final AddonActionRequest request;
       AddonId addon = addonInfo.getAddon();
-      if (installedAddons.contains(addon))
+      if (installedAddons.containsKey(addon))
       {
          // Already contains the installed addon. Update ONLY if the version is SNAPSHOT
          if (Versions.isSnapshot(addonInfo.getAddon().getVersion()) && updateSnapshotDependencies)
          {
-            request = createUpdateRequest(addonInfo, addonInfo, repository, furnace);
+            AddonRepository addonRepository = installedAddons.get(addon);
+            if (repository.equals(addonRepository))
+            {
+               request = createUpdateRequest(addonInfo, addonInfo, repository, furnace);
+            }
+            else
+            {
+               request = createDeployRequest(addonInfo, repository, furnace);
+            }
          }
          else
          {
@@ -174,21 +182,29 @@ public class AddonManagerImpl implements AddonManager
       }
       else
       {
-         AddonId differentVersion = null;
-         for (AddonId addonId : installedAddons)
+         Entry<AddonId, AddonRepository> differentVersionEntry = null;
+         for (Entry<AddonId, AddonRepository> addonEntry : installedAddons.entrySet())
          {
+            AddonId addonId = addonEntry.getKey();
             if (addonId.getName().equals(addon.getName()))
             {
-               differentVersion = addonId;
+               differentVersionEntry = addonEntry;
                break;
             }
          }
-         if (differentVersion != null)
+         if (differentVersionEntry != null)
          {
             // TODO: Use Lincoln's new Version/Versions class
-            if (differentVersion.getVersion().toString().compareTo(addon.getVersion().toString()) < 0)
+            if (differentVersionEntry.getKey().getVersion().toString().compareTo(addon.getVersion().toString()) < 0)
             {
-               request = createUpdateRequest(info(differentVersion), addonInfo, repository, furnace);
+               if (repository.equals(differentVersionEntry.getValue()))
+               {
+                  request = createUpdateRequest(info(differentVersionEntry.getKey()), addonInfo, repository, furnace);
+               }
+               else
+               {
+                  request = createDeployRequest(addonInfo, repository, furnace);
+               }
             }
             else
             {
@@ -243,14 +259,21 @@ public class AddonManagerImpl implements AddonManager
       return (MutableAddonRepository) repository;
    }
 
-   private Set<AddonId> getInstalledAddons()
+   /**
+    * Returns a {@link Map} of the installed addons with the key as the {@link AddonId} and the value as an
+    * {@link AddonRepository} indicating which repository is it from
+    */
+   private Map<AddonId, AddonRepository> getInstalledAddons()
    {
-      Set<AddonId> addons = new HashSet<AddonId>();
+      Map<AddonId, AddonRepository> addons = new HashMap<AddonId, AddonRepository>();
       for (AddonRepository repository : furnace.getRepositories())
       {
-         addons.addAll(repository.listEnabled());
+         List<AddonId> listEnabled = repository.listEnabled();
+         for (AddonId addonId : listEnabled)
+         {
+            addons.put(addonId, repository);
+         }
       }
       return addons;
    }
-
 }
