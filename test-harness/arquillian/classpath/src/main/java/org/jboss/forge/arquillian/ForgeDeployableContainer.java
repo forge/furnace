@@ -160,8 +160,10 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
             initContainer();
             for (String name : deploymentRepositories.keySet())
             {
-               runnable.furnace.addRepository(AddonRepositoryMode.MUTABLE,
+               MutableAddonRepository repository = (MutableAddonRepository) runnable.furnace.addRepository(
+                        AddonRepositoryMode.MUTABLE,
                         new File(addonDir, OperatingSystemUtils.getSafeFilename(name)));
+               deploymentRepositories.put(name, repository);
             }
             target = (MutableAddonRepository) runnable.furnace.addRepository(AddonRepositoryMode.MUTABLE,
                      new File(addonDir, OperatingSystemUtils.getSafeFilename(repositoryName)));

@@ -13,14 +13,15 @@ import org.jboss.forge.arquillian.DeployToRepository;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.furnace.Furnace;
+import org.jboss.forge.furnace.addons.AddonId;
+import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
-import org.jboss.forge.furnace.util.Assert;
+import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.junit.Ignore;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-@Ignore
 @RunWith(Arquillian.class)
 public class AddonRepositoryLoadingTest
 {
@@ -81,7 +82,16 @@ public class AddonRepositoryLoadingTest
    @Test
    public void testAddonRepositoryIsCorrectInMultiViewEnvironment() throws Exception
    {
-      Furnace furnace = LocalServices.getFurnace(Thread.currentThread().getContextClassLoader());
-      Assert.notNull(furnace, "Furnace instance was null");
+      Furnace furnace = LocalServices.getFurnace(getClass().getClassLoader());
+      Assert.assertNotNull(furnace);
+      AddonRegistry registry = furnace.getAddonRegistry();
+      AddonRepository rep1 = registry.getAddon(AddonId.from("dep1", "1")).getRepository();
+      AddonRepository rep2 = registry.getAddon(AddonId.from("dep2", "2")).getRepository();
+      AddonRepository rep3 = registry.getAddon(AddonId.from("dep3", "3")).getRepository();
+      AddonRepository rep4 = registry.getAddon(AddonId.from("dep4", "4")).getRepository();
+      AddonRepository rep5 = registry.getAddon(AddonId.from("dep5", "5")).getRepository();
+      Assert.assertEquals(rep1, rep2);
+      Assert.assertEquals(rep3, rep4);
+      Assert.assertEquals(rep4, rep5);
    }
 }
