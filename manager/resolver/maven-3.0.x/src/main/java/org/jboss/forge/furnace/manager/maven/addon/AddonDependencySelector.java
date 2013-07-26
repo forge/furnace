@@ -16,17 +16,20 @@ class AddonDependencySelector implements DependencySelector
    private static final String FORGE_ADDON = "forge-addon";
    private final int depth;
    private final Dependency parent;
+   private final AddonDependencySelector parentSelector;
 
    public AddonDependencySelector()
    {
       this.depth = 0;
       this.parent = null;
+      this.parentSelector = null;
    }
 
-   public AddonDependencySelector(Dependency parent, int depth)
+   public AddonDependencySelector(Dependency parent, AddonDependencySelector parentSelector, int depth)
    {
       this.depth = depth;
       this.parent = parent;
+      this.parentSelector = parentSelector;
    }
 
    @Override
@@ -52,7 +55,17 @@ class AddonDependencySelector implements DependencySelector
       return result;
    }
 
-   private boolean isExcluded(Dependency dependency)
+   protected boolean isExcluded(Dependency dependency)
+   {
+      boolean result = isExcludedFromParent(dependency);
+      if (!result && parentSelector != null)
+      {
+         result = parentSelector.isExcluded(dependency);
+      }
+      return result;
+   }
+
+   private boolean isExcludedFromParent(Dependency dependency)
    {
       boolean result = false;
       if (parent != null && parent.getExclusions().size() > 0)
@@ -84,7 +97,7 @@ class AddonDependencySelector implements DependencySelector
       {
          return new StaticDependencySelector(false);
       }
-      return new AddonDependencySelector(context.getDependency(), depth + 1);
+      return new AddonDependencySelector(context.getDependency(), this, depth + 1);
    }
 
    @Override

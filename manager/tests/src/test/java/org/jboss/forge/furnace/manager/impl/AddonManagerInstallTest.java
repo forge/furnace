@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.Set;
 
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
@@ -29,6 +30,7 @@ import org.jboss.forge.furnace.manager.request.DeployRequest;
 import org.jboss.forge.furnace.manager.request.InstallRequest;
 import org.jboss.forge.furnace.manager.request.UpdateRequest;
 import org.jboss.forge.furnace.manager.spi.AddonDependencyResolver;
+import org.jboss.forge.furnace.manager.spi.AddonInfo;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -139,4 +141,20 @@ public class AddonManagerInstallTest
       Assert.assertEquals(2, actions.size());
       Assert.assertThat((List<DeployRequest>) actions, everyItem(isA(DeployRequest.class)));
    }
+
+   @SuppressWarnings("unchecked")
+   @Test
+   public void testParentExclusion() throws IOException
+   {
+      AddonId addon = AddonId.from("test:no_dep_one_lib_excluding_indirect_lib", "1.0.0.Final");
+      InstallRequest install = addonManager.install(addon);
+      List<? extends AddonActionRequest> actions = install.getActions();
+      Assert.assertEquals(1, actions.size());
+      Assert.assertThat((List<DeployRequest>) actions, everyItem(isA(DeployRequest.class)));
+      DeployRequest deployRequest = (DeployRequest) actions.get(0);
+      AddonInfo addonInfo = deployRequest.getRequestedAddonInfo();
+      Set<File> resources = addonInfo.getResources();
+      Assert.assertEquals("It should have three resources", 3, resources.size());
+   }
+
 }
