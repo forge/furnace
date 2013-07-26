@@ -12,8 +12,6 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
-import javax.enterprise.inject.ResolutionException;
-
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.providers.file.FileWagon;
 import org.apache.maven.wagon.providers.http.LightweightHttpWagon;
@@ -29,7 +27,7 @@ class ManualWagonProvider implements WagonProvider
 
    /**
     * {@inheritDoc}
-    *
+    * 
     * @see org.sonatype.aether.connector.wagon.WagonProvider#lookup(java.lang.String)
     */
    @Override
@@ -53,7 +51,7 @@ class ManualWagonProvider implements WagonProvider
 
    /**
     * {@inheritDoc}
-    *
+    * 
     * @see org.sonatype.aether.connector.wagon.WagonProvider#release(org.apache.maven.wagon.Wagon)
     */
    @Override
@@ -84,7 +82,7 @@ class ManualWagonProvider implements WagonProvider
       }
       catch (final PrivilegedActionException pae)
       {
-         throw new ResolutionException("Could not manually set authenticator to accessible on "
+         throw new RuntimeException("Could not manually set authenticator to accessible on "
                   + LightweightHttpWagon.class.getName(), pae);
       }
       try
@@ -93,8 +91,8 @@ class ManualWagonProvider implements WagonProvider
       }
       catch (final Exception e)
       {
-         throw new ResolutionException("Could not manually set authenticator on "
-                  + LightweightHttpWagon.class.getName(), e);
+         throw new RuntimeException("Could not manually set authenticator on " + LightweightHttpWagon.class.getName(),
+                  e);
       }
 
       // SHRINKRES-69
