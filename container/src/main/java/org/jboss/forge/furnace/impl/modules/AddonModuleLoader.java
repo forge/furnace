@@ -159,9 +159,6 @@ public class AddonModuleLoader extends ModuleLoader
                      return null;
                   }
 
-                  builder.addDependency(DependencySpec.createLocalDependencySpec(PathFilters.acceptAll(),
-                           PathFilters.acceptAll()));
-
                   try
                   {
                      addAddonDependencies(views, repository, found, builder);
@@ -171,6 +168,9 @@ public class AddonModuleLoader extends ModuleLoader
                      logger.warning(e.getMessage());
                      return null;
                   }
+
+                  builder.addDependency(DependencySpec.createLocalDependencySpec(PathFilters.acceptAll(),
+                           PathFilters.acceptAll()));
 
                   addLocalResources(repository, found, builder, id);
 
