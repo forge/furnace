@@ -140,7 +140,7 @@ public final class AddonRunnable implements Runnable
                   }
                   catch (Throwable e)
                   {
-                     logger.log(Level.SEVERE, "Failed to execute pre-shutdown task for [" + addon + "]", e);
+                     logger.log(Level.FINE, "Failed to execute pre-shutdown task for [" + addon + "]", e);
                   }
                   lifecycleProvider.stop(addon);
                   return null;
