@@ -175,7 +175,7 @@ public class MavenContainer
       DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
       session.setOffline(false);
 
-      LocalRepository localRepo = new LocalRepository(new File(settings.getLocalRepository()), "");
+      LocalRepository localRepo = new LocalRepository(new File(settings.getLocalRepository()));
       session.setLocalRepositoryManager(repoSystem.newLocalRepositoryManager(session, localRepo));
       session.setChecksumPolicy(RepositoryPolicy.CHECKSUM_POLICY_IGNORE);
       session.setCache(new DefaultRepositoryCache());
