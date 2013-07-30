@@ -201,7 +201,6 @@ public class MasterGraph
       return builder.toString();
    }
 
-   @SuppressWarnings("resource")
    public void toDOT(File file)
    {
       FileWriter fw = null;
