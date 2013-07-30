@@ -8,7 +8,7 @@ package org.jboss.forge.arquillian.services;
 
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.exception.ContainerException;
-import org.jboss.forge.furnace.services.ExportedInstance;
+import org.jboss.forge.furnace.spi.ExportedInstance;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>

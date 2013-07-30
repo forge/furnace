@@ -16,8 +16,8 @@ import java.util.logging.Logger;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.lock.LockMode;
-import org.jboss.forge.furnace.services.ExportedInstance;
-import org.jboss.forge.furnace.services.ServiceRegistry;
+import org.jboss.forge.furnace.spi.ExportedInstance;
+import org.jboss.forge.furnace.spi.ServiceRegistry;
 import org.jboss.forge.furnace.util.Addons;
 import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.util.ClassLoaders;
@@ -60,12 +60,16 @@ public class ReflectionServiceRegistry implements ServiceRegistry
 
    @Override
    @SuppressWarnings("unchecked")
-   public <T> Set<ExportedInstance<T>> getExportedInstances(String clazz)
+   public <T> Set<ExportedInstance<T>> getExportedInstances(String typeName)
    {
       Set<ExportedInstance<T>> result = new HashSet<ExportedInstance<T>>();
-      if (serviceTypes.contains(clazz))
+      if (ClassLoaders.containsClass(addon.getClassLoader(), typeName))
       {
-         result.addAll(getExportedInstances((Class<T>) ClassLoaders.loadClass(addon.getClassLoader(), clazz)));
+         Class<T> type = (Class<T>) ClassLoaders.loadClass(addon.getClassLoader(), typeName);
+         if (serviceTypes.contains(type))
+         {
+            result.addAll(getExportedInstances(type));
+         }
       }
       return result;
    }
@@ -99,7 +103,12 @@ public class ReflectionServiceRegistry implements ServiceRegistry
    @SuppressWarnings("unchecked")
    public <T> ExportedInstance<T> getExportedInstance(String type)
    {
-      return getExportedInstance((Class<T>) ClassLoaders.loadClass(addon.getClassLoader(), type));
+      if (ClassLoaders.containsClass(addon.getClassLoader(), type))
+      {
+         Class<T> clazz = (Class<T>) ClassLoaders.loadClass(addon.getClassLoader(), type);
+         return getExportedInstance(clazz);
+      }
+      return null;
    }
 
    @Override

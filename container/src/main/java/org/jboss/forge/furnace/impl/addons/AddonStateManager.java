@@ -17,7 +17,7 @@ import org.jboss.forge.furnace.impl.modules.AddonModuleLoader;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.repositories.AddonRepository;
-import org.jboss.forge.furnace.services.ServiceRegistry;
+import org.jboss.forge.furnace.spi.ServiceRegistry;
 import org.jboss.forge.furnace.util.Assert;
 
 public class AddonStateManager

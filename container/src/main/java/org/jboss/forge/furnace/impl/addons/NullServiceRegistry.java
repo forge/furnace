@@ -3,8 +3,8 @@ package org.jboss.forge.furnace.impl.addons;
 import java.util.Collections;
 import java.util.Set;
 
-import org.jboss.forge.furnace.services.ExportedInstance;
-import org.jboss.forge.furnace.services.ServiceRegistry;
+import org.jboss.forge.furnace.spi.ExportedInstance;
+import org.jboss.forge.furnace.spi.ServiceRegistry;
 
 /**
  * Used when an addon does not provide services.

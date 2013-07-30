@@ -5,10 +5,12 @@
  * http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.jboss.forge.furnace.services;
+package org.jboss.forge.furnace.spi;
 
 import java.util.Collections;
 import java.util.Set;
+
+import org.jboss.forge.furnace.services.Exported;
 
 /**
  * Contains the collection of all installed and available {@link ExportedInstance} types.

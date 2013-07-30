@@ -7,7 +7,7 @@ import java.util.concurrent.Future;
 import org.jboss.forge.furnace.addons.AddonDependency;
 import org.jboss.forge.furnace.impl.util.NullFuture;
 import org.jboss.forge.furnace.repositories.AddonRepository;
-import org.jboss.forge.furnace.services.ServiceRegistry;
+import org.jboss.forge.furnace.spi.ServiceRegistry;
 import org.jboss.forge.furnace.util.Assert;
 
 public class AddonState

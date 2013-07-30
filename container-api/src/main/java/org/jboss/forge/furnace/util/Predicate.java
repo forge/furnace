@@ -17,5 +17,8 @@ package org.jboss.forge.furnace.util;
  */
 public interface Predicate<INPUTTYPE>
 {
+   /**
+    * Return <code>true</code> if the given value should be accepted; otherwise return <code>false</code>.
+    */
    boolean accept(INPUTTYPE type);
 }

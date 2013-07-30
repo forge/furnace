@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.concurrent.Future;
 
 import org.jboss.forge.furnace.repositories.AddonRepository;
-import org.jboss.forge.furnace.services.ServiceRegistry;
+import org.jboss.forge.furnace.spi.ServiceRegistry;
 
 /**
  * Represents a node in the {@link Addon} dependency graph.

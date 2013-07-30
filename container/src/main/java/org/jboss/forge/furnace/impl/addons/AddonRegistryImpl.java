@@ -24,8 +24,8 @@ import org.jboss.forge.furnace.addons.AddonStatus;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.repositories.AddonRepository;
-import org.jboss.forge.furnace.services.ExportedInstance;
-import org.jboss.forge.furnace.services.ServiceRegistry;
+import org.jboss.forge.furnace.services.Imported;
+import org.jboss.forge.furnace.spi.ServiceRegistry;
 import org.jboss.forge.furnace.util.AddonFilters;
 import org.jboss.forge.furnace.util.Assert;
 
@@ -113,100 +113,15 @@ public class AddonRegistryImpl implements AddonRegistry
    }
 
    @Override
-   public <T> Set<ExportedInstance<T>> getExportedInstances(final Class<T> type)
+   public <T> Imported<T> getInstance(final Class<T> type)
    {
-      return lock.performLocked(LockMode.READ, new Callable<Set<ExportedInstance<T>>>()
-      {
-         @Override
-         public Set<ExportedInstance<T>> call() throws Exception
-         {
-            Set<ExportedInstance<T>> result = new HashSet<ExportedInstance<T>>();
-            for (Addon addon : getAddons())
-            {
-               if (AddonStatus.STARTED.equals(addon.getStatus()))
-               {
-                  ServiceRegistry serviceRegistry = addon.getServiceRegistry();
-                  result.addAll(serviceRegistry.getExportedInstances(type));
-               }
-            }
-            return result;
-         }
-      });
+      return new ImportedImpl<T>(this, lock, type);
    }
 
    @Override
-   public <T> Set<ExportedInstance<T>> getExportedInstances(final String type)
+   public <T> Imported<T> getInstance(final String typeName)
    {
-      return lock.performLocked(LockMode.READ, new Callable<Set<ExportedInstance<T>>>()
-      {
-         @Override
-         public Set<ExportedInstance<T>> call() throws Exception
-         {
-            Set<ExportedInstance<T>> result = new HashSet<ExportedInstance<T>>();
-            for (Addon addon : getAddons())
-            {
-               if (addon.getStatus().isStarted())
-               {
-                  ServiceRegistry serviceRegistry = addon.getServiceRegistry();
-                  Set<ExportedInstance<T>> remoteInstances = serviceRegistry.getExportedInstances(type);
-                  result.addAll(remoteInstances);
-               }
-            }
-            return result;
-         }
-      });
-   }
-
-   @Override
-   public <T> ExportedInstance<T> getExportedInstance(final Class<T> type)
-   {
-      return lock.performLocked(LockMode.READ, new Callable<ExportedInstance<T>>()
-      {
-         @Override
-         public ExportedInstance<T> call() throws Exception
-         {
-            ExportedInstance<T> result = null;
-            for (Addon addon : getAddons())
-            {
-               if (addon.getStatus().isStarted())
-               {
-                  ServiceRegistry serviceRegistry = addon.getServiceRegistry();
-                  result = serviceRegistry.getExportedInstance(type);
-                  if (result != null)
-                  {
-                     break;
-                  }
-               }
-            }
-            return result;
-         }
-      });
-   }
-
-   @Override
-   public <T> ExportedInstance<T> getExportedInstance(final String type)
-   {
-      return lock.performLocked(LockMode.READ, new Callable<ExportedInstance<T>>()
-      {
-         @Override
-         public ExportedInstance<T> call() throws Exception
-         {
-            ExportedInstance<T> result = null;
-            for (Addon addon : getAddons())
-            {
-               if (addon.getStatus().isStarted())
-               {
-                  ServiceRegistry serviceRegistry = addon.getServiceRegistry();
-                  result = serviceRegistry.getExportedInstance(type);
-                  if (result != null)
-                  {
-                     break;
-                  }
-               }
-            }
-            return result;
-         }
-      });
+      return new ImportedImpl<T>(this, lock, typeName);
    }
 
    @Override

@@ -14,6 +14,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.jboss.forge.furnace.addons.Addon;
+import org.jboss.forge.furnace.spi.ServiceRegistry;
 
 /**
  * Specifies that the target type should be added to this {@link Addon}'s {@link ServiceRegistry}, and made available

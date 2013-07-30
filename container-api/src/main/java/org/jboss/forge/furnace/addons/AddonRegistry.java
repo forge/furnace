@@ -6,11 +6,10 @@
  */
 package org.jboss.forge.furnace.addons;
 
-import java.util.Collections;
 import java.util.Set;
 
 import org.jboss.forge.furnace.services.Exported;
-import org.jboss.forge.furnace.services.ExportedInstance;
+import org.jboss.forge.furnace.services.Imported;
 
 /**
  * Provides methods for registering, starting, stopping, and interacting with registered {@link Addon} instances.
@@ -20,36 +19,21 @@ import org.jboss.forge.furnace.services.ExportedInstance;
 public interface AddonRegistry extends AddonView
 {
    /**
-    * Get the set of currently available {@link Exported} services of the given {@link Class} type. Return
-    * {@link Collections#EMPTY_SET} if no matching services are found.
+    * Return an {@link Imported} containing the set of currently available {@link Exported} services of the given
+    * {@link Class} type. Return an empty {@link Imported} if no matching services are found.
     * 
-    * @return the {@link Set} of {@link ExportedInstance} objects (Never null.)
+    * @return the {@link Imported} (Never null.)
     */
-   <T> Set<ExportedInstance<T>> getExportedInstances(Class<T> clazz);
+   <T> Imported<T> getInstance(Class<T> clazz);
 
    /**
-    * Get the set of currently available {@link Exported} services types with {@link Class#getName()} matching the given
-    * name. Return {@link Collections#EMPTY_SET} if no matching services are found.
+    * Return an {@link Imported} containing the set of currently available {@link Exported} services with
+    * {@link Class#getName()} matching the given name. Return an empty {@link Imported} if no matching services are
+    * found.
     * 
-    * @return the {@link Set} of {@link ExportedInstance} objects (Never null.)
+    * @return the {@link Imported} (Never null.)
     */
-   <T> Set<ExportedInstance<T>> getExportedInstances(String clazz);
-
-   /**
-    * Get an instance of any currently available {@link Exported} service of the given {@link Class} type. Return
-    * <code>null</code> if no matching service can be found.
-    * 
-    * @return the {@link ExportedInstance} (May be null.)
-    */
-   <T> ExportedInstance<T> getExportedInstance(Class<T> type);
-
-   /**
-    * Get an instance of any currently available {@link Exported} service types with {@link Class#getName()} matching
-    * the given name. Return <code>null</code> if no matching service can be found.
-    * 
-    * @return the {@link ExportedInstance} (May be null.)
-    */
-   <T> ExportedInstance<T> getExportedInstance(String type);
+   <T> Imported<T> getInstance(String clazz);
 
    /**
     * Get a {@link Set} of all currently available {@link Exported} service types.

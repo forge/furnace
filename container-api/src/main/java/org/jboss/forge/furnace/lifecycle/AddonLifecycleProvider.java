@@ -9,7 +9,7 @@ package org.jboss.forge.furnace.lifecycle;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonRegistry;
-import org.jboss.forge.furnace.services.ServiceRegistry;
+import org.jboss.forge.furnace.spi.ServiceRegistry;
 
 /**
  * SPI for controlling {@link Addon} life-cycles such as start-up and shut-down.
