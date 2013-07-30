@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    <modelVersion>4.0.0</modelVersion>
    <parent>
       <groupId>org.jboss.forge.furnace</groupId>
@@ -7,10 +8,6 @@
    </parent>
    <artifactId>furnace-manager-resolver-maven-3.0.x</artifactId>
    <name>Furnace - Manager Maven Resolver</name>
-   <properties>
-      <aether.version>1.13.1</aether.version>
-      <maven.version>3.0.5</maven.version>
-   </properties>
 
    <dependencies>
       <dependency>
@@ -35,36 +32,11 @@
          <artifactId>furnace-manager-spi</artifactId>
       </dependency>
 
-      <!-- Aether -->
+      <!-- ShrinkWrap Resolver -->
       <dependency>
-         <groupId>org.apache.maven</groupId>
-         <artifactId>maven-aether-provider</artifactId>
-         <version>${maven.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.sonatype.aether</groupId>
-         <artifactId>aether-connector-file</artifactId>
-         <version>${aether.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.sonatype.aether</groupId>
-         <artifactId>aether-connector-wagon</artifactId>
-         <version>${aether.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.maven.wagon</groupId>
-         <artifactId>wagon-http-lightweight</artifactId>
-         <version>2.4</version>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.maven.wagon</groupId>
-         <artifactId>wagon-file</artifactId>
-         <version>2.4</version>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.maven</groupId>
-         <artifactId>maven-settings-builder</artifactId>
-         <version>${maven.version}</version>
+         <groupId>org.jboss.shrinkwrap.resolver</groupId>
+         <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+         <version>2.0.0</version>
       </dependency>
    </dependencies>
 
