@@ -189,7 +189,7 @@ public class ImportedImpl<T> implements Imported<T>
    @Override
    public boolean isSatisfied()
    {
-      return !getExportedInstances().isEmpty();
+      return getExportedInstance() != null;
    }
 
    @Override
