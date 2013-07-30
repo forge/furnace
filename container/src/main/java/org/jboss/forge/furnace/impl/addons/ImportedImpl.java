@@ -64,10 +64,9 @@ public class ImportedImpl<T> implements Imported<T>
    @Override
    public T get()
    {
-      Iterator<ExportedInstance<T>> iterator = getExportedInstances().iterator();
-      if (iterator.hasNext())
+      ExportedInstance<T> exported = getExportedInstance();
+      if (exported != null)
       {
-         ExportedInstance<T> exported = iterator.next();
          T instance = exported.get();
          instanceMap.put(instance, exported);
          return instance;
@@ -86,6 +85,39 @@ public class ImportedImpl<T> implements Imported<T>
          instanceMap.remove(instance);
          exported.release(instance);
       }
+   }
+
+   private ExportedInstance<T> getExportedInstance()
+   {
+      return lock.performLocked(LockMode.READ, new Callable<ExportedInstance<T>>()
+      {
+         @Override
+         public ExportedInstance<T> call() throws Exception
+         {
+            ExportedInstance<T> result = null;
+
+            for (Addon addon : addonRegistry.getAddons())
+            {
+               if (AddonStatus.STARTED.equals(addon.getStatus()))
+               {
+                  ServiceRegistry serviceRegistry = addon.getServiceRegistry();
+                  if (type != null)
+                  {
+                     result = serviceRegistry.getExportedInstance(type);
+                  }
+                  else
+                  {
+                     result = serviceRegistry.getExportedInstance(typeName);
+                  }
+               }
+               if (result != null)
+                  break;
+            }
+
+            return result;
+         }
+      });
+
    }
 
    private Set<ExportedInstance<T>> getExportedInstances()
