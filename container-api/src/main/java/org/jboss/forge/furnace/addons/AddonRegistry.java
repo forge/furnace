@@ -19,21 +19,20 @@ import org.jboss.forge.furnace.services.Imported;
 public interface AddonRegistry extends AddonView
 {
    /**
-    * Return an {@link Imported} containing the set of currently available {@link Exported} services of the given
-    * {@link Class} type. Return an empty {@link Imported} if no matching services are found.
+    * Return an {@link Imported} instance that can be used to obtain all currently available {@link Exported} services of the
+    * given {@link Class} type.
     * 
     * @return the {@link Imported} (Never null.)
     */
-   <T> Imported<T> getInstance(Class<T> clazz);
+   <T> Imported<T> getServices(Class<T> clazz);
 
    /**
-    * Return an {@link Imported} containing the set of currently available {@link Exported} services with
-    * {@link Class#getName()} matching the given name. Return an empty {@link Imported} if no matching services are
-    * found.
+    * Return an {@link Imported} instance that can be used to obtain all currently available {@link Exported} services with
+    * {@link Class#getName()} matching the given name.
     * 
     * @return the {@link Imported} (Never null.)
     */
-   <T> Imported<T> getInstance(String clazz);
+   <T> Imported<T> getServices(String clazz);
 
    /**
     * Get a {@link Set} of all currently available {@link Exported} service types.

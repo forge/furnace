@@ -113,13 +113,13 @@ public class AddonRegistryImpl implements AddonRegistry
    }
 
    @Override
-   public <T> Imported<T> getInstance(final Class<T> type)
+   public <T> Imported<T> getServices(final Class<T> type)
    {
       return new ImportedImpl<T>(this, lock, type);
    }
 
    @Override
-   public <T> Imported<T> getInstance(final String typeName)
+   public <T> Imported<T> getServices(final String typeName)
    {
       return new ImportedImpl<T>(this, lock, typeName);
    }
