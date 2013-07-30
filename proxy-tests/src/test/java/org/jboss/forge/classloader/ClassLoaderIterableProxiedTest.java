@@ -7,6 +7,8 @@
 
 package org.jboss.forge.classloader;
 
+import java.util.Iterator;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
@@ -70,5 +72,7 @@ public class ClassLoaderIterableProxiedTest
       Iterable<?> enhancedInstance = enhancedFactory.getIterable();
       Assert.assertTrue(Proxies.isForgeProxy(enhancedInstance));
 
+      Iterator<?> iterator = enhancedInstance.iterator();
+      Assert.assertNotNull(iterator);
    }
 }

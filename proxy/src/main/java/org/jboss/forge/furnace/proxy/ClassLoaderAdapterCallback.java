@@ -465,6 +465,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler
                      public boolean isHandled(Method method)
                      {
                         if (!method.getDeclaringClass().getName().contains("java.lang")
+                                 || !Proxies.isPassthroughType(method.getDeclaringClass())
                                  || ("toString".equals(method.getName()) && method.getParameterTypes().length == 0)
                                  || isEquals(method))
                            return true;

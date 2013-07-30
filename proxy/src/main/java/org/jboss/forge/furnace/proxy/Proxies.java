@@ -7,6 +7,7 @@
 package org.jboss.forge.furnace.proxy;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 
 import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.ProxyFactory;
@@ -423,6 +424,15 @@ public class Proxies
                || type.getName().matches("^(java\\.).*")
                || type.isPrimitive();
 
+      return result;
+   }
+
+   public static boolean isCollectionType(Object instance)
+   {
+      boolean result = instance instanceof Collection
+               || instance instanceof Iterable
+               || instance.getClass().isArray();
+      
       return result;
    }
 }
