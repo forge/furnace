@@ -227,8 +227,13 @@ public class ClassLoaderAdapterCallback implements MethodHandler
             }
          }
 
-         if (!found && type.isInterface())
-            left = Arrays.append(left, type);
+         if (!found)
+         {
+            if (type.isInterface())
+               left = Arrays.append(left, type);
+            else if (left.length == 0 || left[0].isInterface())
+               left = Arrays.prepend(left, type);
+         }
       }
       return left;
    }
