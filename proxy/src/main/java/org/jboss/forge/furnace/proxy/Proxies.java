@@ -407,7 +407,7 @@ public class Proxies
     */
    public static boolean isPassthroughType(Class<?> type)
    {
-      boolean result = type.getName().startsWith("[L")
+      boolean result = type.isArray()
                || type.getName().matches("^(java\\.lang).*")
                || type.getName().matches("^(java\\.io).*")
                || type.getName().matches("^(java\\.net).*")
@@ -420,7 +420,7 @@ public class Proxies
 
    public static boolean isLanguageType(Class<?> type)
    {
-      boolean result = type.getName().startsWith("[L")
+      boolean result = type.isArray()
                || type.getName().matches("^(java\\.).*")
                || type.isPrimitive();
 

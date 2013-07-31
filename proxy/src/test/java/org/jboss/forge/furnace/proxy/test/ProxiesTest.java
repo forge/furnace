@@ -99,10 +99,17 @@ public class ProxiesTest
    }
 
    @Test
-   public void testIsLangugageType() throws Exception
+   public void testIsLanguageType() throws Exception
    {
-      Object[] foo = new Object[] {};
-      Assert.assertTrue(Proxies.isLanguageType(foo.getClass()));
+      Assert.assertTrue(Proxies.isLanguageType(Object[].class));
+      Assert.assertTrue(Proxies.isLanguageType(byte[].class));
+      Assert.assertTrue(Proxies.isLanguageType(float[].class));
+      Assert.assertTrue(Proxies.isLanguageType(char[].class));
+      Assert.assertTrue(Proxies.isLanguageType(double[].class));
+      Assert.assertTrue(Proxies.isLanguageType(int[].class));
+      Assert.assertTrue(Proxies.isLanguageType(long[].class));
+      Assert.assertTrue(Proxies.isLanguageType(short[].class));
+      Assert.assertTrue(Proxies.isLanguageType(boolean[].class));
       Assert.assertTrue(Proxies.isLanguageType(Object.class));
       Assert.assertTrue(Proxies.isLanguageType(InputStream.class));
       Assert.assertTrue(Proxies.isLanguageType(Runnable.class));
@@ -117,10 +124,17 @@ public class ProxiesTest
    }
 
    @Test
-   public void testCertainLangugageTypesRequireProxying() throws Exception
+   public void testCertainLanguageTypesRequireProxying() throws Exception
    {
-      Object[] foo = new Object[] {};
-      Assert.assertTrue(Proxies.isPassthroughType(foo.getClass()));
+      Assert.assertTrue(Proxies.isPassthroughType(Object[].class));
+      Assert.assertTrue(Proxies.isPassthroughType(byte[].class));
+      Assert.assertTrue(Proxies.isPassthroughType(float[].class));
+      Assert.assertTrue(Proxies.isPassthroughType(char[].class));
+      Assert.assertTrue(Proxies.isPassthroughType(double[].class));
+      Assert.assertTrue(Proxies.isPassthroughType(int[].class));
+      Assert.assertTrue(Proxies.isPassthroughType(long[].class));
+      Assert.assertTrue(Proxies.isPassthroughType(short[].class));
+      Assert.assertTrue(Proxies.isPassthroughType(boolean[].class));
       Assert.assertTrue(Proxies.isPassthroughType(Object.class));
       Assert.assertTrue(Proxies.isPassthroughType(InputStream.class));
       Assert.assertTrue(Proxies.isPassthroughType(Runnable.class));
