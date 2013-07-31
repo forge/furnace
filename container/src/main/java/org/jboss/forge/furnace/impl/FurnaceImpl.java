@@ -137,7 +137,6 @@ public class FurnaceImpl implements Furnace
       }
 
       fireBeforeContainerStartedEvent();
-      status = ContainerStatus.STARTED;
 
       try
       {
@@ -172,6 +171,8 @@ public class FurnaceImpl implements Furnace
                   }
                }
             }
+            status = ContainerStatus.STARTED;
+            
             Thread.sleep(100);
          }
          while (alive && serverMode);
