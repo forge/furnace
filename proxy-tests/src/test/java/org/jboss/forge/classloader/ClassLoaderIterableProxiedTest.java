@@ -18,7 +18,6 @@ import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
 import org.jboss.forge.furnace.proxy.Proxies;
-import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,9 +32,6 @@ public class ClassLoaderIterableProxiedTest
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
                .addBeansXML()
                .addClasses(IterableFactory.class)
-               .addAsAddonDependencies(
-                        AddonDependencyEntry.create("dep", "1")
-               )
                .addAsLocalServices(ClassLoaderIterableProxiedTest.class);
 
       return archive;
@@ -70,6 +66,31 @@ public class ClassLoaderIterableProxiedTest
 
       Assert.assertTrue(Proxies.isForgeProxy(enhancedFactory));
       Iterable<?> enhancedInstance = enhancedFactory.getIterable();
+      Assert.assertTrue(Proxies.isForgeProxy(enhancedInstance));
+
+      Iterator<?> iterator = enhancedInstance.iterator();
+      Assert.assertNotNull(iterator);
+   }
+
+   @Test
+   public void testCustomIterableTypesAreProxied() throws Exception
+   {
+      AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
+               .getAddonRegistry();
+      ClassLoader thisLoader = ClassLoaderIterableProxiedTest.class.getClassLoader();
+      ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep", "1")).getClassLoader();
+
+      Class<?> foreignType = dep1Loader.loadClass(IterableFactory.class.getName());
+      Iterable<?> proxy = (Iterable<?>) foreignType.getMethod("getIterable")
+               .invoke(foreignType.newInstance());
+      Assert.assertFalse(Proxies.isForgeProxy(proxy));
+
+      Object delegate = foreignType.newInstance();
+      IterableFactory enhancedFactory = (IterableFactory) ClassLoaderAdapterBuilder.callingLoader(thisLoader)
+               .delegateLoader(dep1Loader).enhance(delegate);
+
+      Assert.assertTrue(Proxies.isForgeProxy(enhancedFactory));
+      Iterable<?> enhancedInstance = enhancedFactory.getCustomIterable();
       Assert.assertTrue(Proxies.isForgeProxy(enhancedInstance));
 
       Iterator<?> iterator = enhancedInstance.iterator();
