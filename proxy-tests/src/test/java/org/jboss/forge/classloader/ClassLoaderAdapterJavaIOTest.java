@@ -18,7 +18,6 @@ import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
 import org.jboss.forge.furnace.proxy.Proxies;
-import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,9 +32,6 @@ public class ClassLoaderAdapterJavaIOTest
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
                .addBeansXML()
                .addClasses(JavaIOFactory.class)
-               .addAsAddonDependencies(
-                        AddonDependencyEntry.create("dep", "1")
-               )
                .addAsLocalServices(ClassLoaderAdapterJavaIOTest.class);
 
       return archive;

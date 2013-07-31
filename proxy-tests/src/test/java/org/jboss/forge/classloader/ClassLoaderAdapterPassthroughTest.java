@@ -52,7 +52,7 @@ public class ClassLoaderAdapterPassthroughTest
    }
 
    @Test
-   public void testParameterPassthrough() throws Exception
+   public void testParameterPassthroughIfTypeIsShared() throws Exception
    {
       AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
                .getAddonRegistry();

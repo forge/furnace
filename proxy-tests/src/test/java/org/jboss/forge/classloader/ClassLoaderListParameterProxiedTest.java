@@ -22,7 +22,6 @@ import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilderDelegateLoader;
 import org.jboss.forge.furnace.proxy.Proxies;
-import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.junit.Assert;
 import org.junit.Test;
@@ -37,9 +36,6 @@ public class ClassLoaderListParameterProxiedTest
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
                .addBeansXML()
                .addClasses(Result.class, MockResult.class, ClassWithListAsParameter.class)
-               .addAsAddonDependencies(
-                        AddonDependencyEntry.create("dep", "1")
-               )
                .addAsLocalServices(ClassLoaderListParameterProxiedTest.class);
 
       return archive;

@@ -36,7 +36,6 @@ public class ClassLoaderParameterUnwrappedTest
                .addBeansXML()
                .addClasses(IterableFactory.class, ClassWithClassAsParameter.class)
                .addAsAddonDependencies(
-                        AddonDependencyEntry.create("dep1", "1"),
                         AddonDependencyEntry.create("dep2", "2")
                )
                .addAsLocalServices(ClassLoaderParameterUnwrappedTest.class);
