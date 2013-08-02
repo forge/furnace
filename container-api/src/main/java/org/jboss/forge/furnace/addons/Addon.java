@@ -9,6 +9,7 @@ package org.jboss.forge.furnace.addons;
 import java.util.Set;
 import java.util.concurrent.Future;
 
+import org.jboss.forge.furnace.event.EventManager;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.spi.ServiceRegistry;
 
@@ -30,6 +31,11 @@ public interface Addon
     * Get the {@link ClassLoader} containing the resources of this {@link Addon}.
     */
    public ClassLoader getClassLoader();
+
+   /**
+    * Get the {@link EventManager} of this {@link Addon}.
+    */
+   public EventManager getEventManager();
 
    /**
     * Get the {@link ServiceRegistry} containing services provided by this {@link Addon}.

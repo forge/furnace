@@ -13,6 +13,7 @@ import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonDependency;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonStatus;
+import org.jboss.forge.furnace.event.EventManager;
 import org.jboss.forge.furnace.impl.util.NullFuture;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.spi.ServiceRegistry;
@@ -51,6 +52,12 @@ public class AddonImpl implements Addon
    public ClassLoader getClassLoader()
    {
       return manager.getClassLoaderOf(this);
+   }
+
+   @Override
+   public EventManager getEventManager()
+   {
+      return manager.getEventManagerOf(this);
    }
 
    @Override

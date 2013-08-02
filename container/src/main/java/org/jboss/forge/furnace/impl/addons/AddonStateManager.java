@@ -11,6 +11,7 @@ import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonDependency;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonView;
+import org.jboss.forge.furnace.event.EventManager;
 import org.jboss.forge.furnace.impl.graph.AddonVertex;
 import org.jboss.forge.furnace.impl.graph.MasterGraph;
 import org.jboss.forge.furnace.impl.modules.AddonModuleLoader;
@@ -50,6 +51,11 @@ public class AddonStateManager
    public ClassLoader getClassLoaderOf(Addon addon)
    {
       return getState(addon).getClassLoader();
+   }
+
+   public EventManager getEventManagerOf(Addon addon)
+   {
+      return getState(addon).getEventManager();
    }
 
    public Future<Void> getFutureOf(Addon addon)
@@ -228,6 +234,19 @@ public class AddonStateManager
          {
             getState(addon).setFuture(result);
             getState(addon).setRunnable(runnable);
+            return null;
+         }
+      });
+   }
+
+   public void setEventManager(final Addon addon, final EventManager manager)
+   {
+      lock.performLocked(LockMode.WRITE, new Callable<Void>()
+      {
+         @Override
+         public Void call() throws Exception
+         {
+            getState(addon).setEventManager(manager);
             return null;
          }
       });

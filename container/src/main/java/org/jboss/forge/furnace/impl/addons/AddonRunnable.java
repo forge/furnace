@@ -76,6 +76,7 @@ public final class AddonRunnable implements Runnable
                            lifecycleProviderEntry.getAddon());
                   lifecycleProvider.start(addon);
                   stateManager.setServiceRegistry(addon, lifecycleProvider.getServiceRegistry(addon));
+                  stateManager.setEventManager(addon, lifecycleProvider.getEventManager(addon));
 
                   for (AddonDependency dependency : addon.getDependencies())
                   {

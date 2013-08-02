@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.concurrent.Future;
 
 import org.jboss.forge.furnace.addons.AddonDependency;
+import org.jboss.forge.furnace.event.EventManager;
 import org.jboss.forge.furnace.impl.util.NullFuture;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.spi.ServiceRegistry;
@@ -17,6 +18,7 @@ public class AddonState
    private Set<AddonDependency> missingDependencies = new HashSet<AddonDependency>();
    private AddonRepository repository;
    private ServiceRegistry registry = new NullServiceRegistry();
+   private EventManager eventManager = new NullEventManager();
    private AddonRunnable runnable;
    private ClassLoader loader;
 
@@ -45,6 +47,11 @@ public class AddonState
    public ClassLoader getClassLoader()
    {
       return loader;
+   }
+
+   public EventManager getEventManager()
+   {
+      return eventManager;
    }
 
    public Set<AddonDependency> getDependencies()
@@ -90,6 +97,11 @@ public class AddonState
    public void setServiceRegistry(ServiceRegistry registry)
    {
       this.registry = (registry != null ? registry : new NullServiceRegistry());
+   }
+
+   public void setEventManager(EventManager manager)
+   {
+      this.eventManager = (manager != null ? manager : new NullEventManager());
    }
 
 }

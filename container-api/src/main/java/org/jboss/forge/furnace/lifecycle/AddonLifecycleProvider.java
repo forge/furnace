@@ -9,6 +9,7 @@ package org.jboss.forge.furnace.lifecycle;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonRegistry;
+import org.jboss.forge.furnace.event.EventManager;
 import org.jboss.forge.furnace.spi.ServiceRegistry;
 
 /**
@@ -35,9 +36,14 @@ public interface AddonLifecycleProvider
    void stop(Addon addon) throws Exception;
 
    /**
-    * Get the service registry for the given {@link Addon}.
+    * Get the {@link ServiceRegistry} for the given {@link Addon}.
     */
    ServiceRegistry getServiceRegistry(Addon addon) throws Exception;
+
+   /**
+    * Get the {@link EventManager} for the given {@link Addon}
+    */
+   EventManager getEventManager(Addon addon);
 
    /**
     * Handle any post-startup tasks.

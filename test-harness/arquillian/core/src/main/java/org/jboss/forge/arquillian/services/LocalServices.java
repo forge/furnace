@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonRegistry;
+import org.jboss.forge.furnace.event.EventManager;
 import org.jboss.forge.furnace.lifecycle.AddonLifecycleProvider;
 import org.jboss.forge.furnace.lifecycle.ControlType;
 import org.jboss.forge.furnace.spi.ServiceRegistry;
@@ -52,6 +53,12 @@ public class LocalServices implements AddonLifecycleProvider
    public static Furnace getFurnace(ClassLoader loader)
    {
       return started.get(loader);
+   }
+
+   @Override
+   public EventManager getEventManager(Addon addon)
+   {
+      return new LazyServiceRegistryEventManager(addon);
    }
 
    @Override

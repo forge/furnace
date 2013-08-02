@@ -21,8 +21,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.jboss.forge.arquillian.services.ReflectionExportedInstance;
-import org.jboss.forge.arquillian.services.ReflectionServiceRegistry;
 import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.furnace.lifecycle.AddonLifecycleProvider;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
@@ -205,8 +203,7 @@ public class ForgeArchiveImpl extends ContainerBase<ForgeArchive> implements For
    public ForgeArchive addAsLocalServices(Class<?>... serviceTypes)
    {
       addAsServiceProvider(AddonLifecycleProvider.class, LocalServices.class);
-      addClasses(LocalServices.class, ReflectionExportedInstance.class,
-               ReflectionServiceRegistry.class);
+      addPackages(true, LocalServices.class.getPackage());
       for (Class<?> type : serviceTypes)
       {
          addAsServiceProvider(SERVICE_REGISTRATION_FILE_NAME,
