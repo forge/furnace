@@ -1,0 +1,52 @@
+== Furnace Maven Plugin project
+
+=== Summary
+
+The Furnace Maven Plugin provides a clean Maven integration with Furnace.
+You can install addons into a specific repository during build time, thus avoiding the need to store addons JARs in your SCM.
+
+NOTE: due to https://issues.jboss.org/browse/FORGE-1034, this plugin only runs in Maven 3.1.0
+
+=== Install
+
+Add the following to your pom.xml:
+
+[source,xml]
+----
+      <plugin>
+        <groupId>org.jboss.furnace</groupId>
+        <artifactId>furnace-maven-plugin</artifactId>
+        <version>${version.forge}</version>
+        <executions>
+           <execution>
+              <id>deploy-addons</id>
+              <phase>prepare-package</phase>
+              <goals>
+                 <goal>addon-install</goal>
+              </goals>
+              <inherited>false</inherited>
+              <configuration>
+                 <addonRepository>${basedir}/addon-repository</addonRepository>
+                 <addonIds>
+                    <addonId>org.jboss.forge:addon-manager,${version.forge}</addonId>
+                    <addonId>org.jboss.forge:maven,${version.forge}</addonId>
+                    <addonId>org.jboss.forge:projects,${version.forge}</addonId>
+                 </addonIds>
+              </configuration>
+           </execution>
+        </executions>
+        <dependencies>
+           <dependency>
+              <groupId>org.jboss.forge.furnace</groupId>
+              <artifactId>furnace-manager-resolver-maven</artifactId>
+              <version>${version.forge}</version>
+           </dependency>
+        </dependencies>
+      </plugin>
+----
+
+Where: 
+
+    version.forge
+    
+is a maven property with the desired forge version (E.g. 2.0.0.Alpha10)

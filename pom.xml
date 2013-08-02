@@ -74,7 +74,7 @@
             <module>se-tests</module>
             <module>manager</module>
             <module>test-harness</module>
-
+            <module>maven-plugin</module>
          </modules>
       </profile>
    </profiles>
