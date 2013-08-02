@@ -90,14 +90,14 @@ public enum ProjectHelper
 
    public List<Dependency> resolveDependenciesFromPOM(File pomFile) throws Exception
    {
-      ProjectBuildingRequest request = getBuildingRequest(false);
+      ProjectBuildingRequest request = getBuildingRequest();
       request.setResolveDependencies(true);
       ProjectBuilder builder = plexus.lookup(ProjectBuilder.class);
       ProjectBuildingResult build = builder.build(pomFile, request);
       return build.getDependencyResolutionResult().getDependencies();
    }
 
-   private ProjectBuildingRequest getBuildingRequest(final boolean offline)
+   private ProjectBuildingRequest getBuildingRequest()
    {
       if (projectBuildingRequest != null)
       {
@@ -157,7 +157,7 @@ public enum ProjectHelper
 
          repositorySession.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(repositorySession,
                   localRepo));
-         repositorySession.setOffline(offline);
+         repositorySession.setOffline(settings.isOffline());
          List<Mirror> mirrors = executionRequest.getMirrors();
          if (mirrors != null)
          {
