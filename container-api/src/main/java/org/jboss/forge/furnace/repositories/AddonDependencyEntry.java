@@ -67,6 +67,22 @@ public class AddonDependencyEntry
    /**
     * Create a new {@link AddonDependencyEntry} with the given attributes.
     */
+   public static AddonDependencyEntry create(String name, boolean exported)
+   {
+      return create(name, new EmptyVersionRange(), exported, false);
+   }
+
+   /**
+    * Create a new {@link AddonDependencyEntry} with the given attributes.
+    */
+   public static AddonDependencyEntry create(String name, boolean exported, boolean optional)
+   {
+      return create(name, new EmptyVersionRange(), exported, optional);
+   }
+
+   /**
+    * Create a new {@link AddonDependencyEntry} with the given attributes.
+    */
    public static AddonDependencyEntry create(String name, String versionRange)
    {
       return create(name, Versions.parseMultipleVersionRange(versionRange), false, false);
