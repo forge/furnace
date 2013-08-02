@@ -23,11 +23,5 @@
          <artifactId>arquillian-forge-core</artifactId>
          <scope>compile</scope>
       </dependency>
-      <!-- TODO: Put in a profile to allow exchanging the resolver type? -->
-      <dependency>
-         <groupId>org.jboss.forge.furnace</groupId>
-         <artifactId>furnace-manager-resolver-maven</artifactId>
-         <scope>compile</scope>
-      </dependency>
    </dependencies>
 </project>

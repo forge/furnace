@@ -8,6 +8,7 @@ package org.jboss.forge.furnace.repositories;
 
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.util.Assert;
+import org.jboss.forge.furnace.versions.EmptyVersionRange;
 import org.jboss.forge.furnace.versions.VersionRange;
 import org.jboss.forge.furnace.versions.Versions;
 
@@ -53,6 +54,14 @@ public class AddonDependencyEntry
    public VersionRange getVersionRange()
    {
       return version;
+   }
+
+   /**
+    * Create a new {@link AddonDependencyEntry} with the given attributes.
+    */
+   public static AddonDependencyEntry create(String name)
+   {
+      return create(name, new EmptyVersionRange(), false, false);
    }
 
    /**

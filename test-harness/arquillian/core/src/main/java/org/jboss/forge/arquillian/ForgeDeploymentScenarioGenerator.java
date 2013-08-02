@@ -1,11 +1,17 @@
 package org.jboss.forge.arquillian;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.graph.Dependency;
 import org.jboss.arquillian.container.spi.client.deployment.DeploymentDescription;
 import org.jboss.arquillian.container.spi.client.deployment.TargetDescription;
 import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
@@ -17,6 +23,7 @@ import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentScena
 import org.jboss.arquillian.test.spi.TestClass;
 import org.jboss.forge.arquillian.archive.ForgeRemoteAddon;
 import org.jboss.forge.arquillian.archive.RepositoryForgeArchive;
+import org.jboss.forge.arquillian.maven.ProjectHelper;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.util.Annotations;
 import org.jboss.shrinkwrap.api.Archive;
@@ -25,24 +32,26 @@ import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 
 public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGenerator
 {
+   Map<String, String> dependencyMap;
+
    @Override
    public List<DeploymentDescription> generate(TestClass testClass)
    {
       List<DeploymentDescription> deployments = new ArrayList<DeploymentDescription>();
       Method[] deploymentMethods = testClass.getMethods(Deployment.class);
-
       for (Method deploymentMethod : deploymentMethods)
       {
          validate(deploymentMethod);
          if (deploymentMethod.isAnnotationPresent(Dependencies.class))
-            deployments.addAll(generateDependencyDeployments(deploymentMethod));
+            deployments.addAll(generateDependencyDeployments(testClass.getJavaClass(), deploymentMethod));
          deployments.add(generateDeployment(deploymentMethod));
       }
 
       return deployments;
    }
 
-   private Collection<DeploymentDescription> generateDependencyDeployments(Method deploymentMethod)
+   private Collection<DeploymentDescription> generateDependencyDeployments(Class<?> classUnderTest,
+            Method deploymentMethod)
    {
       Dependencies dependency = deploymentMethod.getAnnotation(Dependencies.class);
       Collection<DeploymentDescription> deployments = new ArrayList<DeploymentDescription>();
@@ -50,11 +59,26 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
       if (dependency.value() != null)
          for (AddonDependency addon : dependency.value())
          {
-            AddonId id = AddonId.from(addon.name(), addon.version());
+            String version;
+            if (addon.version().isEmpty())
+            {
+               version = resolveVersionFromPOM(classUnderTest, addon.name());
+               if (version == null)
+               {
+                  throw new IllegalStateException("Could not resolve the version for " + addon.name()
+                           + ". Either specify the version for this test or add it to pom.xml");
+               }
+            }
+            else
+            {
+               version = addon.version();
+            }
+            AddonId id = AddonId.from(addon.name(), version);
             ForgeRemoteAddon remoteAddon = ShrinkWrap.create(ForgeRemoteAddon.class).setAddonId(id);
 
             if (Annotations.isAnnotationPresent(deploymentMethod, DeployToRepository.class))
-               remoteAddon.setAddonRepository(Annotations.getAnnotation(deploymentMethod, DeployToRepository.class).value());
+               remoteAddon.setAddonRepository(Annotations.getAnnotation(deploymentMethod, DeployToRepository.class)
+                        .value());
 
             DeploymentDescription deploymentDescription = new DeploymentDescription(id.toCoordinates(), remoteAddon);
             deploymentDescription.shouldBeTestable(false);
@@ -62,6 +86,61 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
          }
 
       return deployments;
+   }
+
+   /**
+    * Read the pom.xml of the project containing the class under test
+    * 
+    * @param classUnderTest
+    * @param name
+    * @return
+    */
+   private String resolveVersionFromPOM(Class<?> classUnderTest, String name)
+   {
+      if (dependencyMap == null)
+      {
+         dependencyMap = new HashMap<String, String>();
+         URL resource = classUnderTest.getClassLoader().getResource("");
+         if (resource == null)
+         {
+            throw new IllegalStateException("Could not find the pom.xml for class " + classUnderTest.getName());
+         }
+         String directory = resource.getFile();
+         File pomFile = findBuildDescriptor(directory);
+         try
+         {
+            List<Dependency> dependencies = ProjectHelper.INSTANCE.resolveDependenciesFromPOM(pomFile);
+            for (Dependency dependency : dependencies)
+            {
+               Artifact artifact = dependency.getArtifact();
+               String addonName = artifact.getGroupId() + ":" + artifact.getArtifactId();
+               String version = artifact.getBaseVersion();
+               dependencyMap.put(addonName, version);
+            }
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+         }
+      }
+      return dependencyMap.get(name);
+   }
+
+   private File findBuildDescriptor(String classLocation)
+   {
+      File pom = null;
+      File dir = new File(classLocation);
+      while (dir != null)
+      {
+         File testPom = new File(dir, "pom.xml");
+         if (testPom.isFile())
+         {
+            pom = testPom;
+            break;
+         }
+         dir = dir.getParentFile();
+      }
+      return pom;
    }
 
    private void validate(Method deploymentMethod)
