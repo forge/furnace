@@ -65,8 +65,10 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
                version = resolveVersionFromPOM(classUnderTest, addon.name());
                if (version == null)
                {
-                  throw new IllegalStateException("Could not resolve the version for " + addon.name()
-                           + ". Either specify the version for this test or add it to pom.xml");
+                  throw new IllegalStateException("Could not resolve the version for [" + addon.name()
+                           + "]. Either specify the version for this @" + AddonDependency.class.getSimpleName()
+                           + " in [" + classUnderTest.getName() + "] or add it to pom.xml located at ["
+                           + getPomFileFor(classUnderTest) + "]");
                }
             }
             else
@@ -100,13 +102,7 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
       if (dependencyMap == null)
       {
          dependencyMap = new HashMap<String, String>();
-         URL resource = classUnderTest.getClassLoader().getResource("");
-         if (resource == null)
-         {
-            throw new IllegalStateException("Could not find the pom.xml for class " + classUnderTest.getName());
-         }
-         String directory = resource.getFile();
-         File pomFile = findBuildDescriptor(directory);
+         File pomFile = getPomFileFor(classUnderTest);
          try
          {
             List<Dependency> dependencies = ProjectHelper.INSTANCE.resolveDependenciesFromPOM(pomFile);
@@ -120,10 +116,23 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
          }
          catch (Exception e)
          {
+            // TODO log this instead?
             e.printStackTrace();
          }
       }
       return dependencyMap.get(name);
+   }
+
+   private File getPomFileFor(Class<?> classUnderTest)
+   {
+      URL resource = classUnderTest.getClassLoader().getResource("");
+      if (resource == null)
+      {
+         throw new IllegalStateException("Could not find the pom.xml for class " + classUnderTest.getName());
+      }
+      String directory = resource.getFile();
+      File pomFile = findBuildDescriptor(directory);
+      return pomFile;
    }
 
    private File findBuildDescriptor(String classLocation)
