@@ -45,6 +45,8 @@ import org.jboss.modules.filter.PathFilters;
  */
 public class AddonModuleLoader extends ModuleLoader
 {
+   private static final String CONTAINER_PREFIX = "org.jboss.forge.furnace.container:";
+
    private static final Logger logger = Logger.getLogger(AddonModuleLoader.class.getName());
 
    private Iterable<ModuleSpecProvider> moduleProviders;
@@ -225,7 +227,7 @@ public class AddonModuleLoader extends ModuleLoader
          /*
           * Containers should always take precedence at runtime.
           */
-         if (dependency.getName().startsWith("org.jboss.forge.furnace:container"))
+         if (dependency.getName().startsWith(CONTAINER_PREFIX))
             addAddonDependency(views, found, builder, dependency);
       }
    }
@@ -236,7 +238,7 @@ public class AddonModuleLoader extends ModuleLoader
       Set<AddonDependencyEntry> addons = repository.getAddonDependencies(found);
       for (AddonDependencyEntry dependency : addons)
       {
-         if (!dependency.getName().startsWith("org.jboss.forge.furnace:container"))
+         if (!dependency.getName().startsWith(CONTAINER_PREFIX))
             addAddonDependency(views, found, builder, dependency);
       }
    }
