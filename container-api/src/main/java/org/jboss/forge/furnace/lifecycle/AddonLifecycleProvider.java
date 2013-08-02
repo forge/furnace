@@ -43,7 +43,7 @@ public interface AddonLifecycleProvider
    /**
     * Get the {@link EventManager} for the given {@link Addon}
     */
-   EventManager getEventManager(Addon addon);
+   EventManager getEventManager(Addon addon) throws Exception;
 
    /**
     * Handle any post-startup tasks.
