@@ -13,36 +13,28 @@ Add the following to your pom.xml:
 
 [source,xml]
 ----
-      <plugin>
-        <groupId>org.jboss.furnace</groupId>
-        <artifactId>furnace-maven-plugin</artifactId>
-        <version>${version.forge}</version>
-        <executions>
-           <execution>
-              <id>deploy-addons</id>
-              <phase>prepare-package</phase>
-              <goals>
-                 <goal>addon-install</goal>
-              </goals>
-              <inherited>false</inherited>
-              <configuration>
-                 <addonRepository>${basedir}/addon-repository</addonRepository>
-                 <addonIds>
-                    <addonId>org.jboss.forge:addon-manager,${version.forge}</addonId>
-                    <addonId>org.jboss.forge:maven,${version.forge}</addonId>
-                    <addonId>org.jboss.forge:projects,${version.forge}</addonId>
-                 </addonIds>
-              </configuration>
-           </execution>
-        </executions>
-        <dependencies>
-           <dependency>
-              <groupId>org.jboss.forge.furnace</groupId>
-              <artifactId>furnace-manager-resolver-maven</artifactId>
-              <version>${version.forge}</version>
-           </dependency>
-        </dependencies>
-      </plugin>
+<plugin>
+   <groupId>org.jboss.furnace</groupId>
+   <artifactId>furnace-maven-plugin</artifactId>
+   <version>${version.forge}</version>
+   <executions>
+      <execution>
+         <id>deploy-addons</id>
+         <phase>prepare-package</phase>
+         <goals>
+            <goal>addon-install</goal>
+         </goals>
+         <configuration>
+            <addonRepository>${basedir}/addon-repository</addonRepository>
+            <addonIds>
+               <addonId>org.jboss.forge:addon-manager,${version.forge}</addonId>
+               <addonId>org.jboss.forge:maven,${version.forge}</addonId>
+               <addonId>org.jboss.forge:projects,${version.forge}</addonId>
+            </addonIds>
+         </configuration>
+      </execution>
+   </executions>
+</plugin>
 ----
 
 Where: 
