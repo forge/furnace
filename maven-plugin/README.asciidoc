@@ -3,20 +3,22 @@
 === Summary
 
 The Furnace Maven Plugin provides a clean Maven integration with Furnace.
-You can install addons into a specific repository during build time, thus avoiding the need to store addons JARs in your SCM.
 
 NOTE: due to https://issues.jboss.org/browse/FORGE-1034, this plugin only runs in Maven 3.1.0
 
-=== Install
+=== Features 
 
+Deploy addons to a specific repository::
+You can install addons into a specific repository during build time, thus avoiding the need to store addons JARs in your SCM.
++
 Add the following to your pom.xml:
-
++
 [source,xml]
 ----
 <plugin>
    <groupId>org.jboss.furnace</groupId>
    <artifactId>furnace-maven-plugin</artifactId>
-   <version>${version.forge}</version>
+   <version>${furnace.version}</version>
    <executions>
       <execution>
          <id>deploy-addons</id>
@@ -37,8 +39,30 @@ Add the following to your pom.xml:
 </plugin>
 ----
 
-Where: 
+Generate DOT file::
+Allows generation of a link:http://en.wikipedia.org/wiki/DOT_(graph_description_language)[DOT (graph description language)] from the addon dependencies. This goal also allows attaching of the DOT file as a new artifact to the build reactor.
++
+Add the following to your pom.xml:
++
+[source,xml]
+----
+<plugin>
+   <groupId>org.jboss.furnace</groupId>
+   <artifactId>furnace-maven-plugin</artifactId>
+   <version>${furnace.version}</version>
+   <executions>
+      <execution>
+         <id>generate-dot</id>
+         <phase>prepare-package</phase>
+         <goals>
+            <goal>generate-dot</goal>
+         </goals>
+         <configuration>
+            <attach>true</attach>
+         </configuration>
+      </execution>
+   </executions>
+</plugin>
+----
 
-    version.forge
-    
-is a maven property with the desired forge version (E.g. 2.0.0.Alpha10)
+
