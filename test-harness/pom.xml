@@ -38,9 +38,8 @@
    </prerequisites>
 
    <properties>
-      <version.arquillian>1.1.0.Final</version.arquillian>
+      <version.arquillian>1.1.1.Final</version.arquillian>
       <version.arquillian.container>1.0.0.CR5</version.arquillian.container>
-      <version.junit>4.11</version.junit>
    </properties>
 
    <modules>
@@ -87,13 +86,6 @@
          </dependency>
 
          <!-- Test Dependencies -->
-         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${version.junit}</version>
-            <scope>test</scope>
-         </dependency>
-
          <dependency>
             <groupId>org.jboss.arquillian</groupId>
             <artifactId>arquillian-bom</artifactId>

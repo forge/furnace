@@ -48,8 +48,6 @@
       <forge.scm.url>http://github.com/forge/furnace</forge.scm.url>
       <forge.release.codename>Fire it Up</forge.release.codename>
       <forge.release.version>${project.version}</forge.release.version>
-      <version.arquillian>1.0.4.Final</version.arquillian>
-      <version.arquillian.container>1.0.0.CR5</version.arquillian.container>
       <version.javassist>1</version.javassist>
       <version.jboss.modules>3</version.jboss.modules>
       <version.junit>4.11</version.junit>
