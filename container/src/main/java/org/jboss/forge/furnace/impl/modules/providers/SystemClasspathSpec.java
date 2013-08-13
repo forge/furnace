@@ -87,6 +87,12 @@ public class SystemClasspathSpec extends AbstractModuleSpecProvider
       paths.add("javax/swing/undo");
       paths.add("javax/tools");
       paths.add("javax/xml");
+      paths.add("javax/xml/bind");
+      paths.add("javax/xml/bind/annotation");
+      paths.add("javax/xml/bind/annotation/adapters");
+      paths.add("javax/xml/bind/attachment");
+      paths.add("javax/xml/bind/helpers");
+      paths.add("javax/xml/bind/util");
       paths.add("javax/xml/crypto");
       paths.add("javax/xml/crypto/dom");
       paths.add("javax/xml/crypto/dsig");
