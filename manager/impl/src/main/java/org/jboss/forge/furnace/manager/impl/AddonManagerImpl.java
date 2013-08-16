@@ -86,7 +86,7 @@ public class AddonManagerImpl implements AddonManager
       List<AddonActionRequest> actions = new ArrayList<AddonActionRequest>();
       for (AddonInfo newAddonInfo : allAddons)
       {
-         AddonActionRequest request = createRequest(newAddonInfo, mutableRepo, installedAddonIds);
+         AddonActionRequest request = createRequest(addonInfo, newAddonInfo, mutableRepo, installedAddonIds);
          if (request != null)
          {
             actions.add(request);
@@ -155,7 +155,8 @@ public class AddonManagerImpl implements AddonManager
     * @param installedAddons
     * @return
     */
-   private AddonActionRequest createRequest(final AddonInfo addonInfo, final MutableAddonRepository repository,
+   private AddonActionRequest createRequest(final AddonInfo requestedAddonInfo, final AddonInfo addonInfo,
+            final MutableAddonRepository repository,
             final Map<AddonId, AddonRepository> installedAddons)
    {
       final AddonActionRequest request;
@@ -168,7 +169,15 @@ public class AddonManagerImpl implements AddonManager
             AddonRepository addonRepository = installedAddons.get(addon);
             if (repository.equals(addonRepository))
             {
-               request = createUpdateRequest(addonInfo, addonInfo, repository, furnace);
+               // Update only if it is the requested addon
+               if (addonInfo.equals(requestedAddonInfo))
+               {
+                  request = createUpdateRequest(addonInfo, addonInfo, repository, furnace);
+               }
+               else
+               {
+                  request = null;
+               }
             }
             else
             {
