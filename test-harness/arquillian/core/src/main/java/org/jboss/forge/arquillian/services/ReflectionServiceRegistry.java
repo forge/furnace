@@ -9,16 +9,12 @@ package org.jboss.forge.arquillian.services;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
-import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.spi.ExportedInstance;
 import org.jboss.forge.furnace.spi.ServiceRegistry;
-import org.jboss.forge.furnace.util.Addons;
 import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.util.ClassLoaders;
 
@@ -32,27 +28,22 @@ public class ReflectionServiceRegistry implements ServiceRegistry
 
    private Addon addon;
    private Set<Class<?>> serviceTypes;
-   private Furnace furnace;
 
    public ReflectionServiceRegistry(Furnace furnace, Addon addon, Set<Class<?>> serviceTypes)
    {
-      this.furnace = furnace;
       this.addon = addon;
       this.serviceTypes = serviceTypes;
    }
 
    @Override
-   public <T> Set<ExportedInstance<T>> getExportedInstances(Class<T> clazz)
+   public <T> Set<ExportedInstance<T>> getExportedInstances(Class<T> requestedType)
    {
       Set<ExportedInstance<T>> result = new HashSet<ExportedInstance<T>>();
-      if (serviceTypes.contains(clazz))
+      for (Class<?> type : serviceTypes)
       {
-         for (Class<?> type : serviceTypes)
+         if (requestedType.isAssignableFrom(type))
          {
-            if (clazz.isAssignableFrom(type))
-            {
-               result.add(new ReflectionExportedInstance<T>(addon, clazz));
-            }
+            result.add(new ReflectionExportedInstance<T>(addon, requestedType));
          }
       }
       return result;
@@ -66,37 +57,30 @@ public class ReflectionServiceRegistry implements ServiceRegistry
       if (ClassLoaders.containsClass(addon.getClassLoader(), typeName))
       {
          Class<T> type = (Class<T>) ClassLoaders.loadClass(addon.getClassLoader(), typeName);
-         if (serviceTypes.contains(type))
-         {
-            result.addAll(getExportedInstances(type));
-         }
+         result.addAll(getExportedInstances(type));
       }
       return result;
    }
 
    @Override
+   @SuppressWarnings("unchecked")
    public <T> ExportedInstance<T> getExportedInstance(final Class<T> requestedType)
    {
       Assert.notNull(requestedType, "Requested Class type may not be null");
-      Addons.waitUntilStarted(addon);
-      return furnace.getLockManager().performLocked(LockMode.READ, new Callable<ExportedInstance<T>>()
+      if (!ClassLoaders.ownsClass(addon.getClassLoader(), requestedType))
       {
-         @Override
-         public ExportedInstance<T> call() throws Exception
+         log.fine("Class " + requestedType.getName() + " is not present in this addon [" + addon + "]");
+         for (Class<?> type : serviceTypes)
          {
-            /*
-             * Double checked waiting, with timeout to prevent complete deadlocks.
-             */
-            Addons.waitUntilStarted(addon, 10, TimeUnit.SECONDS);
-            if (!ClassLoaders.ownsClass(addon.getClassLoader(), requestedType))
+            if (requestedType.isAssignableFrom(type))
             {
-               log.fine("Class " + requestedType.getName() + " is not present in this addon [" + addon + "]");
-               return null;
+               return new ReflectionExportedInstance<T>(addon, (Class<T>) type);
             }
-
-            return new ReflectionExportedInstance<T>(addon, requestedType);
          }
-      });
+         return null;
+      }
+
+      return new ReflectionExportedInstance<T>(addon, requestedType);
    }
 
    @Override

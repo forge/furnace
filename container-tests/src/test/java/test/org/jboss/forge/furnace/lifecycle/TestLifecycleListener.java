@@ -5,7 +5,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  */
 
-package test.org.jboss.forge.furnace;
+package test.org.jboss.forge.furnace.lifecycle;
 
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.exception.ContainerException;

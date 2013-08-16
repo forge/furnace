@@ -160,6 +160,9 @@ public class AddonModuleLoader extends ModuleLoader
                      logger.warning(e.getMessage());
                      return null;
                   }
+                  
+                  builder.addDependency(DependencySpec.createLocalDependencySpec(PathFilters.acceptAll(),
+                           PathFilters.acceptAll()));
 
                   try
                   {
@@ -170,9 +173,6 @@ public class AddonModuleLoader extends ModuleLoader
                      logger.warning(e.getMessage());
                      return null;
                   }
-
-                  builder.addDependency(DependencySpec.createLocalDependencySpec(PathFilters.acceptAll(),
-                           PathFilters.acceptAll()));
 
                   addLocalResources(repository, found, builder, id);
 

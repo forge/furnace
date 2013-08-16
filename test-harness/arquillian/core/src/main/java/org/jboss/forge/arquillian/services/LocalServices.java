@@ -17,6 +17,8 @@ import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.event.EventManager;
+import org.jboss.forge.furnace.event.PostStartup;
+import org.jboss.forge.furnace.event.PreShutdown;
 import org.jboss.forge.furnace.lifecycle.AddonLifecycleProvider;
 import org.jboss.forge.furnace.lifecycle.ControlType;
 import org.jboss.forge.furnace.spi.ServiceRegistry;
@@ -86,11 +88,13 @@ public class LocalServices implements AddonLifecycleProvider
    @Override
    public void postStartup(Addon addon) throws Exception
    {
+      getEventManager(addon).fireEvent(new PostStartup());
    }
 
    @Override
    public void preShutdown(Addon addon) throws Exception
    {
+      getEventManager(addon).fireEvent(new PreShutdown());
    }
 
    @Override

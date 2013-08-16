@@ -137,7 +137,7 @@ public final class AddonRunnable implements Runnable
                {
                   try
                   {
-                     lifecycleProvider.postStartup(addon);
+                     lifecycleProvider.preShutdown(addon);
                   }
                   catch (Throwable e)
                   {
@@ -193,11 +193,12 @@ public final class AddonRunnable implements Runnable
 
                   if (ClassLoaders.ownsClass(classLoader, provider.getClass()))
                   {
-                     if (ControlType.ALL.equals(provider.getControlType()))
+                     ControlType controlType = provider.getControlType();
+                     if (ControlType.ALL.equals(controlType))
                      {
                         result = new AddonLifecycleProviderEntry(addon, provider);
                      }
-                     if (ControlType.SELF.equals(provider.getControlType()))
+                     if (ControlType.SELF.equals(controlType))
                      {
                         result = new AddonLifecycleProviderEntry(addon, provider);
                      }

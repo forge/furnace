@@ -1,4 +1,4 @@
-package test.org.jboss.forge.furnace;
+package test.org.jboss.forge.furnace.lifecycle;
 
 import java.io.File;
 
