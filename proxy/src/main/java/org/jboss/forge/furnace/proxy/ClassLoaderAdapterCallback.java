@@ -87,8 +87,8 @@ public class ClassLoaderAdapterCallback implements MethodHandler
             catch (InvocationTargetException e)
             {
                if (e.getCause() instanceof Exception)
-                  throw (Exception) e.getCause();
-               throw e;
+                  throw enhanceException(delegateMethod, (Exception) e.getCause());
+               throw enhanceException(delegateMethod, e);
             }
 
          }
@@ -197,6 +197,47 @@ public class ClassLoaderAdapterCallback implements MethodHandler
       return result;
    }
 
+   private Exception enhanceException(final Method method, Exception exception)
+   {
+      try
+      {
+         if (exception != null)
+         {
+            Exception unwrappedException = Proxies.unwrap(exception);
+            Class<?> unwrappedExceptionType = unwrappedException.getClass();
+
+            ClassLoader exceptionLoader = delegateLoader;
+            if (!ClassLoaders.containsClass(delegateLoader, unwrappedExceptionType))
+            {
+               exceptionLoader = Proxies.unwrapProxyTypes(unwrappedExceptionType, callingLoader, delegateLoader,
+                        unwrappedExceptionType.getClassLoader()).getClassLoader();
+               if (exceptionLoader == null)
+               {
+                  exceptionLoader = getClass().getClassLoader();
+               }
+            }
+
+            if (exceptionNeedsEnhancement(exception))
+            {
+               Class<?>[] exceptionHierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(callingLoader,
+                        Proxies.unwrapProxyTypes(exception.getClass(), callingLoader, delegateLoader, exceptionLoader));
+
+               if (!Modifier.isFinal(unwrappedExceptionType.getModifiers()))
+               {
+                  exception = enhance(callingLoader, exceptionLoader, method, exception, exceptionHierarchy);
+               }
+            }
+         }
+      }
+      catch (Exception e)
+      {
+         throw new ContainerException("Failed to enhance exception type: [" + exception.getClass().getName()
+                  + "] during proxied invocation of [" + method.getDeclaringClass().getName() + "." + method.getName()
+                  + "]. \n\nOriginal exception was: ", e);
+      }
+      return exception;
+   }
+
    @SuppressWarnings({ "unchecked", "rawtypes" })
    private Object enhanceEnum(ClassLoader loader, Object instance)
    {
@@ -236,6 +277,29 @@ public class ClassLoaderAdapterCallback implements MethodHandler
          }
       }
       return left;
+   }
+
+   @SuppressWarnings("unchecked")
+   private boolean exceptionNeedsEnhancement(Exception exception)
+   {
+      Class<? extends Exception> exceptionType = exception.getClass();
+      Class<? extends Exception> unwrappedExceptionType =
+               (Class<? extends Exception>) Proxies.unwrap(exception).getClass();
+
+      if (Proxies.isPassthroughType(unwrappedExceptionType))
+      {
+         return false;
+      }
+
+      if (unwrappedExceptionType.getClassLoader() != null
+               && !exceptionType.getClassLoader().equals(callingLoader))
+      {
+         if (ClassLoaders.containsClass(callingLoader, exceptionType))
+         {
+            return false;
+         }
+      }
+      return true;
    }
 
    private boolean returnTypeNeedsEnhancement(Class<?> methodReturnType, Object returnValue,

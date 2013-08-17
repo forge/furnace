@@ -26,25 +26,20 @@ public class ForgeDeploymentPackager implements DeploymentPackager
          Collection<Archive<?>> auxiliaryArchives = testDeployment.getAuxiliaryArchives();
          for (Archive<?> archive : auxiliaryArchives)
          {
-            Map<ArchivePath, Node> content = archive.getContent(new Filter<ArchivePath>()
-            {
-               @Override
-               public boolean include(ArchivePath path)
-               {
-                  return path.toString().matches("org/jboss/shrinkwrap/descriptor/api/.*");
-               }
-            });
-
-            System.out.println(archive.toString(true));
-
-            System.out.println(archive.getName() + ": " + content.size());
-
-            for (Entry<ArchivePath, Node> entry : content.entrySet())
-            {
-               ArchivePath key = entry.getKey();
-               System.out.println("Deleting from " + archive.getName() + ": " + key);
-               archive.delete(key);
-            }
+//            Map<ArchivePath, Node> content = archive.getContent(new Filter<ArchivePath>()
+//            {
+//               @Override
+//               public boolean include(ArchivePath path)
+//               {
+//                  return path.toString().matches("org/jboss/shrinkwrap/descriptor/api/.*");
+//               }
+//            });
+//
+//            for (Entry<ArchivePath, Node> entry : content.entrySet())
+//            {
+//               ArchivePath key = entry.getKey();
+//               archive.delete(key);
+//            }
 
             deployment.addAsLibrary(archive);
          }

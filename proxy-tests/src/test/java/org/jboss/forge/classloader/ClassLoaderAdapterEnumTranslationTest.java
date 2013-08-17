@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
-public class ClassLoaderAdapterEnumCollisionsTest
+public class ClassLoaderAdapterEnumTranslationTest
 {
    @Deployment(order = 3)
    public static ForgeArchive getDeployment()
@@ -32,7 +32,7 @@ public class ClassLoaderAdapterEnumCollisionsTest
                .create(ForgeArchive.class)
                .addBeansXML()
                .addClasses(SimpleEnum.class, SimpleEnumFactory.class)
-               .addAsLocalServices(ClassLoaderAdapterEnumCollisionsTest.class);
+               .addAsLocalServices(ClassLoaderAdapterEnumTranslationTest.class);
 
       return archive;
    }
@@ -52,7 +52,7 @@ public class ClassLoaderAdapterEnumCollisionsTest
    {
       AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
                .getAddonRegistry();
-      ClassLoader thisLoader = ClassLoaderAdapterEnumCollisionsTest.class.getClassLoader();
+      ClassLoader thisLoader = ClassLoaderAdapterEnumTranslationTest.class.getClassLoader();
       ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep", "1")).getClassLoader();
 
       Class<?> foreignType = dep1Loader.loadClass(SimpleEnumFactory.class.getName());
