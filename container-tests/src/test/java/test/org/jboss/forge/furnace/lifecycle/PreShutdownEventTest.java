@@ -12,8 +12,12 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.furnace.Furnace;
+import org.jboss.forge.furnace.addons.Addon;
+import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
+import org.jboss.forge.furnace.repositories.MutableAddonRepository;
+import org.jboss.forge.furnace.util.Addons;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.junit.Assert;
 import org.junit.Test;
@@ -22,7 +26,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class PreShutdownEventTest
 {
-   @Deployment(order = 1)
+   @Deployment(order = 2)
    public static ForgeArchive getDeployment()
    {
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
@@ -32,6 +36,17 @@ public class PreShutdownEventTest
 
       archive.addAsLocalServices(PreShutdownEventTest.class);
 
+      return archive;
+   }
+
+   @Deployment(name = "dep2,2", testable = false, order = 1)
+   public static ForgeArchive getDeployment2()
+   {
+      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+               .addAsLocalServices(RecordingEventManager.class)
+               .addAsAddonDependencies(
+                        AddonDependencyEntry.create("dep1")
+               );
       return archive;
    }
 
@@ -45,11 +60,16 @@ public class PreShutdownEventTest
    }
 
    @Test
-   public void testPostStartupIsCalled() throws Exception
+   public void testPreShutdownIsCalled() throws Exception
    {
       Furnace furnace = LocalServices.getFurnace(getClass().getClassLoader());
       AddonRegistry registry = furnace.getAddonRegistry();
-      RecordingEventManager manager = registry.getServices(RecordingEventManager.class).get();
-      Assert.assertEquals(1, manager.getEvents().size());
+      Addon dep2 = registry.getAddon(AddonId.from("dep2", "2"));
+      RecordingEventManager manager = dep2.getServiceRegistry().getExportedInstance(RecordingEventManager.class).get();
+      Assert.assertEquals(2, manager.getPostStartupCount());
+      MutableAddonRepository repository = (MutableAddonRepository) furnace.getRepositories().get(0);
+      repository.disable(dep2.getId());
+      Addons.waitUntilStopped(dep2);
+      Assert.assertEquals(1, manager.getPreShutdownCount());
    }
 }
