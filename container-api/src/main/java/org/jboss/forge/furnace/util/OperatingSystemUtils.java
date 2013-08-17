@@ -116,4 +116,35 @@ public final class OperatingSystemUtils
       }
       return result;
    }
+
+   private static final int TEMP_DIR_ATTEMPTS = 10000;
+
+   /**
+    * Create a temporary directory.
+    */
+   public static File createTempDir()
+   {
+      File baseDir = getTempDirectory();
+      String baseName = System.currentTimeMillis() + "-";
+
+      for (int counter = 0; counter < TEMP_DIR_ATTEMPTS; counter++)
+      {
+         File tempDir = new File(baseDir, baseName + counter);
+         if (tempDir.mkdir())
+         {
+            return tempDir;
+         }
+      }
+      throw new IllegalStateException("Failed to create directory within "
+               + TEMP_DIR_ATTEMPTS + " attempts (tried "
+               + baseName + "0 to " + baseName + (TEMP_DIR_ATTEMPTS - 1) + ')');
+   }
+
+   /**
+    * Get the current system temp directory.
+    */
+   public static File getTempDirectory()
+   {
+      return new File(System.getProperty("java.io.tmpdir"));
+   }
 }
