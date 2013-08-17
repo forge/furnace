@@ -108,6 +108,7 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
                {
                   testInstance = ClassLoaderAdapterCallback.enhance(getClass().getClassLoader(),
                            testInstance.getClass().getClassLoader(), testInstance, testClass);
+                  testInstance.getClass();
                }
                catch (Exception e)
                {
@@ -133,9 +134,9 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
                               + testMethodExecutor.getInstance().getClass().getName() + "."
                               + testMethodExecutor.getMethod().getName() + "()");
 
-                     invokeBefore(testClass, testInstance);
+                     invokeBefore(testInstance.getClass(), testInstance);
                      method.invoke(testInstance);
-                     invokeAfter(testClass, testInstance);
+                     invokeAfter(testInstance.getClass(), testInstance);
 
                      result = new TestResult(Status.PASSED);
                   }
