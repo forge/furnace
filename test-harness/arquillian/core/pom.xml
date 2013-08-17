@@ -19,6 +19,10 @@
       </dependency>
       <dependency>
          <groupId>org.jboss.forge.furnace</groupId>
+         <artifactId>furnace-proxy</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.forge.furnace</groupId>
          <artifactId>furnace-manager</artifactId>
       </dependency>
       <dependency>

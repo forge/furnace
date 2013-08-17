@@ -19,6 +19,7 @@ import org.jboss.forge.arquillian.protocol.FurnaceHolder;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonRegistry;
+import org.jboss.forge.furnace.proxy.ClassLoaderAdapterCallback;
 import org.jboss.forge.furnace.spi.ExportedInstance;
 import org.jboss.forge.furnace.spi.ServiceRegistry;
 import org.jboss.forge.furnace.util.Annotations;
@@ -103,6 +104,16 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
             TestResult result = null;
             try
             {
+               try
+               {
+                  testInstance = ClassLoaderAdapterCallback.enhance(getClass().getClassLoader(),
+                           testInstance.getClass().getClassLoader(), testInstance, testClass);
+               }
+               catch (Exception e)
+               {
+                  System.out.println("Could not enhance test class. Falling back to un-proxied invocation.");
+               }
+
                Method method = testInstance.getClass().getMethod(testMethodExecutor.getMethod().getName());
                Annotation[] annotations = method.getAnnotations();
 
@@ -118,21 +129,15 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
                {
                   try
                   {
-                     try
-                     {
-                        System.out.println("Executing test method: "
-                                 + testMethodExecutor.getInstance().getClass().getName() + "."
-                                 + testMethodExecutor.getMethod().getName() + "()");
+                     System.out.println("Executing test method: "
+                              + testMethodExecutor.getInstance().getClass().getName() + "."
+                              + testMethodExecutor.getMethod().getName() + "()");
 
-                        invokeBefore(testClass, testInstance);
-                        method.invoke(testInstance);
-                        invokeAfter(testClass, testInstance);
+                     invokeBefore(testClass, testInstance);
+                     method.invoke(testInstance);
+                     invokeAfter(testClass, testInstance);
 
-                        result = new TestResult(Status.PASSED);
-                     }
-                     finally
-                     {
-                     }
+                     result = new TestResult(Status.PASSED);
                   }
                   catch (InvocationTargetException e)
                   {
