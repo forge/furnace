@@ -12,6 +12,8 @@ import java.util.List;
 
 import org.jboss.forge.furnace.event.EventException;
 import org.jboss.forge.furnace.event.EventManager;
+import org.jboss.forge.furnace.event.PostStartup;
+import org.jboss.forge.furnace.event.PreShutdown;
 import org.jboss.forge.furnace.services.Exported;
 
 /**
@@ -23,10 +25,17 @@ public class RecordingEventManager implements EventManager
 {
    private static List<Object> events = new ArrayList<Object>();
    private static List<Annotation[]> qualifiers = new ArrayList<Annotation[]>();
+   private static int postStartupCount;
+   private static int preShutdownCount;
 
    @Override
    public void fireEvent(Object event, Annotation... qualifiers) throws EventException
    {
+      if (event instanceof PostStartup)
+         postStartupCount++;
+      if (event instanceof PreShutdown)
+         preShutdownCount++;
+
       RecordingEventManager.events.add(event);
       RecordingEventManager.qualifiers.add(qualifiers);
    }
@@ -39,6 +48,16 @@ public class RecordingEventManager implements EventManager
    public List<Annotation[]> getQualifiers()
    {
       return RecordingEventManager.qualifiers;
+   }
+
+   public int getPostStartupCount()
+   {
+      return postStartupCount;
+   }
+
+   public int getPreShutdownCount()
+   {
+      return preShutdownCount;
    }
 
    @Override

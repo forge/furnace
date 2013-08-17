@@ -66,10 +66,10 @@ public class PostStartupEventTest
       AddonRegistry registry = furnace.getAddonRegistry();
       Addon dep2 = registry.getAddon(AddonId.from("dep2", "2"));
       RecordingEventManager manager = dep2.getServiceRegistry().getExportedInstance(RecordingEventManager.class).get();
-      Assert.assertEquals(2, manager.getEvents().size());
+      Assert.assertEquals(2, manager.getPostStartupCount());
       MutableAddonRepository repository = (MutableAddonRepository) furnace.getRepositories().get(0);
       repository.disable(dep2.getId());
       Addons.waitUntilStopped(dep2);
-      Assert.assertEquals(3, manager.getEvents().size());
+      Assert.assertEquals(1, manager.getPreShutdownCount());
    }
 }
