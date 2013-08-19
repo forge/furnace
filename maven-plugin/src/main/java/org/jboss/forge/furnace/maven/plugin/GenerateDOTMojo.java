@@ -74,7 +74,7 @@ public class GenerateDOTMojo extends AbstractMojo
    /**
     * Skip this execution ?
     */
-   @Parameter(property="furance.dot.skip")
+   @Parameter(property="furnace.dot.skip")
    private boolean skip;
 
    /**
