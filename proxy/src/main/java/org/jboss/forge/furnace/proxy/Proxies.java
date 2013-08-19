@@ -183,7 +183,9 @@ public class Proxies
 
    public static boolean isProxyType(Class<?> type)
    {
-      if (type.getName().contains("$$EnhancerByCGLIB$$") || type.getName().contains("_javassist_"))
+      if (type.getName().contains("$$EnhancerByCGLIB$$")
+               || type.getName().contains("_javassist_")
+               || type.getName().contains("$Proxy$_$$_WeldClientProxy"))
       {
          return true;
       }
@@ -432,7 +434,7 @@ public class Proxies
       boolean result = instance instanceof Collection
                || instance instanceof Iterable
                || instance.getClass().isArray();
-      
+
       return result;
    }
 }
