@@ -15,6 +15,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javassist.util.proxy.MethodFilter;
@@ -30,6 +31,7 @@ import org.jboss.forge.furnace.util.ClassLoaders;
  */
 public class ClassLoaderAdapterCallback implements MethodHandler
 {
+   private static final Logger log = Logger.getLogger(ClassLoaderAdapterCallback.class.getName());
    private static final ClassLoader JAVASSIST_LOADER = ProxyObject.class.getClassLoader();
 
    private final Object delegate;
@@ -197,8 +199,9 @@ public class ClassLoaderAdapterCallback implements MethodHandler
       return result;
    }
 
-   private Exception enhanceException(final Method method, Exception exception)
+   private Exception enhanceException(final Method method, final Exception exception)
    {
+      Exception result = exception;
       try
       {
          if (exception != null)
@@ -224,18 +227,21 @@ public class ClassLoaderAdapterCallback implements MethodHandler
 
                if (!Modifier.isFinal(unwrappedExceptionType.getModifiers()))
                {
-                  exception = enhance(callingLoader, exceptionLoader, method, exception, exceptionHierarchy);
+                  result = enhance(callingLoader, exceptionLoader, method, exception, exceptionHierarchy);
+                  result.setStackTrace(exception.getStackTrace());
                }
             }
          }
       }
       catch (Exception e)
       {
-         throw new ContainerException("Failed to enhance exception type: [" + exception.getClass().getName()
-                  + "] during proxied invocation of [" + method.getDeclaringClass().getName() + "." + method.getName()
-                  + "]. \n\nOriginal exception was: ", e);
+         log.log(Level.WARNING,
+                  "Could not enhance exception for passing through ClassLoader boundary. Exception type ["
+                           + exception.getClass().getName() + "], Caller [" + callingLoader + "], Delegate ["
+                           + delegateLoader + "]");
+         return exception;
       }
-      return exception;
+      return result;
    }
 
    @SuppressWarnings({ "unchecked", "rawtypes" })
