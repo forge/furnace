@@ -112,7 +112,7 @@ public class ClasspathWorkspaceReader implements WorkspaceReader
 
                if (foundArtifact.getGroupId().equals(artifact.getGroupId())
                         && foundArtifact.getArtifactId().equals(artifact.getArtifactId())
-                        && foundArtifact.getVersion().equals(artifact.getVersion()))
+                        && foundArtifact.getBaseVersion().equals(artifact.getBaseVersion()))
                {
                   if ("pom".equals(artifact.getExtension()))
                   {
@@ -129,7 +129,7 @@ public class ClasspathWorkspaceReader implements WorkspaceReader
          else if (file.isFile())
          {
             final StringBuilder name = new StringBuilder(artifact.getArtifactId()).append("-").append(
-                     artifact.getVersion());
+                     artifact.getBaseVersion());
 
             // TODO: This is nasty
             // we need to get a a pom.xml file to be sure we fetch transitive deps as well
@@ -144,7 +144,7 @@ public class ClasspathWorkspaceReader implements WorkspaceReader
                      Artifact foundArtifact = getFoundArtifact(pomFile);
                      if (foundArtifact.getGroupId().equals(artifact.getGroupId())
                               && foundArtifact.getArtifactId().equals(artifact.getArtifactId())
-                              && foundArtifact.getVersion().equals(artifact.getVersion()))
+                              && foundArtifact.getBaseVersion().equals(artifact.getBaseVersion()))
                      {
 
                         // System.out
@@ -195,7 +195,7 @@ public class ClasspathWorkspaceReader implements WorkspaceReader
                if (foundArtifact.getGroupId().equals(artifact.getGroupId())
                         && foundArtifact.getArtifactId().equals(artifact.getArtifactId()))
                {
-                  versions.add(foundArtifact.getVersion());
+                  versions.add(foundArtifact.getBaseVersion());
                }
             }
          }
@@ -203,7 +203,7 @@ public class ClasspathWorkspaceReader implements WorkspaceReader
          else if (file.isFile())
          {
             final StringBuilder name = new StringBuilder(artifact.getArtifactId()).append("-").append(
-                     artifact.getVersion());
+                     artifact.getBaseVersion());
 
             // TODO: This is nasty
             // we need to get a a pom.xml file to be sure we fetch transitive deps as well
@@ -220,7 +220,7 @@ public class ClasspathWorkspaceReader implements WorkspaceReader
                      if (foundArtifact.getGroupId().equals(artifact.getGroupId())
                               && foundArtifact.getArtifactId().equals(artifact.getArtifactId()))
                      {
-                        versions.add(foundArtifact.getVersion());
+                        versions.add(foundArtifact.getBaseVersion());
                      }
                   }
                }
