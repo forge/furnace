@@ -24,12 +24,13 @@ import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
 
 import org.jboss.forge.furnace.exception.ContainerException;
+import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.util.ClassLoaders;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class ClassLoaderAdapterCallback implements MethodHandler
+public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
 {
    private static final Logger log = Logger.getLogger(ClassLoaderAdapterCallback.class.getName());
    private static final ClassLoader JAVASSIST_LOADER = ProxyObject.class.getClassLoader();
@@ -45,6 +46,11 @@ public class ClassLoaderAdapterCallback implements MethodHandler
 
    public ClassLoaderAdapterCallback(ClassLoader callingLoader, ClassLoader delegateLoader, Object delegate)
    {
+      Assert.notNull(callingLoader, "Calling loader must not be null.");
+      Assert.notNull(delegateLoader, "Delegate loader must not be null.");
+      Assert.notNull(delegate, "Delegate must not be null.");
+      // Assert.isTrue(callingLoader != delegateLoader, "Calling loader must not be same as Delegate loader.");
+
       this.callingLoader = callingLoader;
       this.delegateLoader = delegateLoader;
       this.delegate = delegate;
@@ -228,6 +234,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler
                if (!Modifier.isFinal(unwrappedExceptionType.getModifiers()))
                {
                   result = enhance(callingLoader, exceptionLoader, method, exception, exceptionHierarchy);
+                  result.initCause(exception);
                   result.setStackTrace(exception.getStackTrace());
                }
             }
@@ -345,7 +352,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler
       return parameterValues;
    }
 
-   private Object enhanceSingleParamterValue(Method delegateMethod, final Class<?> delegateParameterType,
+   private Object enhanceSingleParamterValue(final Method delegateMethod, final Class<?> delegateParameterType,
             final Object parameterValue)
    {
       if (parameterValue != null)
@@ -627,5 +634,11 @@ public class ClassLoaderAdapterCallback implements MethodHandler
       {
          throw new ContainerException("Failed to create proxy for type [" + delegateType + "]", e);
       }
+   }
+
+   @Override
+   public Object getDelegate() throws Exception
+   {
+      return delegate;
    }
 }

@@ -83,7 +83,7 @@ public class ProxiesTest
          }
 
          @Override
-         public Object getDelegate()
+         public Object getDelegate() throws Exception
          {
             return null;
          }

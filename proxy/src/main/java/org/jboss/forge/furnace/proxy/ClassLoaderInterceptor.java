@@ -65,7 +65,7 @@ public class ClassLoaderInterceptor implements ForgeProxy
    }
 
    @Override
-   public Object getDelegate()
+   public Object getDelegate() throws Exception
    {
       return delegate;
    }
