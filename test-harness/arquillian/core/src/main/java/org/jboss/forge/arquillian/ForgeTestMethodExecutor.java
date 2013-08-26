@@ -134,9 +134,19 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
                               + testMethodExecutor.getInstance().getClass().getName() + "."
                               + testMethodExecutor.getMethod().getName() + "()");
 
-                     invokeBefore(testInstance.getClass(), testInstance);
-                     method.invoke(testInstance);
-                     invokeAfter(testInstance.getClass(), testInstance);
+                     try
+                     {
+                        invokeBefore(testInstance.getClass(), testInstance);
+                        method.invoke(testInstance);
+                     }
+                     catch (Exception e)
+                     {
+                        throw e;
+                     }
+                     finally
+                     {
+                        invokeAfter(testInstance.getClass(), testInstance);
+                     }
 
                      result = new TestResult(Status.PASSED);
                   }
