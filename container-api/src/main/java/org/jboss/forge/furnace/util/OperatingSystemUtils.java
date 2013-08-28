@@ -56,6 +56,14 @@ public final class OperatingSystemUtils
    }
 
    /**
+    * Get the directory from which this application was launched.
+    */
+   public static File getWorkingDir()
+   {
+      return new File(System.getProperty("user.dir"));
+   }
+
+   /**
     * Get the FORGE_HOME directory as a {@link File}.
     */
    public static File getForgeHomeDir()
