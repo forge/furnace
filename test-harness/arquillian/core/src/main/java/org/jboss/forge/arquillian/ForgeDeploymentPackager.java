@@ -33,10 +33,7 @@ public class ForgeDeploymentPackager implements DeploymentPackager
                @Override
                public boolean include(ArchivePath path)
                {
-                  boolean matched = path.get().matches("/org/jboss/shrinkwrap/descriptor/api/(?!spec).*/.*");
-                  if (matched)
-                     System.out.println(path.toString());
-                  return matched;
+                  return path.get().matches("/org/jboss/shrinkwrap/descriptor/api/(?!spec).*/.*");
                }
             });
 
