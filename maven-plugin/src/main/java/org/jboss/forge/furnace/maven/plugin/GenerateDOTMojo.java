@@ -10,8 +10,6 @@ package org.jboss.forge.furnace.maven.plugin;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.ServiceLoader;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -27,6 +25,7 @@ import org.jboss.forge.furnace.impl.graph.AddonDependencyEdge;
 import org.jboss.forge.furnace.impl.graph.AddonDependencyEdgeNameProvider;
 import org.jboss.forge.furnace.impl.graph.AddonVertex;
 import org.jboss.forge.furnace.impl.graph.AddonVertexNameProvider;
+import org.jboss.forge.furnace.manager.maven.addon.MavenAddonDependencyResolver;
 import org.jboss.forge.furnace.manager.spi.AddonDependencyResolver;
 import org.jboss.forge.furnace.manager.spi.AddonInfo;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
@@ -74,8 +73,14 @@ public class GenerateDOTMojo extends AbstractMojo
    /**
     * Skip this execution ?
     */
-   @Parameter(property="furnace.dot.skip")
+   @Parameter(property = "furnace.dot.skip")
    private boolean skip;
+
+   /**
+    * Classifier used for addon resolution (default is forge-addon)
+    */
+   @Parameter(defaultValue = "forge-addon")
+   private String classifier;
 
    /**
     * The current maven project
@@ -97,13 +102,7 @@ public class GenerateDOTMojo extends AbstractMojo
          getLog().info("Execution skipped.");
          return;
       }
-      Iterator<AddonDependencyResolver> it = ServiceLoader.load(AddonDependencyResolver.class).iterator();
-      if (!it.hasNext())
-      {
-         throw new MojoExecutionException(
-                  "No AddonDependencyResolver implementation found. Please add one in the <dependencies> section of the forge-maven-plugin.");
-      }
-      AddonDependencyResolver addonResolver = it.next();
+      AddonDependencyResolver addonResolver = new MavenAddonDependencyResolver(classifier);
       if (addonIds == null || addonIds.length == 0)
       {
          // XXX
@@ -143,11 +142,11 @@ public class GenerateDOTMojo extends AbstractMojo
     */
    private File generateDOTFile(AddonDependencyResolver addonResolver, AddonId id, String fileName)
    {
-      AddonInfo addonInfo = addonResolver.resolveAddonDependencyHierarchy(id);
       File parent = new File(outputDirectory);
       parent.mkdirs();
       File file = new File(parent, fileName);
       getLog().info("Generating " + file);
+      AddonInfo addonInfo = addonResolver.resolveAddonDependencyHierarchy(id);
       toDOT(file, toGraph(addonInfo));
       return file;
    }

@@ -35,6 +35,7 @@ import org.jboss.forge.furnace.manager.maven.MavenContainer;
 import org.jboss.forge.furnace.manager.maven.util.MavenRepositories;
 import org.jboss.forge.furnace.manager.spi.AddonDependencyResolver;
 import org.jboss.forge.furnace.manager.spi.AddonInfo;
+import org.jboss.forge.furnace.util.Assert;
 
 /**
  * Maven implementation of the {@link AddonDependencyResolver} used by the AddonManager
@@ -45,7 +46,19 @@ import org.jboss.forge.furnace.manager.spi.AddonInfo;
 public class MavenAddonDependencyResolver implements AddonDependencyResolver
 {
    private static final String FORGE_ADDON_CLASSIFIER = "forge-addon";
+   private final String classifier;
    private final MavenContainer container = new MavenContainer();
+
+   public MavenAddonDependencyResolver()
+   {
+      classifier = FORGE_ADDON_CLASSIFIER;
+   }
+
+   public MavenAddonDependencyResolver(String classifier)
+   {
+      Assert.notNull(classifier, "Classifier should not be null");
+      this.classifier = classifier;
+   }
 
    @Override
    public AddonInfo resolveAddonDependencyHierarchy(AddonId addonId)
@@ -67,8 +80,8 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
       final String mavenCoords = toMavenCoords(addonId);
       Artifact queryArtifact = new DefaultArtifact(mavenCoords);
-      session.setDependencyTraverser(new AddonDependencyTraverser());
-      session.setDependencySelector(new AddonDependencySelector());
+      session.setDependencyTraverser(new AddonDependencyTraverser(classifier));
+      session.setDependencySelector(new AddonDependencySelector(classifier));
       Dependency dependency = new Dependency(queryArtifact, null);
 
       List<RemoteRepository> repositories = MavenRepositories.getRemoteRepositories(container, settings);
@@ -88,7 +101,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       for (ArtifactResult artifactResult : artifactResults)
       {
          Artifact artifact = artifactResult.getArtifact();
-         if (FORGE_ADDON_CLASSIFIER.equals(artifact.getClassifier())
+         if (this.classifier.equals(artifact.getClassifier())
                   && !mavenCoords.equals(artifact.toString()))
          {
             continue;
@@ -204,13 +217,13 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    private DependencyNode traverseAddonGraph(String coords, RepositorySystem system, Settings settings,
             DefaultRepositorySystemSession session)
    {
-      session.setDependencyTraverser(new AddonDependencyTraverser());
-      session.setDependencySelector(new AddonDependencySelector());
+      session.setDependencyTraverser(new AddonDependencyTraverser(this.classifier));
+      session.setDependencySelector(new AddonDependencySelector(this.classifier));
       Artifact queryArtifact = new DefaultArtifact(coords);
 
       List<RemoteRepository> repositories = MavenRepositories.getRemoteRepositories(container, settings);
       CollectRequest collectRequest = new CollectRequest(new Dependency(queryArtifact, null), repositories);
-      
+
       CollectResult result;
       try
       {
@@ -225,13 +238,13 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
 
    private String toMavenCoords(AddonId addonId)
    {
-      String coords = addonId.getName() + ":jar:" + FORGE_ADDON_CLASSIFIER + ":" + addonId.getVersion();
+      String coords = addonId.getName() + ":jar:" + this.classifier + ":" + addonId.getVersion();
       return coords;
    }
 
    private boolean isAddon(Artifact artifact)
    {
-      return FORGE_ADDON_CLASSIFIER.equals(artifact.getClassifier());
+      return this.classifier.equals(artifact.getClassifier());
    }
 
    private AddonId toAddonId(Artifact artifact)

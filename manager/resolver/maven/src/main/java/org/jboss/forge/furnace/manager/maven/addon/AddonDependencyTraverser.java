@@ -20,11 +20,18 @@ import org.eclipse.aether.graph.Dependency;
  */
 public final class AddonDependencyTraverser implements DependencyTraverser
 {
+   private final String classifier;
+
+   public AddonDependencyTraverser(String classifier)
+   {
+      this.classifier = classifier;
+   }
+
    @Override
    public boolean traverseDependency(Dependency dependency)
    {
       Artifact artifact = dependency.getArtifact();
-      boolean isForgeAddon = "forge-addon".equals(artifact.getClassifier());
+      boolean isForgeAddon = classifier.equals(artifact.getClassifier());
       // We don't want to traverse non-addons optional dependencies
       if (!isForgeAddon && dependency.isOptional())
       {

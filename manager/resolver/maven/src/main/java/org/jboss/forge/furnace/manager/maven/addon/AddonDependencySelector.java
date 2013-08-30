@@ -13,20 +13,23 @@ import org.eclipse.aether.util.graph.selector.StaticDependencySelector;
  */
 class AddonDependencySelector implements DependencySelector
 {
-   private static final String FORGE_ADDON = "forge-addon";
+   private final String classifier;
    private final int depth;
    private final Dependency parent;
    private final AddonDependencySelector parentSelector;
 
-   public AddonDependencySelector()
+   public AddonDependencySelector(String classifier)
    {
+      this.classifier = classifier;
       this.depth = 0;
       this.parent = null;
       this.parentSelector = null;
    }
 
-   public AddonDependencySelector(Dependency parent, AddonDependencySelector parentSelector, int depth)
+   public AddonDependencySelector(String classifier, Dependency parent, AddonDependencySelector parentSelector,
+            int depth)
    {
+      this.classifier = classifier;
       this.depth = depth;
       this.parent = parent;
       this.parentSelector = parentSelector;
@@ -49,8 +52,8 @@ class AddonDependencySelector implements DependencySelector
          if ("test".equals(scope))
             return false;
 
-         result = (FORGE_ADDON.equals(classifier) && depth == 1)
-                  || (!FORGE_ADDON.equals(classifier) && !"provided".equals(scope) && !optional);
+         result = (this.classifier.equals(classifier) && depth == 1)
+                  || (!this.classifier.equals(classifier) && !"provided".equals(scope) && !optional);
       }
       return result;
    }
@@ -93,11 +96,11 @@ class AddonDependencySelector implements DependencySelector
    @Override
    public DependencySelector deriveChildSelector(DependencyCollectionContext context)
    {
-      if ((depth > 0) && FORGE_ADDON.equals(context.getDependency().getArtifact().getClassifier()))
+      if ((depth > 0) && this.classifier.equals(context.getDependency().getArtifact().getClassifier()))
       {
          return new StaticDependencySelector(false);
       }
-      return new AddonDependencySelector(context.getDependency(), this, depth + 1);
+      return new AddonDependencySelector(this.classifier, context.getDependency(), this, depth + 1);
    }
 
    @Override
