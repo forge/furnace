@@ -6,6 +6,8 @@
  */
 package org.jboss.forge.furnace.spi;
 
+import org.jboss.forge.furnace.addons.Addon;
+
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
@@ -16,4 +18,6 @@ public interface ExportedInstance<T>
    void release(T instance);
 
    Class<? extends T> getActualType();
+
+   Addon getSourceAddon();
 }

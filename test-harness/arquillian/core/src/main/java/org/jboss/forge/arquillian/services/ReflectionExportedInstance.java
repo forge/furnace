@@ -56,4 +56,9 @@ public class ReflectionExportedInstance<T> implements ExportedInstance<T>
       return type;
    }
 
+   @Override
+   public Addon getSourceAddon()
+   {
+      return addon;
+   }
 }

@@ -212,7 +212,8 @@ public class ImportedImpl<T> implements Imported<T>
       while (iterator.hasNext())
       {
          ExportedInstance<T> instance = iterator.next();
-         result.append(instance);
+         result.append(instance.getActualType().getName()).append(" from addon ");
+         result.append(instance.getSourceAddon().getId());
          if (iterator.hasNext())
             result.append(",\n");
       }
