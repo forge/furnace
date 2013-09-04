@@ -27,20 +27,20 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
-public class ClassLoaderAdapterResultProxyTest
+public class ClassLoaderNestedInterfaceProxyTest
 {
+   private static final String FACTORY_IMPL_TYPE = InstanceFactory.class.getName() + "Impl";
+
    @Deployment(order = 3)
    public static ForgeArchive getDeployment()
    {
       ForgeArchive archive = ShrinkWrap
                .create(ForgeArchive.class)
-               .addClasses(BasicInterface.class,
+               .addClasses(
                         SuperInterface.class,
                         AbstractClass.class,
-                        Implementation.class,
-                        InstanceFactory.class,
-                        InstanceFactoryImpl.class)
-               .addAsLocalServices(ClassLoaderAdapterResultProxyTest.class);
+                        InstanceFactory.class)
+               .addAsLocalServices(ClassLoaderNestedInterfaceProxyTest.class);
 
       return archive;
    }
@@ -49,7 +49,8 @@ public class ClassLoaderAdapterResultProxyTest
    public static ForgeArchive getDeploymentDep1()
    {
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
-               .addClasses(BasicInterface.class,
+               .addClasses(
+                        BasicInterface.class,
                         SuperInterface.class,
                         AbstractClass.class,
                         Implementation.class,
@@ -65,13 +66,13 @@ public class ClassLoaderAdapterResultProxyTest
    {
       AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
                .getAddonRegistry();
-      ClassLoader thisLoader = ClassLoaderAdapterResultProxyTest.class.getClassLoader();
+      ClassLoader thisLoader = ClassLoaderNestedInterfaceProxyTest.class.getClassLoader();
       ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep", "1")).getClassLoader();
 
-      Class<?> foreignType = dep1Loader.loadClass(InstanceFactoryImpl.class.getName());
+      Class<?> foreignType = dep1Loader.loadClass(FACTORY_IMPL_TYPE);
       try
       {
-         Implementation local = (Implementation) foreignType.getMethod("getInstance")
+         SuperInterface local = (SuperInterface) foreignType.getMethod("getInstance")
                   .invoke(foreignType.newInstance());
 
          Assert.fail("Should have received a " + ClassCastException.class.getName() + " but got a real object ["
@@ -86,11 +87,11 @@ public class ClassLoaderAdapterResultProxyTest
       }
 
       Object delegate = foreignType.newInstance();
-      InstanceFactoryImpl enhancedFactory = (InstanceFactoryImpl) ClassLoaderAdapterBuilder.callingLoader(thisLoader)
+      InstanceFactory enhancedFactory = (InstanceFactory) ClassLoaderAdapterBuilder.callingLoader(thisLoader)
                .delegateLoader(dep1Loader).enhance(delegate);
 
       Assert.assertTrue(Proxies.isForgeProxy(enhancedFactory));
-      Implementation enhancedInstance = enhancedFactory.getInstance();
+      SuperInterface enhancedInstance = (SuperInterface) enhancedFactory.getRawInstance();
       Assert.assertTrue(Proxies.isForgeProxy(enhancedInstance));
    }
 }

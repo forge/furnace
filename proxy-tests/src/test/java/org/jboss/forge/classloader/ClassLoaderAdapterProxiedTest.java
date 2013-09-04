@@ -9,7 +9,6 @@ package org.jboss.forge.classloader;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.LazyLoader;
 
-import org.jboss.forge.classloader.mock.MockFinalResult;
 import org.jboss.forge.classloader.mock.MockService;
 import org.jboss.forge.classloader.mock.Result;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterCallback;
@@ -84,6 +83,7 @@ public class ClassLoaderAdapterProxiedTest
       Assert.assertNotEquals(internal.getResult(), adapter.getResultEnhancedReturnTypeObject());
    }
 
+   @Test(expected = ClassCastException.class)
    public void testCannotAdaptFinalResultReturnType() throws Exception
    {
       ClassLoader loader = MockService.class.getClassLoader();
@@ -99,9 +99,7 @@ public class ClassLoaderAdapterProxiedTest
       });
 
       MockService adapter = ClassLoaderAdapterCallback.enhance(loader, loader, delegate, MockService.class);
-      MockFinalResult result = adapter.getResultFinalReturnType();
-      Assert.assertFalse(Proxies.isForgeProxy(result));
-      Assert.assertNotNull(result);
+      adapter.getResultFinalReturnType();
    }
 
    @Test

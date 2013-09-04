@@ -8,9 +8,20 @@ package org.jboss.forge.classloader.mock.result;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
- *
+ * 
  */
-public interface BasicInterface extends SuperInterface
+public class InstanceFactoryImpl implements InstanceFactory
 {
+   @SuppressWarnings("unchecked")
+   @Override
+   public <T extends SuperInterface> T getInstance()
+   {
+      return (T) new Implementation();
+   }
 
+   @Override
+   public Object getRawInstance()
+   {
+      return getInstance();
+   }
 }

@@ -10,11 +10,9 @@ package org.jboss.forge.classloader.mock.result;
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * 
  */
-public class InstanceFactory
+public interface InstanceFactory
 {
-   @SuppressWarnings("unchecked")
-   public <T extends BasicInterface> T getInstance()
-   {
-      return (T) new Implementation();
-   }
+   public <T extends SuperInterface> T getInstance();
+
+   public Object getRawInstance();
 }

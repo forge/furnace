@@ -10,7 +10,7 @@ package org.jboss.forge.classloader.mock.result;
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  *
  */
-public interface BasicInterface extends SuperInterface
+public interface SuperInterface
 {
 
 }

@@ -25,7 +25,9 @@ class ProxyTypeInspector
 
       while (baseClass != null && Modifier.isFinal(baseClass.getModifiers()))
       {
-         baseClass = baseClass.getSuperclass();
+         Class<?> superclass = baseClass.getSuperclass();
+         hierarchy.addAll(java.util.Arrays.asList(getCompatibleClassHierarchy(loader, superclass)));
+         baseClass = superclass;
       }
 
       while (baseClass != null
@@ -34,7 +36,9 @@ class ProxyTypeInspector
                && !baseClass.getSuperclass().equals(Object.class)
                && !Proxies.isInstantiable(baseClass))
       {
-         baseClass = baseClass.getSuperclass();
+         Class<?> superclass = baseClass.getSuperclass();
+         hierarchy.addAll(java.util.Arrays.asList(getCompatibleClassHierarchy(loader, superclass)));
+         baseClass = superclass;
       }
 
       if (baseClass != null && ClassLoaders.containsClass(loader, baseClass.getName())
@@ -51,6 +55,8 @@ class ProxyTypeInspector
          {
             if (ClassLoaders.containsClass(loader, type.getName()))
                hierarchy.add(ClassLoaders.loadClass(loader, type));
+            else
+               hierarchy.addAll(java.util.Arrays.asList(getCompatibleClassHierarchy(loader, type)));
          }
          baseClass = baseClass.getSuperclass();
       }
