@@ -14,4 +14,6 @@ public interface ExportedInstance<T>
    T get();
 
    void release(T instance);
+
+   Class<? extends T> getActualType();
 }

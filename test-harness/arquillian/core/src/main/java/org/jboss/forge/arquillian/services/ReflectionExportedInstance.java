@@ -17,9 +17,11 @@ import org.jboss.forge.furnace.spi.ExportedInstance;
 public class ReflectionExportedInstance<T> implements ExportedInstance<T>
 {
    private Class<T> type;
+   private Addon addon;
 
    public ReflectionExportedInstance(Addon addon, Class<T> clazz)
    {
+      this.addon = addon;
       this.type = clazz;
    }
 
@@ -40,6 +42,18 @@ public class ReflectionExportedInstance<T> implements ExportedInstance<T>
    public void release(T instance)
    {
       // no action required
+   }
+
+   @Override
+   public String toString()
+   {
+      return type.getName() + " from " + addon;
+   }
+
+   @Override
+   public Class<? extends T> getActualType()
+   {
+      return type;
    }
 
 }

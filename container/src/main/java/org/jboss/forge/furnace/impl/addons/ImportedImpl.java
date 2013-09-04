@@ -26,6 +26,7 @@ import org.jboss.forge.furnace.services.Exported;
 import org.jboss.forge.furnace.services.Imported;
 import org.jboss.forge.furnace.spi.ExportedInstance;
 import org.jboss.forge.furnace.spi.ServiceRegistry;
+import org.jboss.forge.furnace.util.Assert;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
@@ -64,6 +65,9 @@ public class ImportedImpl<T> implements Imported<T>
    @Override
    public T get()
    {
+      if (isAmbiguous())
+         throw new IllegalStateException("Cannot resolve Ambiguous dependencies: " + toString());
+
       ExportedInstance<T> exported = getExportedInstance();
       if (exported != null)
       {
@@ -85,6 +89,24 @@ public class ImportedImpl<T> implements Imported<T>
          instanceMap.remove(instance);
          exported.release(instance);
       }
+   }
+
+   @Override
+   public T selectExact(Class<T> type)
+   {
+      Assert.notNull(type, "Type to select must not be null.");
+      Set<ExportedInstance<T>> instances = getExportedInstances();
+      for (ExportedInstance<T> instance : instances)
+      {
+         if (type.equals(instance.getActualType()))
+         {
+            T result = instance.get();
+            instanceMap.put(result, instance);
+            return result;
+         }
+      }
+      throw new ContainerException("No @" + Exported.class.getSimpleName()
+               + " services of type [" + type + "] could be found in any started addons.");
    }
 
    private ExportedInstance<T> getExportedInstance()
@@ -183,7 +205,20 @@ public class ImportedImpl<T> implements Imported<T>
    @Override
    public String toString()
    {
-      return "ImportedImpl [type=" + typeName + "]";
+      StringBuilder result = new StringBuilder();
+
+      result.append("[");
+      Iterator<ExportedInstance<T>> iterator = this.getExportedInstances().iterator();
+      while (iterator.hasNext())
+      {
+         ExportedInstance<T> instance = iterator.next();
+         result.append(instance);
+         if (iterator.hasNext())
+            result.append(",\n");
+      }
+      result.append("]");
+
+      return result.toString();
    }
 
    @Override

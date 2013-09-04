@@ -24,6 +24,11 @@ public interface Imported<T> extends Iterable<T>
    void release(T instance);
 
    /**
+    * Get a fully constructed instance of the exact requested type.
+    */
+   T selectExact(Class<T> type);
+
+   /**
     * Returns <code>true</code> if an instance of the requested type can be produced.
     */
    boolean isSatisfied();
