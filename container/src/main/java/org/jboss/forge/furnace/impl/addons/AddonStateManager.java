@@ -78,18 +78,25 @@ public class AddonStateManager
       return getState(addon).getServiceRegistry();
    }
 
-   public Set<AddonView> getViewsOf(Addon addon)
+   public Set<AddonView> getViewsOf(final Addon addon)
    {
-      Set<AddonView> result = new HashSet<AddonView>();
-      for (AddonVertex vertex : graph.getGraph().vertexSet())
+      return lock.performLocked(LockMode.READ, new Callable<Set<AddonView>>()
       {
-         if (addon.equals(vertex.getAddon()))
+         @Override
+         public Set<AddonView> call() throws Exception
          {
-            result.addAll(vertex.getViews());
-            break;
+            Set<AddonView> result = new HashSet<AddonView>();
+            for (AddonVertex vertex : graph.getGraph().vertexSet())
+            {
+               if (addon.equals(vertex.getAddon()))
+               {
+                  result.addAll(vertex.getViews());
+                  break;
+               }
+            }
+            return result;
          }
-      }
-      return result;
+      });
    }
 
    private AddonState getState(final Addon addon)
