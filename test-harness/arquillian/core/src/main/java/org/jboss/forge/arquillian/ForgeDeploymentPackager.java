@@ -1,10 +1,10 @@
 package org.jboss.forge.arquillian;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import org.jboss.arquillian.container.test.spi.TestDeployment;
 import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPackager;
@@ -18,12 +18,16 @@ import org.jboss.shrinkwrap.api.Node;
 
 public class ForgeDeploymentPackager implements DeploymentPackager
 {
+
+   private Pattern SHRINKWRAP_DESCRIPTOR_PATTERN = Pattern.compile("/org/jboss/shrinkwrap/descriptor/.*");
+
    @Override
    public Archive<?> generateDeployment(TestDeployment testDeployment, Collection<ProtocolArchiveProcessor> processors)
    {
-      if (testDeployment.getApplicationArchive() instanceof ForgeArchive)
+      Archive<?> applicationArchive = testDeployment.getApplicationArchive();
+      if (applicationArchive instanceof ForgeArchive)
       {
-         ForgeArchive deployment = ForgeArchive.class.cast(testDeployment.getApplicationArchive());
+         ForgeArchive deployment = ForgeArchive.class.cast(applicationArchive);
 
          Collection<Archive<?>> auxiliaryArchives = testDeployment.getAuxiliaryArchives();
          for (Archive<?> archive : auxiliaryArchives)
@@ -33,17 +37,13 @@ public class ForgeDeploymentPackager implements DeploymentPackager
                @Override
                public boolean include(ArchivePath path)
                {
-                  return path.get().matches("/org/jboss/shrinkwrap/descriptor/api/(?!spec).*/.*");
+                  return SHRINKWRAP_DESCRIPTOR_PATTERN.matcher(path.get()).matches();
                }
             });
 
-            Set<ArchivePath> toRemove = new HashSet<ArchivePath>();
-            for (Entry<ArchivePath, Node> entry : content.entrySet())
-            {
-               ArchivePath path = entry.getKey();
-               toRemove.add(path);
-            }
-
+            // Reversing the paths to avoid concurrent modification exceptions
+            TreeSet<ArchivePath> toRemove = new TreeSet<ArchivePath>(Collections.reverseOrder());
+            toRemove.addAll(content.keySet());
             for (ArchivePath path : toRemove)
             {
                archive.delete(path);
@@ -55,9 +55,9 @@ public class ForgeDeploymentPackager implements DeploymentPackager
 
          return deployment;
       }
-      else if (testDeployment.getApplicationArchive() instanceof ForgeRemoteAddon)
+      else if (applicationArchive instanceof ForgeRemoteAddon)
       {
-         return testDeployment.getApplicationArchive();
+         return applicationArchive;
       }
       else
       {
