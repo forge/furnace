@@ -37,13 +37,6 @@ public class ClassLoaderAdapterCallbackTest
    };
 
    @Test
-   public void testNestedProxy() throws Exception
-   {
-      Object object = Proxies.enhance(MockService.class, handler);
-      Proxies.enhance(object.getClass(), handler);
-   }
-
-   @Test
    public void testNestedDupicateProxyAdapterCallback() throws Exception
    {
       ClassLoader loader = ClassLoaderAdapterCallbackTest.class.getClassLoader();

@@ -21,6 +21,37 @@ import org.junit.Test;
 
 public class ProxiesTest
 {
+   ForgeProxy handler = new ForgeProxy()
+   {
+      @Override
+      public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable
+      {
+         return null;
+      }
+
+      @Override
+      public Object getDelegate()
+      {
+         return new MockType();
+      }
+   };
+
+   public class MemberClass
+   {
+   }
+
+   @Test
+   public void testNestedProxy() throws Exception
+   {
+      Object object = Proxies.enhance(MockType.class, handler);
+      Proxies.enhance(object.getClass(), handler);
+   }
+
+   @Test(expected = Exception.class)
+   public void testCannotProxyMemberClass() throws Exception
+   {
+      Proxies.enhance(MemberClass.class, handler);
+   }
 
    @Test
    public void testUnwrapProxyClassName()
