@@ -129,25 +129,27 @@ public class AddonStateManager
 
    public MasterGraph getCurrentGraph()
    {
-      return graph;
+      return lock.performLocked(LockMode.READ, new Callable<MasterGraph>()
+      {
+         @Override
+         public MasterGraph call() throws Exception
+         {
+            return graph;
+         }
+      });
    }
 
-   public void setCurrentGraph(final MasterGraph graph)
+   public void setCurrentGraph(final MasterGraph update)
    {
       lock.performLocked(LockMode.WRITE, new Callable<Void>()
       {
          @Override
          public Void call() throws Exception
          {
-            AddonStateManager.this.setGraph(graph);
+            graph = update;
             return null;
          }
       });
-   }
-
-   private void setGraph(MasterGraph graph)
-   {
-      this.graph = graph;
    }
 
    public AddonId resolveAddonId(Set<AddonView> views, String name)

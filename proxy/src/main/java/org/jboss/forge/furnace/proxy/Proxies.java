@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 
 import javassist.util.proxy.MethodFilter;
+import javassist.util.proxy.Proxy;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
 
@@ -62,11 +63,13 @@ public class Proxies
                   + instance + " of type " + instance.getClass());
 
       Class<?> first = hierarchy[0];
-      if (!first.isInterface())
+      if (!first.isInterface() && !isProxyType(first))
       {
          f.setSuperclass(Proxies.unwrapProxyTypes(first, loader));
          hierarchy = Arrays.shiftLeft(hierarchy, new Class<?>[hierarchy.length - 1]);
       }
+      else if (isProxyType(first))
+         hierarchy = Arrays.shiftLeft(hierarchy, new Class<?>[hierarchy.length - 1]);
 
       int index = Arrays.indexOf(hierarchy, ProxyObject.class);
       if (index >= 0)
@@ -100,7 +103,13 @@ public class Proxies
          throw new IllegalStateException(e);
       }
 
-      ((ProxyObject) enhancedResult).setHandler(handler);
+      if (enhancedResult instanceof Proxy)
+         ((Proxy) enhancedResult).setHandler(handler);
+      else if (enhancedResult instanceof ProxyObject)
+         ((ProxyObject) enhancedResult).setHandler(handler);
+      else
+         throw new IllegalStateException("Could not set proxy handler [" + handler + "] for proxy object ["
+                  + enhancedResult + "] for instance object [" + instance + "] of type [" + instance.getClass() + "]");
 
       return (T) enhancedResult;
    }
@@ -185,7 +194,9 @@ public class Proxies
    {
       if (type.getName().contains("$$EnhancerByCGLIB$$")
                || type.getName().contains("_javassist_")
-               || type.getName().contains("$Proxy$_$$_WeldClientProxy"))
+               || type.getName().contains("$Proxy$_$$_WeldClientProxy")
+               || Proxy.class.isAssignableFrom(type)
+               || ProxyObject.class.isAssignableFrom(type))
       {
          return true;
       }

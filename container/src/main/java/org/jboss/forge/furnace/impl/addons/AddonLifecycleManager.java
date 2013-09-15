@@ -165,7 +165,6 @@ public class AddonLifecycleManager
          {
             MasterGraph master = new MasterGraph();
 
-            int i = 0;
             for (AddonView view : views)
             {
                if (starting.get() == -1)
@@ -176,8 +175,9 @@ public class AddonLifecycleManager
 
                master.merge(graph);
 
-               logger.log(Level.INFO, " ------------ MASTER GRAPH v" + i++ + "------------ ");
+               logger.log(Level.INFO, " ------------ VIEW [" + view.getName() + "]------------ ");
                logger.log(Level.INFO, master.toString());
+               logger.log(Level.INFO, " ------------ END [" + view.getName() + "]------------ ");
             }
 
             MasterGraph last = stateManager.getCurrentGraph();

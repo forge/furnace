@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 
 import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.Proxy;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
 
@@ -604,7 +605,8 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                      Class<?>[] interfaces = enhancedResult.getClass().getInterfaces();
                      for (Class<?> javassistType : interfaces)
                      {
-                        if (ProxyObject.class.getName().equals(javassistType.getName()))
+                        if (ProxyObject.class.getName().equals(javassistType.getName())
+                                 || Proxy.class.getName().equals(javassistType.getName()))
                         {
                            String callbackClassName = ClassLoaderAdapterCallback.class.getName();
                            ClassLoader javassistLoader = javassistType.getClassLoader();

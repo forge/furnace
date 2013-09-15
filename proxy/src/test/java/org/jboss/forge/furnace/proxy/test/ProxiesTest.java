@@ -14,6 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.Proxy;
+import javassist.util.proxy.ProxyObject;
+
 import org.jboss.forge.furnace.proxy.ForgeProxy;
 import org.jboss.forge.furnace.proxy.Proxies;
 import org.junit.Assert;
@@ -177,6 +181,36 @@ public class ProxiesTest
       Assert.assertFalse(Proxies.isPassthroughType(Set.class));
       Assert.assertFalse(Proxies.isPassthroughType(Iterable.class));
       Assert.assertFalse(Proxies.isPassthroughType(Map.class));
+   }
+
+   @Test
+   public void testIsProxyType() throws Exception
+   {
+      Assert.assertTrue(Proxies.isProxyType(new Proxy()
+      {
+         @Override
+         public void setHandler(MethodHandler mi)
+         {
+         }
+      }.getClass()));
+   }
+
+   @Test
+   public void testIsProxyObjectType() throws Exception
+   {
+      Assert.assertTrue(Proxies.isProxyType(new ProxyObject()
+      {
+         @Override
+         public void setHandler(MethodHandler mi)
+         {
+         }
+
+         @Override
+         public MethodHandler getHandler()
+         {
+            return null;
+         }
+      }.getClass()));
    }
 
 }
