@@ -7,7 +7,10 @@
 
 package org.jboss.forge.furnace.manager;
 
+import java.util.Set;
+
 import org.jboss.forge.furnace.addons.AddonId;
+import org.jboss.forge.furnace.manager.request.CompositeAddonActionRequest;
 import org.jboss.forge.furnace.manager.request.DeployRequest;
 import org.jboss.forge.furnace.manager.request.DisableRequest;
 import org.jboss.forge.furnace.manager.request.EnableRequest;
@@ -51,6 +54,16 @@ public interface AddonManager
    InstallRequest install(AddonId id, AddonRepository addonRepository);
 
    /**
+    * Create a new {@link CompositeAddonActionRequest} for the given {@link Set} of {@link AddonId} instances and
+    * {@link AddonRepository}.
+    * 
+    * @param ids the addons to be installed
+    * @param addonRepository the {@link AddonRepository} to be used
+    * @return the request for installation
+    */
+   CompositeAddonActionRequest install(Set<AddonId> ids, AddonRepository target);
+
+   /**
     * Create a new {@link DeployRequest} for the given {@link AddonId}.
     * 
     * @param id the addon to be installed
@@ -82,6 +95,16 @@ public interface AddonManager
     * @return the request for removal
     */
    RemoveRequest remove(AddonId id, AddonRepository addonRepository);
+
+   /**
+    * Create a new {@link RemoveRequest} for the given {@link Set} of {@link AddonId} instances and
+    * {@link AddonRepository}.
+    * 
+    * @param ids the addons to be installed
+    * @param addonRepository the {@link AddonRepository} to be used
+    * @return the request for installation
+    */
+   CompositeAddonActionRequest remove(Set<AddonId> ids, AddonRepository target);
 
    /**
     * Create a new {@link EnableRequest} for the given {@link AddonId}.

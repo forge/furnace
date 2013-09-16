@@ -13,9 +13,9 @@ import java.util.List;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.manager.impl.action.AbstractFurnaceAction;
 import org.jboss.forge.furnace.manager.request.AddonActionRequest;
+import org.jboss.forge.furnace.manager.request.CompositeAddonActionRequest;
 import org.jboss.forge.furnace.manager.request.FurnaceIsolationType;
 import org.jboss.forge.furnace.manager.request.InstallRequest;
-import org.jboss.forge.furnace.manager.spi.AddonInfo;
 
 /**
  * Implementation of the {@link InstallRequest} interface
@@ -23,15 +23,13 @@ import org.jboss.forge.furnace.manager.spi.AddonInfo;
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  * 
  */
-public class InstallRequestImpl extends AbstractFurnaceAction implements InstallRequest
+public class CompositeRequestImpl extends AbstractFurnaceAction implements CompositeAddonActionRequest
 {
-   private final AddonInfo addonInfo;
    private final List<AddonActionRequest> actions;
 
-   public InstallRequestImpl(AddonInfo addonInfo, List<AddonActionRequest> actions, Furnace furnace)
+   public CompositeRequestImpl(List<AddonActionRequest> actions, Furnace furnace)
    {
       super(furnace);
-      this.addonInfo = addonInfo;
       this.actions = Collections.unmodifiableList(actions);
    }
 
@@ -51,30 +49,9 @@ public class InstallRequestImpl extends AbstractFurnaceAction implements Install
    }
 
    @Override
-   public AddonInfo getRequestedAddonInfo()
-   {
-      return addonInfo;
-   }
-
-   @Override
    public String toString()
    {
-      StringBuilder sb = new StringBuilder();
-      sb.append("Installation request for [");
-      sb.append(addonInfo).append("] will: \r\n");
-      if (actions.isEmpty())
-      {
-         sb.append("Do nothing");
-      }
-      else
-      {
-         for (AddonActionRequest action : actions)
-         {
-            sb.append(action.toString());
-            sb.append("\n");
-         }
-      }
-      return sb.toString();
+      return actions.toString();
    }
 
 }

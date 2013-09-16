@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,8 +25,8 @@ import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
 import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.annotation.Inject;
-import org.jboss.forge.arquillian.archive.ForgeArchive;
 import org.jboss.forge.arquillian.archive.ForgeRemoteAddon;
+import org.jboss.forge.arquillian.archive.ForgeArchive;
 import org.jboss.forge.arquillian.archive.RepositoryForgeArchive;
 import org.jboss.forge.arquillian.protocol.ForgeProtocolDescription;
 import org.jboss.forge.arquillian.protocol.FurnaceHolder;
@@ -108,7 +109,8 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
          AddonManager addonManager = new AddonManagerImpl(runnable.furnace, resolver, false);
 
          AddonRepository target = selectTargetRepository(archive);
-         addonManager.install(remoteAddon.getAddonId(), target).perform();
+         Set<AddonId> ids = remoteAddon.getAddonIds();
+         addonManager.install(ids, target).perform();
 
          waitForDeploymentCompletion(deployment, addonToDeploy);
       }
@@ -324,8 +326,24 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
    @Override
    public void undeploy(Archive<?> archive) throws DeploymentException
    {
-      undeploying = true;
-      AddonId addonToUndeploy = getAddonEntry(deploymentInstance.get());
+      if (archive instanceof ForgeArchive)
+      {
+         undeploying = true;
+         AddonId addonToUndeploy = getAddonEntry(deploymentInstance.get());
+         undeploy(addonToUndeploy);
+      }
+      else if (archive instanceof ForgeRemoteAddon)
+      {
+         Set<AddonId> addonIds = ((ForgeRemoteAddon) archive).getAddonIds();
+         for (AddonId addonId : addonIds)
+         {
+            undeploy(addonId);
+         }
+      }
+   }
+
+   private void undeploy(AddonId addonToUndeploy) throws DeploymentException
+   {
       AddonRegistry registry = runnable.getForge().getAddonRegistry();
       System.out.println("Undeploying [" + addonToUndeploy + "] ... ");
 

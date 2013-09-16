@@ -7,12 +7,12 @@
 
 package org.jboss.forge.furnace.manager.impl;
 
-import static org.jboss.forge.furnace.manager.impl.request.AddonActionRequestFactory.createDeployRequest;
-import static org.jboss.forge.furnace.manager.impl.request.AddonActionRequestFactory.createDisableRequest;
-import static org.jboss.forge.furnace.manager.impl.request.AddonActionRequestFactory.createEnableRequest;
-import static org.jboss.forge.furnace.manager.impl.request.AddonActionRequestFactory.createInstallRequest;
-import static org.jboss.forge.furnace.manager.impl.request.AddonActionRequestFactory.createRemoveRequest;
-import static org.jboss.forge.furnace.manager.impl.request.AddonActionRequestFactory.createUpdateRequest;
+import static org.jboss.forge.furnace.manager.impl.action.AddonActionRequestFactory.createDeployRequest;
+import static org.jboss.forge.furnace.manager.impl.action.AddonActionRequestFactory.createDisableRequest;
+import static org.jboss.forge.furnace.manager.impl.action.AddonActionRequestFactory.createEnableRequest;
+import static org.jboss.forge.furnace.manager.impl.action.AddonActionRequestFactory.createInstallRequest;
+import static org.jboss.forge.furnace.manager.impl.action.AddonActionRequestFactory.createRemoveRequest;
+import static org.jboss.forge.furnace.manager.impl.action.AddonActionRequestFactory.createUpdateRequest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,11 +20,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.manager.AddonManager;
+import org.jboss.forge.furnace.manager.impl.request.CompositeRequestImpl;
 import org.jboss.forge.furnace.manager.request.AddonActionRequest;
+import org.jboss.forge.furnace.manager.request.CompositeAddonActionRequest;
 import org.jboss.forge.furnace.manager.request.DeployRequest;
 import org.jboss.forge.furnace.manager.request.DisableRequest;
 import org.jboss.forge.furnace.manager.request.EnableRequest;
@@ -92,7 +95,33 @@ public class AddonManagerImpl implements AddonManager
             actions.add(request);
          }
       }
-      return createInstallRequest(addonInfo, actions);
+      return createInstallRequest(addonInfo, actions, furnace);
+   }
+
+   @Override
+   public CompositeAddonActionRequest install(Set<AddonId> ids, AddonRepository repository)
+   {
+      List<AddonActionRequest> actions = new ArrayList<AddonActionRequest>();
+
+      for (AddonId addonId : ids)
+      {
+         actions.add(install(addonId, repository));
+      }
+
+      return new CompositeRequestImpl(actions, furnace);
+   }
+
+   @Override
+   public CompositeAddonActionRequest remove(Set<AddonId> ids, AddonRepository repository)
+   {
+      List<AddonActionRequest> actions = new ArrayList<AddonActionRequest>();
+
+      for (AddonId addonId : ids)
+      {
+         actions.add(remove(addonId, repository));
+      }
+
+      return new CompositeRequestImpl(actions, furnace);
    }
 
    @Override
@@ -149,11 +178,6 @@ public class AddonManagerImpl implements AddonManager
 
    /**
     * Calculate the necessary request based in the list of installed addons for a given {@link MutableAddonRepository}
-    * 
-    * @param addonInfo
-    * @param repository
-    * @param installedAddons
-    * @return
     */
    private AddonActionRequest createRequest(final AddonInfo requestedAddonInfo, final AddonInfo addonInfo,
             final MutableAddonRepository repository,
@@ -230,12 +254,7 @@ public class AddonManagerImpl implements AddonManager
    }
 
    /**
-    * Collect all required addons for a specific addon.
-    * 
-    * It traverses the whole graph
-    * 
-    * @param addonInfo
-    * @param addons
+    * Collect all required addons for a specific addon. Traverses the whole graph.
     */
    private void collectRequiredAddons(AddonInfo addonInfo, List<AddonInfo> addons)
    {

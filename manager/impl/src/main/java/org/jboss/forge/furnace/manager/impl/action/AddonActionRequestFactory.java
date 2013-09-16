@@ -5,11 +5,17 @@
  * http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.jboss.forge.furnace.manager.impl.request;
+package org.jboss.forge.furnace.manager.impl.action;
 
 import java.util.List;
 
 import org.jboss.forge.furnace.Furnace;
+import org.jboss.forge.furnace.manager.impl.request.DeployRequestImpl;
+import org.jboss.forge.furnace.manager.impl.request.DisableRequestImpl;
+import org.jboss.forge.furnace.manager.impl.request.EnableRequestImpl;
+import org.jboss.forge.furnace.manager.impl.request.InstallRequestImpl;
+import org.jboss.forge.furnace.manager.impl.request.RemoveRequestImpl;
+import org.jboss.forge.furnace.manager.impl.request.UpdateRequestImpl;
 import org.jboss.forge.furnace.manager.request.AddonActionRequest;
 import org.jboss.forge.furnace.manager.request.DeployRequest;
 import org.jboss.forge.furnace.manager.request.DisableRequest;
@@ -28,9 +34,10 @@ import org.jboss.forge.furnace.repositories.MutableAddonRepository;
  */
 public class AddonActionRequestFactory
 {
-   public static InstallRequest createInstallRequest(AddonInfo addonInfo, List<AddonActionRequest> actions)
+   public static InstallRequest createInstallRequest(AddonInfo addonInfo, List<AddonActionRequest> actions,
+            Furnace furnace)
    {
-      return new InstallRequestImpl(addonInfo, actions);
+      return new InstallRequestImpl(addonInfo, actions, furnace);
    }
 
    public static DeployRequest createDeployRequest(AddonInfo addonInfo, MutableAddonRepository repository,
@@ -44,7 +51,7 @@ public class AddonActionRequestFactory
    {
       RemoveRequest removeRequest = createRemoveRequest(addonToRemove, repository, furnace);
       DeployRequest installRequest = createDeployRequest(addonToInstall, repository, furnace);
-      return new UpdateRequestImpl(removeRequest, installRequest);
+      return new UpdateRequestImpl(removeRequest, installRequest, furnace);
    }
 
    public static RemoveRequest createRemoveRequest(AddonInfo addonInfo, MutableAddonRepository repository,
