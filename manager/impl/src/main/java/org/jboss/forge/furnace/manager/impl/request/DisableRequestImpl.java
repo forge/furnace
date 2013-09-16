@@ -8,6 +8,7 @@ package org.jboss.forge.furnace.manager.impl.request;
 
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
+import org.jboss.forge.furnace.manager.impl.action.AbstractAddonActionRequest;
 import org.jboss.forge.furnace.manager.request.DisableRequest;
 import org.jboss.forge.furnace.manager.spi.AddonInfo;
 import org.jboss.forge.furnace.repositories.MutableAddonRepository;
@@ -19,9 +20,9 @@ import org.jboss.forge.furnace.repositories.MutableAddonRepository;
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  * 
  */
-class DisableRequestImpl extends AbstractAddonActionRequest implements DisableRequest
+public class DisableRequestImpl extends AbstractAddonActionRequest implements DisableRequest
 {
-   DisableRequestImpl(AddonInfo info, MutableAddonRepository repository, Furnace forge)
+   public DisableRequestImpl(AddonInfo info, MutableAddonRepository repository, Furnace forge)
    {
       super(info, repository, forge);
    }

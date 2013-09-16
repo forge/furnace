@@ -1,5 +1,7 @@
 package org.jboss.forge.arquillian.archive;
 
+import java.util.Set;
+
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.shrinkwrap.api.Archive;
 
@@ -10,9 +12,9 @@ import org.jboss.shrinkwrap.api.Archive;
  */
 public interface ForgeRemoteAddon extends Archive<ForgeRemoteAddon>
 {
-   AddonId getAddonId();
+   Set<AddonId> getAddonIds();
 
-   ForgeRemoteAddon setAddonId(AddonId id);
+   ForgeRemoteAddon setAddonIds(Set<AddonId> ids);
 
    String getAddonRepository();
 

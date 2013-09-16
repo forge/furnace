@@ -8,6 +8,7 @@ package org.jboss.forge.furnace.manager.impl.request;
 
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
+import org.jboss.forge.furnace.manager.impl.action.AbstractAddonActionRequest;
 import org.jboss.forge.furnace.manager.request.EnableRequest;
 import org.jboss.forge.furnace.manager.spi.AddonInfo;
 import org.jboss.forge.furnace.repositories.MutableAddonRepository;
@@ -18,9 +19,9 @@ import org.jboss.forge.furnace.repositories.MutableAddonRepository;
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  */
-class EnableRequestImpl extends AbstractAddonActionRequest implements EnableRequest
+public class EnableRequestImpl extends AbstractAddonActionRequest implements EnableRequest
 {
-   EnableRequestImpl(AddonInfo info, MutableAddonRepository repository, Furnace forge)
+   public EnableRequestImpl(AddonInfo info, MutableAddonRepository repository, Furnace forge)
    {
       super(info, repository, forge);
    }
