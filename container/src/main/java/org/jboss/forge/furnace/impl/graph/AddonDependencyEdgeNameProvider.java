@@ -19,6 +19,7 @@ public class AddonDependencyEdgeNameProvider implements EdgeNameProvider<AddonDe
    public String getEdgeName(AddonDependencyEdge edge)
    {
       StringBuilder builder = new StringBuilder();
+      builder.append(edge.isOptional() ? "O" : "");
       builder.append(edge.isExported() ? "E" : "");
       return builder.toString();
    }

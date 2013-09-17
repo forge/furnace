@@ -55,7 +55,7 @@ public class GenerateDOTMojo extends AbstractMojo
    /**
     * Include transitive addons
     */
-   @Parameter
+   @Parameter(property = "furnace.dot.transitive", defaultValue = "true")
    private boolean includeTransitiveAddons;
 
    /**
@@ -155,6 +155,36 @@ public class GenerateDOTMojo extends AbstractMojo
    {
       DirectedGraph<AddonVertex, AddonDependencyEdge> graph = new DefaultDirectedGraph<AddonVertex, AddonDependencyEdge>(
                AddonDependencyEdge.class);
+      populateGraph(info, graph);
+      return graph;
+   }
+
+   /**
+    * @param info
+    * @param graph
+    */
+   private void populateGraph(AddonInfo info, DirectedGraph<AddonVertex, AddonDependencyEdge> graph)
+   {
+      addGraphDependencies(info, graph);
+      if (includeTransitiveAddons)
+      {
+         for (AddonInfo requiredAddon : info.getRequiredAddons())
+         {
+            populateGraph(requiredAddon, graph);
+         }
+         for (AddonInfo optionalAddon : info.getOptionalAddons())
+         {
+            populateGraph(optionalAddon, graph);
+         }
+      }
+   }
+
+   /**
+    * @param info
+    * @param graph
+    */
+   private void addGraphDependencies(AddonInfo info, DirectedGraph<AddonVertex, AddonDependencyEdge> graph)
+   {
       AddonId addon = info.getAddon();
       AddonVertex rootVertex = new AddonVertex(addon.getName(), addon.getVersion());
       graph.addVertex(rootVertex);
@@ -163,13 +193,8 @@ public class GenerateDOTMojo extends AbstractMojo
          AddonVertex depVertex = new AddonVertex(entry.getName(), entry.getVersionRange().getMax());
          graph.addVertex(depVertex);
          graph.addEdge(rootVertex, depVertex,
-                  new AddonDependencyEdge(entry.getVersionRange(), entry.isExported()));
+                  new AddonDependencyEdge(entry.getVersionRange(), entry.isExported(), entry.isOptional()));
       }
-      if (includeTransitiveAddons)
-      {
-         // TODO
-      }
-      return graph;
    }
 
    void toDOT(File file, DirectedGraph<AddonVertex, AddonDependencyEdge> graph)
