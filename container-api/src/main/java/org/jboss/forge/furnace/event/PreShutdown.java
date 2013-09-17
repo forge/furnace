@@ -7,6 +7,8 @@
 
 package org.jboss.forge.furnace.event;
 
+import org.jboss.forge.furnace.addons.Addon;
+
 /**
  * Fired before the container begins its shutdown process.
  * 
@@ -15,4 +17,15 @@ package org.jboss.forge.furnace.event;
  */
 public final class PreShutdown
 {
+   private Addon addon;
+
+   public PreShutdown(Addon addon)
+   {
+      this.addon = addon;
+   }
+
+   public Addon getAddon()
+   {
+      return addon;
+   }
 }

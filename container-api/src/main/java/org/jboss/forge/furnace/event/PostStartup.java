@@ -7,6 +7,8 @@
 
 package org.jboss.forge.furnace.event;
 
+import org.jboss.forge.furnace.addons.Addon;
+
 /**
  * Fired by the container to signal that the current addon should begin its work.
  * 
@@ -15,4 +17,15 @@ package org.jboss.forge.furnace.event;
  */
 public final class PostStartup
 {
+   private Addon addon;
+
+   public PostStartup(Addon addon)
+   {
+      this.addon = addon;
+   }
+
+   public Addon getAddon()
+   {
+      return addon;
+   }
 }

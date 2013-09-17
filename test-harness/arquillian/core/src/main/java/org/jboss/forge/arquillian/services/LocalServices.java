@@ -88,13 +88,13 @@ public class LocalServices implements AddonLifecycleProvider
    @Override
    public void postStartup(Addon addon) throws Exception
    {
-      getEventManager(addon).fireEvent(new PostStartup());
+      getEventManager(addon).fireEvent(new PostStartup(addon));
    }
 
    @Override
    public void preShutdown(Addon addon) throws Exception
    {
-      getEventManager(addon).fireEvent(new PreShutdown());
+      getEventManager(addon).fireEvent(new PreShutdown(addon));
    }
 
    @Override
