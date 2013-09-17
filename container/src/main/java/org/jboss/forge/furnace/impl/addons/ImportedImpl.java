@@ -220,9 +220,9 @@ public class ImportedImpl<T> implements Imported<T>
    }
 
    @Override
-   public boolean isSatisfied()
+   public boolean isUnsatisfied()
    {
-      return getExportedInstance() != null;
+      return getExportedInstances().isEmpty();
    }
 
    @Override

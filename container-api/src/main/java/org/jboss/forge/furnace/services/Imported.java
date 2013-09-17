@@ -29,9 +29,9 @@ public interface Imported<T> extends Iterable<T>
    T selectExact(Class<T> type);
 
    /**
-    * Returns <code>true</code> if an instance of the requested type can be produced.
+    * Returns <code>true</code> if no instances of the requested type can be produced.
     */
-   boolean isSatisfied();
+   boolean isUnsatisfied();
 
    /**
     * Returns <code>true</code> if multiple instances of the requested type can be produced.

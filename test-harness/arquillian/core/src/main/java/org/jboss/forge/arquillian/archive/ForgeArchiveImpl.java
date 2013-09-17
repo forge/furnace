@@ -18,7 +18,9 @@ package org.jboss.forge.arquillian.archive;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.jboss.forge.arquillian.services.LocalServices;
@@ -204,11 +206,14 @@ public class ForgeArchiveImpl extends ContainerBase<ForgeArchive> implements For
    {
       addAsServiceProvider(AddonLifecycleProvider.class, LocalServices.class);
       addPackages(true, LocalServices.class.getPackage());
+      Set<String> typeNames = new LinkedHashSet<String>();
       for (Class<?> type : serviceTypes)
       {
-         addAsServiceProvider(SERVICE_REGISTRATION_FILE_NAME,
-                  type.getName());
+         typeNames.add(type.getName());
       }
+
+      addAsServiceProvider(SERVICE_REGISTRATION_FILE_NAME,
+               typeNames.toArray(new String[typeNames.size()]));
       return this;
    }
 
