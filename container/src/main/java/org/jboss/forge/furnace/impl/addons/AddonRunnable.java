@@ -187,7 +187,7 @@ public final class AddonRunnable implements Runnable
                         AddonLifecycleProvider.class, classLoader);
 
                Iterator<AddonLifecycleProvider> iterator = serviceLoader.iterator();
-               if (serviceLoader != null && iterator.hasNext())
+               while (serviceLoader != null && iterator.hasNext())
                {
                   AddonLifecycleProvider provider = iterator.next();
 
@@ -215,10 +215,14 @@ public final class AddonRunnable implements Runnable
             }
          });
       }
-      catch (Throwable e)
+      catch (RuntimeException e)
       {
-         // FIXME Figure out why ServiceLoader is trying to load things from the wrong ClassLoader
-         logger.log(Level.FINEST, "ServiceLoader misbehaved when loading AddonLifecycleProvider instances.", e);
+         throw e;
+      }
+      catch (Exception e)
+      {
+         throw new ContainerException("Error occurred while attempting to local instance of ["
+                  + AddonLifecycleProvider.class.getName() + "] for addon [" + addon + "].");
       }
 
       return result;
