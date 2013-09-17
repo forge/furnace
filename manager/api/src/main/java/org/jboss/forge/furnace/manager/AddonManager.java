@@ -15,7 +15,6 @@ import org.jboss.forge.furnace.manager.request.InstallRequest;
 import org.jboss.forge.furnace.manager.request.RemoveRequest;
 import org.jboss.forge.furnace.manager.spi.AddonInfo;
 import org.jboss.forge.furnace.repositories.AddonRepository;
-import org.jboss.forge.furnace.services.Exported;
 
 /**
  * Responsible for installing, removing, enabling, and disabling {@link AddonId} instances in any registered
@@ -24,7 +23,6 @@ import org.jboss.forge.furnace.services.Exported;
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-@Exported
 public interface AddonManager
 {
    /**

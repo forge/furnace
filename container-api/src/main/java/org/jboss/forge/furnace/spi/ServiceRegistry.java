@@ -10,8 +10,6 @@ package org.jboss.forge.furnace.spi;
 import java.util.Collections;
 import java.util.Set;
 
-import org.jboss.forge.furnace.services.Exported;
-
 /**
  * Contains the collection of all installed and available {@link ExportedInstance} types.
  * 
@@ -20,61 +18,61 @@ import org.jboss.forge.furnace.services.Exported;
 public interface ServiceRegistry
 {
    /**
-    * Get the set of currently available {@link Exported} services of the given {@link Class} type. Return
-    * {@link Collections#EMPTY_SET} if no matching services are found.
+    * Get the set of currently available services of the given {@link Class} type. Return {@link Collections#EMPTY_SET}
+    * if no matching services are found.
     * 
     * @return the {@link Set} of {@link ExportedInstance} objects (Never null.)
     */
    <T> Set<ExportedInstance<T>> getExportedInstances(Class<T> clazz);
 
    /**
-    * Get the set of currently available {@link Exported} services types with {@link Class#getName()} matching the given
-    * name. Return {@link Collections#EMPTY_SET} if no matching services are found.
+    * Get the set of currently available services types with {@link Class#getName()} matching the given name. Return
+    * {@link Collections#EMPTY_SET} if no matching services are found.
     * 
     * @return the {@link Set} of {@link ExportedInstance} objects (Never null.)
     */
    <T> Set<ExportedInstance<T>> getExportedInstances(String clazz);
 
    /**
-    * Get an instance of any currently available {@link Exported} service of the given {@link Class} type. Return
-    * <code>null</code> if no matching service can be found.
+    * Get an instance of any currently available service of the given {@link Class} type. Return <code>null</code> if no
+    * matching service can be found.
     * 
     * @return the {@link ExportedInstance} (May be null.)
     */
    <T> ExportedInstance<T> getExportedInstance(Class<T> type);
 
    /**
-    * Get an instance of any currently available {@link Exported} service types with {@link Class#getName()} matching
-    * the given name. Return <code>null</code> if no matching service can be found.
+    * Get an instance of any currently available service types with {@link Class#getName()} matching the given name.
+    * Return <code>null</code> if no matching service can be found.
     * 
     * @return the {@link ExportedInstance} (May be null.)
     */
    <T> ExportedInstance<T> getExportedInstance(String type);
 
    /**
-    * Get a {@link Set} of all currently available {@link Exported} service types.
+    * Get a {@link Set} of all currently available service types.
     * 
     * @return the {@link Set} of {@link Class} types (Never null.)
     */
    Set<Class<?>> getExportedTypes();
 
    /**
-    * Get a {@link Set} of currently available {@link Exported} service types for which
-    * {@link Class#isAssignableFrom(Class)} returns <code>true</code>.
+    * Get a {@link Set} of currently available service types for which {@link Class#isAssignableFrom(Class)} returns
+    * <code>true</code>.
     * 
     * @return the {@link Set} of {@link Class} types (Never null.)
     */
    <T> Set<Class<T>> getExportedTypes(Class<T> type);
 
    /**
-    * Return <code>true</code> if the given {@link Class} type is registered as an {@link Exported} service, otherwise
-    * return <code>false</code>.
+    * Return <code>true</code> if the given {@link Class} type is registered as an service, otherwise return
+    * <code>false</code>.
     */
    boolean hasService(Class<?> clazz);
 
    /**
-    * Return <code>true</code> if a type with the given name is registered as an {@link Exported} service, otherwise
-    * return <code>false</code>.
+    * Return <code>true</code> if a type with the given name is registered as an service, otherwise return
+    * <code>false</code>.
     */
    boolean hasService(String clazz);
 

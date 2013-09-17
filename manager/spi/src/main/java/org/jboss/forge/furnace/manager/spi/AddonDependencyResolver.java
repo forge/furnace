@@ -9,7 +9,6 @@ package org.jboss.forge.furnace.manager.spi;
 import java.io.File;
 
 import org.jboss.forge.furnace.addons.AddonId;
-import org.jboss.forge.furnace.services.Exported;
 
 /**
  * A resolver that knows how to construct a graph of the requested Addon
@@ -17,7 +16,6 @@ import org.jboss.forge.furnace.services.Exported;
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  */
-@Exported
 public interface AddonDependencyResolver
 {
    /**
@@ -27,17 +25,11 @@ public interface AddonDependencyResolver
 
    /**
     * Resolve an artifact given an AddonId coordinate
-    * 
-    * @param coordinate
-    * @return
     */
    public File[] resolveResources(final AddonId addonId);
 
    /**
     * Resolve all versions of a given AddonId
-    * 
-    * @param addonId
-    * @return
     */
    public AddonId[] resolveVersions(final String addonName);
 }

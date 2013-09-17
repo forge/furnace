@@ -1,7 +1,8 @@
 package org.jboss.forge.furnace.util;
 
-import org.jboss.forge.furnace.services.Exported;
-import org.jboss.forge.furnace.util.Annotations;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -10,28 +11,36 @@ import org.junit.Test;
  */
 public class AnnotationsTest
 {
+   @Retention(RetentionPolicy.RUNTIME)
+   public @interface MockAnnotation
+   {
+
+   }
+
    @Test
    public void testInheritFromInterface() throws Exception
    {
-      Assert.assertTrue(Annotations.isAnnotationPresent(InheritsRemote.class, Exported.class));
+      Assert.assertTrue(Annotations.isAnnotationPresent(InheritsRemote.class, MockAnnotation.class));
    }
 
    @Test
    public void testInheritFromInterfaceInheritingRemote() throws Exception
    {
-      Assert.assertTrue(Annotations.isAnnotationPresent(InheritsRemoteFromExtendedInterface.class, Exported.class));
+      Assert.assertTrue(Annotations
+               .isAnnotationPresent(InheritsRemoteFromExtendedInterface.class, MockAnnotation.class));
    }
 
    @Test
    public void testInheritFromSuperclass() throws Exception
    {
-      Assert.assertTrue(Annotations.isAnnotationPresent(SuperClassAnnotatedWithRemote.class, Exported.class));
+      Assert.assertTrue(Annotations.isAnnotationPresent(SuperClassAnnotatedWithRemote.class, MockAnnotation.class));
    }
 
    @Test
    public void testInheritFromSuperclassInheritingRemote() throws Exception
    {
-      Assert.assertTrue(Annotations.isAnnotationPresent(InheritsRemoteFromSuperClassInheriting.class, Exported.class));
+      Assert.assertTrue(Annotations.isAnnotationPresent(InheritsRemoteFromSuperClassInheriting.class,
+               MockAnnotation.class));
    }
 
    public class InheritsRemote implements AnnotatedWithRemote
@@ -39,7 +48,7 @@ public class AnnotationsTest
 
    }
 
-   @Exported
+   @MockAnnotation
    public interface AnnotatedWithRemote
    {
 
@@ -55,7 +64,7 @@ public class AnnotationsTest
 
    }
 
-   @Exported
+   @MockAnnotation
    public class SuperClassAnnotatedWithRemote
    {
 

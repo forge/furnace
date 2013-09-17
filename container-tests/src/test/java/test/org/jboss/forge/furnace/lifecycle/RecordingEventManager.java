@@ -14,13 +14,10 @@ import org.jboss.forge.furnace.event.EventException;
 import org.jboss.forge.furnace.event.EventManager;
 import org.jboss.forge.furnace.event.PostStartup;
 import org.jboss.forge.furnace.event.PreShutdown;
-import org.jboss.forge.furnace.services.Exported;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
- * 
  */
-@Exported
 public class RecordingEventManager implements EventManager
 {
    private static List<Object> events = new ArrayList<Object>();

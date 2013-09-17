@@ -22,7 +22,6 @@ import org.jboss.forge.furnace.addons.AddonStatus;
 import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.lock.LockMode;
-import org.jboss.forge.furnace.services.Exported;
 import org.jboss.forge.furnace.services.Imported;
 import org.jboss.forge.furnace.spi.ExportedInstance;
 import org.jboss.forge.furnace.spi.ServiceRegistry;
@@ -76,8 +75,7 @@ public class ImportedImpl<T> implements Imported<T>
          return instance;
       }
       else
-         throw new ContainerException("No @" + Exported.class.getSimpleName()
-                  + " services of type [" + typeName + "] could be found in any started addons.");
+         throw new ContainerException("No services of type [" + typeName + "] could be found in any started addons.");
    }
 
    @Override
@@ -105,8 +103,7 @@ public class ImportedImpl<T> implements Imported<T>
             return result;
          }
       }
-      throw new ContainerException("No @" + Exported.class.getSimpleName()
-               + " services of type [" + type + "] could be found in any started addons.");
+      throw new ContainerException("No services of type [" + type + "] could be found in any started addons.");
    }
 
    private ExportedInstance<T> getExportedInstance()

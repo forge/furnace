@@ -8,7 +8,6 @@ package org.jboss.forge.furnace.addons;
 
 import java.util.Set;
 
-import org.jboss.forge.furnace.services.Exported;
 import org.jboss.forge.furnace.services.Imported;
 
 /**
@@ -19,15 +18,15 @@ import org.jboss.forge.furnace.services.Imported;
 public interface AddonRegistry extends AddonView
 {
    /**
-    * Return an {@link Imported} instance that can be used to obtain all currently available {@link Exported} services of the
-    * given {@link Class} type.
+    * Return an {@link Imported} instance that can be used to obtain all currently available services of the given
+    * {@link Class} type.
     * 
     * @return the {@link Imported} (Never null.)
     */
    <T> Imported<T> getServices(Class<T> clazz);
 
    /**
-    * Return an {@link Imported} instance that can be used to obtain all currently available {@link Exported} services with
+    * Return an {@link Imported} instance that can be used to obtain all currently available services with
     * {@link Class#getName()} matching the given name.
     * 
     * @return the {@link Imported} (Never null.)
@@ -35,15 +34,15 @@ public interface AddonRegistry extends AddonView
    <T> Imported<T> getServices(String clazz);
 
    /**
-    * Get a {@link Set} of all currently available {@link Exported} service types.
+    * Get a {@link Set} of all currently available service types.
     * 
     * @return the {@link Set} of {@link Class} types (Never null.)
     */
    Set<Class<?>> getExportedTypes();
 
    /**
-    * Get a {@link Set} of currently available {@link Exported} service types for which
-    * {@link Class#isAssignableFrom(Class)} returns <code>true</code>.
+    * Get a {@link Set} of currently available service types for which {@link Class#isAssignableFrom(Class)} returns
+    * <code>true</code>.
     * 
     * @return the {@link Set} of {@link Class} types (Never null.)
     */
