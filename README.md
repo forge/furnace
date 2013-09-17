@@ -30,12 +30,6 @@ To install addons, you will need to add the following dependencies to your proje
 
     <dependency>
        <groupId>org.jboss.forge.furnace</groupId>
-       <artifactId>furnace</artifactId>
-       <version>${version.furnace}</version>
-    </dependency>
-   	  
-    <dependency>
-       <groupId>org.jboss.forge.furnace</groupId>
        <artifactId>furnace-manager-resolver-maven</artifactId>
        <version>${version.furnace}</version>
     </dependency>
