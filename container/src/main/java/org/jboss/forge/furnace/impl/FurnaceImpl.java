@@ -125,6 +125,7 @@ public class FurnaceImpl implements Furnace
    @Override
    public Furnace start(ClassLoader loader)
    {
+      logger.log(Level.INFO, "Furnace [" + AddonRepositoryImpl.getRuntimeAPIVersion() + "] starting.");
       assertNotAlive();
       alive = true;
 
@@ -172,7 +173,7 @@ public class FurnaceImpl implements Furnace
                }
             }
             status = ContainerStatus.STARTED;
-            
+
             Thread.sleep(100);
          }
          while (alive && serverMode);
