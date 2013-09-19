@@ -10,10 +10,7 @@ package org.jboss.forge.furnace.manager.impl.request;
 import java.util.Collections;
 import java.util.List;
 
-import org.jboss.forge.furnace.Furnace;
-import org.jboss.forge.furnace.manager.impl.action.AbstractFurnaceAction;
 import org.jboss.forge.furnace.manager.request.AddonActionRequest;
-import org.jboss.forge.furnace.manager.request.FurnaceIsolationType;
 import org.jboss.forge.furnace.manager.request.InstallRequest;
 import org.jboss.forge.furnace.manager.spi.AddonInfo;
 
@@ -23,24 +20,23 @@ import org.jboss.forge.furnace.manager.spi.AddonInfo;
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  * 
  */
-public class InstallRequestImpl extends AbstractFurnaceAction implements InstallRequest
+class InstallRequestImpl implements InstallRequest
 {
    private final AddonInfo addonInfo;
    private final List<AddonActionRequest> actions;
 
-   public InstallRequestImpl(AddonInfo addonInfo, List<AddonActionRequest> actions, Furnace furnace)
+   public InstallRequestImpl(AddonInfo addonInfo, List<AddonActionRequest> actions)
    {
-      super(furnace);
       this.addonInfo = addonInfo;
       this.actions = Collections.unmodifiableList(actions);
    }
 
    @Override
-   public void execute()
+   public void perform()
    {
       for (AddonActionRequest action : actions)
       {
-         action.perform(FurnaceIsolationType.NONE);
+         action.perform();
       }
    }
 

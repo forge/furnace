@@ -16,9 +16,6 @@
  */
 package org.jboss.forge.arquillian.archive;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;
@@ -27,22 +24,21 @@ import org.jboss.shrinkwrap.impl.base.container.ContainerBase;
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class ForgeRemoteAddonImpl extends ContainerBase<ForgeRemoteAddon> implements
-         ForgeRemoteAddon
+public class ForgeRemoteAddonImpl extends ContainerBase<ForgeRemoteAddon> implements ForgeRemoteAddon
 {
-   private Set<AddonId> ids = new LinkedHashSet<AddonId>();
+   private AddonId id;
    private String repository;
 
    @Override
-   public Set<AddonId> getAddonIds()
+   public AddonId getAddonId()
    {
-      return ids;
+      return id;
    }
 
    @Override
-   public ForgeRemoteAddon setAddonIds(Set<AddonId> ids)
+   public ForgeRemoteAddon setAddonId(AddonId id)
    {
-      this.ids = ids;
+      this.id = id;
       return this;
    }
 

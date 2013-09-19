@@ -14,7 +14,6 @@ import java.util.concurrent.Callable;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.lock.LockMode;
-import org.jboss.forge.furnace.manager.impl.action.AbstractAddonActionRequest;
 import org.jboss.forge.furnace.manager.request.DeployRequest;
 import org.jboss.forge.furnace.manager.spi.AddonInfo;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
@@ -27,12 +26,14 @@ import org.jboss.forge.furnace.repositories.MutableAddonRepository;
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  * 
  */
-public class DeployRequestImpl extends AbstractAddonActionRequest implements DeployRequest
+class DeployRequestImpl extends AbstractAddonActionRequest implements DeployRequest
 {
    /**
     * Package-access constructor. Only AddonManager should be allowed to call this constructor.
+    * 
+    * @param addonManager
     */
-   public DeployRequestImpl(AddonInfo info, MutableAddonRepository repository, Furnace forge)
+   DeployRequestImpl(AddonInfo info, MutableAddonRepository repository, Furnace forge)
    {
       super(info, repository, forge);
    }

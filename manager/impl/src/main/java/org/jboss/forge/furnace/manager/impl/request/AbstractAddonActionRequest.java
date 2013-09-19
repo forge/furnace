@@ -5,7 +5,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.jboss.forge.furnace.manager.impl.action;
+package org.jboss.forge.furnace.manager.impl.request;
 
 import java.util.logging.Logger;
 
@@ -13,29 +13,31 @@ import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.manager.request.AddonActionRequest;
 import org.jboss.forge.furnace.manager.spi.AddonInfo;
 import org.jboss.forge.furnace.repositories.MutableAddonRepository;
+import org.jboss.forge.furnace.spi.ContainerLifecycleListener;
+import org.jboss.forge.furnace.spi.ListenerRegistration;
 import org.jboss.forge.furnace.util.Assert;
 
 /**
  * Abstract class for {@link AddonActionRequest} implementations
  * 
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
- * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * 
  */
-public abstract class AbstractAddonActionRequest extends AbstractFurnaceAction implements AddonActionRequest
+public abstract class AbstractAddonActionRequest implements AddonActionRequest
 {
    protected final AddonInfo addonInfo;
+   protected final Furnace furnace;
    protected final MutableAddonRepository repository;
 
    protected Logger log = Logger.getLogger(getClass().getName());
 
    protected AbstractAddonActionRequest(AddonInfo addonInfo, MutableAddonRepository addonRepository, Furnace furnace)
    {
-      super(furnace);
       Assert.notNull(addonInfo, "AddonInfo must not be null.");
       Assert.notNull(furnace, "Addon Repository must not be null.");
-
+      Assert.notNull(furnace, "Furnace must not be null.");
       this.addonInfo = addonInfo;
+      this.furnace = furnace;
       this.repository = addonRepository;
    }
 
@@ -44,6 +46,37 @@ public abstract class AbstractAddonActionRequest extends AbstractFurnaceAction i
    {
       return addonInfo;
    }
+
+   @Override
+   public final void perform()
+   {
+      ConfigurationScanListener listener = new ConfigurationScanListener();
+      ListenerRegistration<ContainerLifecycleListener> reg = furnace.addContainerLifecycleListener(listener);
+      try
+      {
+         execute();
+         if (!furnace.getStatus().isStopped())
+         {
+            while (furnace.getStatus().isStarting() || !listener.isConfigurationScanned())
+            {
+               try
+               {
+                  Thread.sleep(100);
+               }
+               catch (InterruptedException e)
+               {
+                  throw new RuntimeException(e);
+               }
+            }
+         }
+      }
+      finally
+      {
+         reg.removeListener();
+      }
+   }
+
+   public abstract void execute();
 
    @Override
    public String toString()

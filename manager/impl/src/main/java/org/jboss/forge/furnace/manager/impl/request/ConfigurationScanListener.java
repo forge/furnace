@@ -4,7 +4,7 @@
  * Licensed under the Eclipse Public License version 1.0, available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.jboss.forge.furnace.manager.impl.action;
+package org.jboss.forge.furnace.manager.impl.request;
 
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.exception.ContainerException;

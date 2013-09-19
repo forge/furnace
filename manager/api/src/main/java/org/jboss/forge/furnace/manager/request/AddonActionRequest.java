@@ -15,10 +15,15 @@ import org.jboss.forge.furnace.manager.spi.AddonInfo;
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  * 
  */
-public interface AddonActionRequest extends FurnaceAction
+public interface AddonActionRequest
 {
    /**
-    * Get the target {@link AddonInfo}.
+    * Target Addon
     */
    AddonInfo getRequestedAddonInfo();
+
+   /**
+    * Execute the desired request
+    */
+   void perform();
 }

@@ -7,11 +7,8 @@
 
 package org.jboss.forge.furnace.manager.impl.request;
 
-import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
-import org.jboss.forge.furnace.manager.impl.action.AbstractFurnaceAction;
 import org.jboss.forge.furnace.manager.request.DeployRequest;
-import org.jboss.forge.furnace.manager.request.FurnaceIsolationType;
 import org.jboss.forge.furnace.manager.request.RemoveRequest;
 import org.jboss.forge.furnace.manager.request.UpdateRequest;
 import org.jboss.forge.furnace.manager.spi.AddonInfo;
@@ -22,14 +19,13 @@ import org.jboss.forge.furnace.manager.spi.AddonInfo;
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  * 
  */
-public class UpdateRequestImpl extends AbstractFurnaceAction implements UpdateRequest
+class UpdateRequestImpl implements UpdateRequest
 {
    private final RemoveRequest removeRequest;
    private final DeployRequest deployRequest;
 
-   public UpdateRequestImpl(RemoveRequest removeRequest, DeployRequest deployRequest, Furnace furnace)
+   public UpdateRequestImpl(RemoveRequest removeRequest, DeployRequest deployRequest)
    {
-      super(furnace);
       this.removeRequest = removeRequest;
       this.deployRequest = deployRequest;
    }
@@ -53,10 +49,10 @@ public class UpdateRequestImpl extends AbstractFurnaceAction implements UpdateRe
    }
 
    @Override
-   public void execute()
+   public void perform()
    {
-      removeRequest.perform(FurnaceIsolationType.CONFIGURATION_RELOAD);
-      deployRequest.perform(FurnaceIsolationType.CONFIGURATION_RELOAD);
+      removeRequest.perform();
+      deployRequest.perform();
    }
 
    @Override

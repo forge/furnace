@@ -7,11 +7,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.graph.Dependency;
@@ -56,13 +53,11 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
    private Collection<DeploymentDescription> generateDependencyDeployments(Class<?> classUnderTest,
             Method deploymentMethod)
    {
-      Dependencies dependencies = deploymentMethod.getAnnotation(Dependencies.class);
+      Dependencies dependency = deploymentMethod.getAnnotation(Dependencies.class);
       Collection<DeploymentDescription> deployments = new ArrayList<DeploymentDescription>();
 
-      if (dependencies.value() != null)
-      {
-         Set<AddonId> dependencyIds = new LinkedHashSet<AddonId>();
-         for (AddonDependency addon : dependencies.value())
+      if (dependency.value() != null)
+         for (AddonDependency addon : dependency.value())
          {
             String version;
             if (addon.version().isEmpty())
@@ -81,21 +76,16 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
                version = addon.version();
             }
             AddonId id = AddonId.from(addon.name(), version);
-            dependencyIds.add(id);
+            ForgeRemoteAddon remoteAddon = ShrinkWrap.create(ForgeRemoteAddon.class).setAddonId(id);
+
+            if (Annotations.isAnnotationPresent(deploymentMethod, DeployToRepository.class))
+               remoteAddon.setAddonRepository(Annotations.getAnnotation(deploymentMethod, DeployToRepository.class)
+                        .value());
+
+            DeploymentDescription deploymentDescription = new DeploymentDescription(id.toCoordinates(), remoteAddon);
+            deploymentDescription.shouldBeTestable(false);
+            deployments.add(deploymentDescription);
          }
-
-         ForgeRemoteAddon remoteAddon = ShrinkWrap.create(ForgeRemoteAddon.class).setAddonIds(
-                  dependencyIds);
-
-         if (Annotations.isAnnotationPresent(deploymentMethod, DeployToRepository.class))
-            remoteAddon.setAddonRepository(Annotations.getAnnotation(deploymentMethod, DeployToRepository.class)
-                     .value());
-
-         DeploymentDescription deploymentDescription = new DeploymentDescription(UUID.randomUUID().toString(),
-                  remoteAddon);
-         deploymentDescription.shouldBeTestable(false);
-         deployments.add(deploymentDescription);
-      }
 
       return deployments;
    }

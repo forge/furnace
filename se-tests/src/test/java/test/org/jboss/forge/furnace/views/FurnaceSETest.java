@@ -17,7 +17,7 @@ import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.manager.AddonManager;
 import org.jboss.forge.furnace.manager.impl.AddonManagerImpl;
-import org.jboss.forge.furnace.manager.impl.action.ConfigurationScanListener;
+import org.jboss.forge.furnace.manager.impl.request.ConfigurationScanListener;
 import org.jboss.forge.furnace.manager.maven.MavenContainer;
 import org.jboss.forge.furnace.manager.maven.addon.MavenAddonDependencyResolver;
 import org.jboss.forge.furnace.manager.spi.AddonDependencyResolver;

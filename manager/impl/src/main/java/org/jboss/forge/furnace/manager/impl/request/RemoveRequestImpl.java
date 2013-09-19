@@ -11,7 +11,6 @@ import java.util.concurrent.Callable;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.lock.LockMode;
-import org.jboss.forge.furnace.manager.impl.action.AbstractAddonActionRequest;
 import org.jboss.forge.furnace.manager.request.RemoveRequest;
 import org.jboss.forge.furnace.manager.spi.AddonInfo;
 import org.jboss.forge.furnace.repositories.MutableAddonRepository;
@@ -20,9 +19,9 @@ import org.jboss.forge.furnace.repositories.MutableAddonRepository;
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * 
  */
-public class RemoveRequestImpl extends AbstractAddonActionRequest implements RemoveRequest
+class RemoveRequestImpl extends AbstractAddonActionRequest implements RemoveRequest
 {
-   public RemoveRequestImpl(AddonInfo addonInfo, MutableAddonRepository repository, Furnace forge)
+   RemoveRequestImpl(AddonInfo addonInfo, MutableAddonRepository repository, Furnace forge)
    {
       super(addonInfo, repository, forge);
    }
