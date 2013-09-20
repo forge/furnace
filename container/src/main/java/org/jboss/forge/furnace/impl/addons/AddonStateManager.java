@@ -86,7 +86,7 @@ public class AddonStateManager
          public Set<AddonView> call() throws Exception
          {
             Set<AddonView> result = new HashSet<AddonView>();
-            for (AddonVertex vertex : graph.getGraph().vertexSet())
+            for (AddonVertex vertex : getCurrentGraph().getGraph().vertexSet())
             {
                if (addon.equals(vertex.getAddon()))
                {
