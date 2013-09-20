@@ -134,7 +134,7 @@ public class AddonStateManager
          @Override
          public MasterGraph call() throws Exception
          {
-            return graph;
+            return graph != null ? graph : new MasterGraph();
          }
       });
    }
