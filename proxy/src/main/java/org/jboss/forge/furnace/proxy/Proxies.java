@@ -95,7 +95,7 @@ public class Proxies
       {
          throw new IllegalStateException(
                   "Could not instantiate proxy for object [" + instance + "] of type [" + unwrappedInstanceType
-                           + "]. For optimal proxy compatability, ensure " +
+                           + "]. For optimal proxy compatibility, ensure " +
                            "that this type is an interface, or a class with a default constructor.", e);
       }
       catch (IllegalAccessException e)
@@ -177,7 +177,7 @@ public class Proxies
       {
          throw new IllegalStateException(
                   "Could not instantiate proxy for type [" + type
-                           + "]. For optimal proxy compatability, ensure " +
+                           + "]. For optimal proxy compatibility, ensure " +
                            "that this type is an interface, or a class with a default constructor.", e);
       }
       catch (IllegalAccessException e)
