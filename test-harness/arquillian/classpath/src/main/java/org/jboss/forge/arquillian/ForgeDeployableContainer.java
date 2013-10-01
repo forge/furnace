@@ -204,7 +204,7 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
    {
       File destDir = repository.getAddonBaseDir(addonToDeploy);
       destDir.mkdirs();
-      ShrinkWrapUtil.toFile(new File(destDir.getAbsolutePath() + "/" + archive.getName()), archive);
+      ShrinkWrapUtil.toFile(new File(destDir.getAbsolutePath(), archive.getName()), archive);
       ShrinkWrapUtil.unzip(destDir, archive);
       System.out.println("Deploying [" + addonToDeploy + "] to repository [" + repository + "]");
       repository.deploy(addonToDeploy, ((ForgeArchive) archive).getAddonDependencies(), new ArrayList<File>());
