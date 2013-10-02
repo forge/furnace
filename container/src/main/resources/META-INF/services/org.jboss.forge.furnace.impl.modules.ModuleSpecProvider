@@ -3,3 +3,4 @@ org.jboss.forge.furnace.impl.modules.providers.SunMiscClasspathSpec
 org.jboss.forge.furnace.impl.modules.providers.SunJDKClasspathSpec
 org.jboss.forge.furnace.impl.modules.providers.SystemClasspathSpec
 org.jboss.forge.furnace.impl.modules.providers.XPathJDKClasspathSpec
+org.jboss.forge.furnace.impl.modules.providers.XATransactionJDKClasspathSpec
