@@ -4,7 +4,7 @@
    <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>10</version>
+      <version>11</version>
    </parent>
 
    <groupId>org.jboss.forge.furnace</groupId>
@@ -52,6 +52,7 @@
       <version.jboss.modules>3</version.jboss.modules>
       <version.junit>4.11</version.junit>
       <version.org.jboss.logmanager.jboss-logmanager>1.4.1.Final</version.org.jboss.logmanager.jboss-logmanager>
+      <version.surefire.plugin>2.16</version.surefire.plugin>
       <version.xmlparser>1.0.0.Final</version.xmlparser>
    </properties>
 
@@ -183,56 +184,6 @@
       </dependency>
    </dependencies>
 
-   <repositories>
-      <repository>
-         <id>jboss-snapshots-repository-group</id>
-         <url>https://repository.jboss.org/nexus/content/repositories/snapshots/</url>
-         <layout>default</layout>
-         <releases>
-            <enabled>false</enabled>
-         </releases>
-         <snapshots>
-            <enabled>true</enabled>
-         </snapshots>
-      </repository>
-      <repository>
-         <id>jboss-public-repository-group</id>
-         <url>https://repository.jboss.org/nexus/content/groups/public/</url>
-         <layout>default</layout>
-         <releases>
-            <enabled>true</enabled>
-         </releases>
-         <snapshots>
-            <enabled>false</enabled>
-         </snapshots>
-      </repository>
-   </repositories>
-
-   <pluginRepositories>
-      <pluginRepository>
-         <id>jboss-snapshots-repository-group</id>
-         <url>https://repository.jboss.org/nexus/content/repositories/snapshots/</url>
-         <layout>default</layout>
-         <releases>
-            <enabled>false</enabled>
-         </releases>
-         <snapshots>
-            <enabled>true</enabled>
-         </snapshots>
-      </pluginRepository>
-      <pluginRepository>
-         <id>jboss-public-repository-group</id>
-         <url>https://repository.jboss.org/nexus/content/groups/public/</url>
-         <layout>default</layout>
-         <releases>
-            <enabled>true</enabled>
-         </releases>
-         <snapshots>
-            <enabled>false</enabled>
-         </snapshots>
-      </pluginRepository>
-   </pluginRepositories>
-
    <build>
       <plugins>
          <plugin>
@@ -265,11 +216,6 @@
          <plugins>
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
-               <artifactId>maven-dependency-plugin</artifactId>
-               <version>2.8</version>
-            </plugin>
-            <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
                <artifactId>maven-source-plugin</artifactId>
                <executions>
                   <execution>
@@ -283,7 +229,6 @@
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
                <artifactId>maven-jar-plugin</artifactId>
-               <version>${version.jar.plugin}</version>
                <configuration>
                   <archive>
                      <manifest>
@@ -318,7 +263,6 @@
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
                <artifactId>maven-javadoc-plugin</artifactId>
-               <version>2.8.1</version>
                <configuration>
                   <!-- Default configuration for all reports -->
                   <outputDirectory>${project.build.directory}/javadoc/${project.version}</outputDirectory>
@@ -343,9 +287,8 @@
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
                <artifactId>maven-surefire-plugin</artifactId>
-               <version>2.16</version>
                <configuration>
-                  <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=128m</argLine>
+                  <argLine>-Xms256m -Xmx512m -XX:MaxPermSize=160m</argLine>
                   <systemProperties>
                      <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
                   </systemProperties>
@@ -436,15 +379,6 @@
             </plugin>
          </plugins>
       </pluginManagement>
-
-      <extensions>
-         <extension>
-            <groupId>org.apache.maven.wagon</groupId>
-            <artifactId>wagon-webdav-jackrabbit</artifactId>
-            <version>1.0-beta-7</version>
-         </extension>
-      </extensions>
-
    </build>
 
    <reporting>
