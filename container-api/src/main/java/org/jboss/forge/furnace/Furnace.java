@@ -78,6 +78,12 @@ public interface Furnace
    public AddonRepository addRepository(AddonRepositoryMode mode, File repository);
 
    /**
+    * Add an {@link AddonRepository} to be scanned for deployed and enabled {@link Addon} instances. This method must
+    * not be called once {@link Furnace} is started.
+    */
+   public AddonRepository addRepository(AddonRepository repository);
+
+   /**
     * Get the current runtime API version of {@link Furnace}.
     */
    public Version getVersion();

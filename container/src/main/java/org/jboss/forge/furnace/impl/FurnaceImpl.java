@@ -344,17 +344,28 @@ public class FurnaceImpl implements Furnace
       Assert.notNull(mode, "Addon repository mode must not be null.");
       Assert.notNull(directory, "Addon repository directory must not be null.");
 
-      for (AddonRepository registeredRepo : repositories)
-      {
-         if (registeredRepo.getRootDirectory().equals(directory))
-         {
-            throw new IllegalArgumentException("There is already a repository defined with this path: " + directory);
-         }
-      }
       AddonRepository repository = AddonRepositoryImpl.forDirectory(this, directory);
 
       if (mode.isImmutable())
          repository = new ImmutableAddonRepository(repository);
+
+      return addRepository(repository);
+   }
+
+   @Override
+   public AddonRepository addRepository(AddonRepository repository)
+   {
+      assertNotAlive();
+
+      Assert.notNull(repository, "Addon repository must not be null.");
+
+      for (AddonRepository registeredRepo : repositories)
+      {
+         if (registeredRepo.getRootDirectory().equals(repository.getRootDirectory()))
+         {
+            throw new IllegalArgumentException("There is already a repository defined with this path: " + repository.getRootDirectory());
+         }
+      }
 
       this.repositories.add(repository);
       lastRepoVersionSeen.put(repository, 0);
