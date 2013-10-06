@@ -342,7 +342,7 @@ public class FurnaceImpl implements Furnace
       assertNotAlive();
 
       Assert.notNull(mode, "Addon repository mode must not be null.");
-      Assert.notNull(mode, "Addon repository directory must not be null.");
+      Assert.notNull(directory, "Addon repository directory must not be null.");
 
       for (AddonRepository registeredRepo : repositories)
       {
