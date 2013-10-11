@@ -60,7 +60,7 @@ public class AddonInstallMojo extends AbstractMojo
       }
       AddonRepository repository = forge.addRepository(AddonRepositoryMode.MUTABLE, addonRepository);
       AddonDependencyResolver addonResolver = new MavenAddonDependencyResolver(this.classifier);
-      AddonManager addonManager = new AddonManagerImpl(forge, addonResolver, false);
+      AddonManager addonManager = new AddonManagerImpl(forge, addonResolver);
 
       for (String addonId : addonIds)
       {

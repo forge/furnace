@@ -41,26 +41,11 @@ public class AddonManagerImpl implements AddonManager
 {
    private final Furnace furnace;
    private final AddonDependencyResolver resolver;
-   private final boolean updateSnapshotDependencies;
 
    public AddonManagerImpl(final Furnace forge, final AddonDependencyResolver resolver)
    {
       this.furnace = forge;
       this.resolver = resolver;
-      this.updateSnapshotDependencies = true;
-   }
-
-   /**
-    * Used by Arquillian
-    * 
-    * @param updateDependencies if forge should care about updating SNAPSHOT dependencies
-    */
-   public AddonManagerImpl(final Furnace forge, final AddonDependencyResolver resolver,
-            boolean updateSnapshotDependencies)
-   {
-      this.furnace = forge;
-      this.resolver = resolver;
-      this.updateSnapshotDependencies = updateSnapshotDependencies;
    }
 
    @Override
@@ -163,21 +148,14 @@ public class AddonManagerImpl implements AddonManager
       AddonId addon = addonInfo.getAddon();
       if (installedAddons.containsKey(addon))
       {
-         // Already contains the installed addon. Update ONLY if the version is SNAPSHOT
-         if (Versions.isSnapshot(addonInfo.getAddon().getVersion()) && updateSnapshotDependencies)
+         // Already contains the installed addon. Update ONLY if the version is SNAPSHOT and if it is the requested
+         // addon
+         if (Versions.isSnapshot(addonInfo.getAddon().getVersion()) && addonInfo.equals(requestedAddonInfo))
          {
             AddonRepository addonRepository = installedAddons.get(addon);
             if (repository.equals(addonRepository))
             {
-               // Update only if it is the requested addon
-               if (addonInfo.equals(requestedAddonInfo))
-               {
-                  request = createUpdateRequest(addonInfo, addonInfo, repository, furnace);
-               }
-               else
-               {
-                  request = null;
-               }
+               request = createUpdateRequest(addonInfo, addonInfo, repository, furnace);
             }
             else
             {
@@ -203,7 +181,7 @@ public class AddonManagerImpl implements AddonManager
          }
          if (differentVersionEntry != null)
          {
-            // TODO: Use Lincoln's new Version/Versions class
+            //TODO: Review condition below
             if (differentVersionEntry.getKey().getVersion().toString().compareTo(addon.getVersion().toString()) < 0)
             {
                if (repository.equals(differentVersionEntry.getValue()))

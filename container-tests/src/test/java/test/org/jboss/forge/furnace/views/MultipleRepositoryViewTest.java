@@ -91,7 +91,7 @@ public class MultipleRepositoryViewTest
       AddonRepository right = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir2);
 
       AddonDependencyResolver resolver = new MavenAddonDependencyResolver();
-      AddonManager manager = new AddonManagerImpl(furnace, resolver, false);
+      AddonManager manager = new AddonManagerImpl(furnace, resolver);
 
       AddonId no_dep = AddonId.from("test:no_dep", "1.0.0.Final");
       AddonId one_dep = AddonId.from("test:one_dep", "1.0.0.Final");
@@ -153,7 +153,7 @@ public class MultipleRepositoryViewTest
       AddonRepository left = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
       AddonRepository right = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir2);
       AddonDependencyResolver resolver = new MavenAddonDependencyResolver();
-      AddonManager manager = new AddonManagerImpl(furnace, resolver, false);
+      AddonManager manager = new AddonManagerImpl(furnace, resolver);
 
       AddonId no_dep = AddonId.from("test:no_dep", "1.0.0.Final");
       AddonId one_dep = AddonId.from("test:one_dep", "1.0.0.Final");
