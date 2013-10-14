@@ -46,30 +46,26 @@ class DeployRequestImpl extends AbstractAddonActionRequest implements DeployRequ
          @Override
          public Object call() throws Exception
          {
-            deploy(repository);
-            repository.enable(addonInfo.getAddon());
+            AddonId addon = addonInfo.getAddon();
+            Set<File> resourceJars = addonInfo.getResources();
+
+            if (resourceJars.isEmpty())
+            {
+               log.fine("No resource JARs found for " + addon);
+            }
+
+            Set<AddonDependencyEntry> addonDependencies = addonInfo.getDependencyEntries();
+            if (addonDependencies.isEmpty())
+            {
+               log.fine("No dependencies found for addon " + addon);
+            }
+            log.info("Deploying addon " + addon);
+            repository.deploy(addon, addonDependencies, resourceJars);
+            if (!Boolean.getBoolean("forge.repo.skip_enable"))
+               repository.enable(addonInfo.getAddon());
             return null;
          }
       });
-   }
-
-   protected void deploy(MutableAddonRepository repository)
-   {
-      AddonId addon = addonInfo.getAddon();
-      Set<File> resourceJars = addonInfo.getResources();
-
-      if (resourceJars.isEmpty())
-      {
-         log.fine("No resource JARs found for " + addon);
-      }
-
-      Set<AddonDependencyEntry> addonDependencies = addonInfo.getDependencyEntries();
-      if (addonDependencies.isEmpty())
-      {
-         log.fine("No dependencies found for addon " + addon);
-      }
-      log.info("Deploying addon " + addon);
-      repository.deploy(addon, addonDependencies, resourceJars);
    }
 
    @Override

@@ -21,8 +21,9 @@ import org.jboss.arquillian.container.test.api.ShouldThrowException;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentScenarioGenerator;
 import org.jboss.arquillian.test.spi.TestClass;
+import org.jboss.forge.arquillian.archive.DeploymentTypeSelector;
 import org.jboss.forge.arquillian.archive.ForgeRemoteAddon;
-import org.jboss.forge.arquillian.archive.RepositoryForgeArchive;
+import org.jboss.forge.arquillian.archive.RepositorySelector;
 import org.jboss.forge.arquillian.maven.ProjectHelper;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.util.Annotations;
@@ -42,16 +43,21 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
       for (Method deploymentMethod : deploymentMethods)
       {
          validate(deploymentMethod);
+         Strategy strategy = Strategy.ISOLATED;
+         if (Annotations.isAnnotationPresent(testClass.getJavaClass(), DeploymentStrategy.class))
+         {
+            strategy = Annotations.getAnnotation(testClass.getJavaClass(), DeploymentStrategy.class).value();
+         }
          if (deploymentMethod.isAnnotationPresent(Dependencies.class))
-            deployments.addAll(generateDependencyDeployments(testClass.getJavaClass(), deploymentMethod));
-         deployments.add(generateDeployment(deploymentMethod));
+            deployments.addAll(generateDependencyDeployments(testClass.getJavaClass(), deploymentMethod, strategy));
+         deployments.add(generateDeployment(deploymentMethod, strategy));
       }
 
       return deployments;
    }
 
    private Collection<DeploymentDescription> generateDependencyDeployments(Class<?> classUnderTest,
-            Method deploymentMethod)
+            Method deploymentMethod, Strategy strategy)
    {
       Dependencies dependency = deploymentMethod.getAnnotation(Dependencies.class);
       Collection<DeploymentDescription> deployments = new ArrayList<DeploymentDescription>();
@@ -77,6 +83,7 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
             }
             AddonId id = AddonId.from(addon.name(), version);
             ForgeRemoteAddon remoteAddon = ShrinkWrap.create(ForgeRemoteAddon.class).setAddonId(id);
+            remoteAddon.setDeploymentStrategyType(strategy);
 
             if (Annotations.isAnnotationPresent(deploymentMethod, DeployToRepository.class))
                remoteAddon.setAddonRepository(Annotations.getAnnotation(deploymentMethod, DeployToRepository.class)
@@ -176,9 +183,10 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
 
    /**
     * @param deploymentMethod
+    * @param strategy
     * @return
     */
-   private DeploymentDescription generateDeployment(Method deploymentMethod)
+   private DeploymentDescription generateDeployment(Method deploymentMethod, Strategy strategy)
    {
       TargetDescription target = generateTarget(deploymentMethod);
       ProtocolDescription protocol = generateProtocol(deploymentMethod);
@@ -188,10 +196,14 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
       if (Archive.class.isAssignableFrom(deploymentMethod.getReturnType()))
       {
          Archive<?> archive = invoke(Archive.class, deploymentMethod);
-         if (archive instanceof RepositoryForgeArchive)
+         if (archive instanceof DeploymentTypeSelector)
+         {
+            ((DeploymentTypeSelector) archive).setDeploymentStrategyType(strategy);
+         }
+         if (archive instanceof RepositorySelector)
          {
             if (Annotations.isAnnotationPresent(deploymentMethod, DeployToRepository.class))
-               ((RepositoryForgeArchive) archive).setAddonRepository(Annotations.getAnnotation(deploymentMethod,
+               ((RepositorySelector) archive).setAddonRepository(Annotations.getAnnotation(deploymentMethod,
                         DeployToRepository.class).value());
          }
          description = new DeploymentDescription(deploymentAnnotation.name(), archive);

@@ -6,6 +6,7 @@
  */
 package org.jboss.forge.arquillian.protocol;
 
+import org.jboss.forge.arquillian.DeploymentStrategyType;
 import org.jboss.forge.furnace.Furnace;
 
 /**
@@ -17,6 +18,7 @@ import org.jboss.forge.furnace.Furnace;
 public class FurnaceHolder
 {
    private Furnace furnace;
+   private DeploymentStrategyType strategy;
 
    public Furnace getFurnace()
    {
@@ -26,6 +28,16 @@ public class FurnaceHolder
    public void setFurnace(Furnace furnace)
    {
       this.furnace = furnace;
+   }
+
+   public DeploymentStrategyType getDeploymentStrategy()
+   {
+      return strategy;
+   }
+
+   public void setDeploymentStrategy(DeploymentStrategyType strategy)
+   {
+      this.strategy = strategy;
    }
 
 }

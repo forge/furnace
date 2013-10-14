@@ -8,13 +8,9 @@ import org.jboss.shrinkwrap.api.Archive;
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public interface ForgeRemoteAddon extends Archive<ForgeRemoteAddon>
+public interface ForgeRemoteAddon extends Archive<ForgeRemoteAddon>, RepositorySelector, DeploymentTypeSelector
 {
    AddonId getAddonId();
 
    ForgeRemoteAddon setAddonId(AddonId id);
-
-   String getAddonRepository();
-
-   ForgeRemoteAddon setAddonRepository(String repository);
 }

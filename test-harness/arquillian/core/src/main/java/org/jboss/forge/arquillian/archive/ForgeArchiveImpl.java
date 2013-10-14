@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import org.jboss.forge.arquillian.Strategy;
 import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.furnace.lifecycle.AddonLifecycleProvider;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
@@ -37,7 +38,8 @@ import org.jboss.shrinkwrap.impl.base.container.ContainerBase;
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class ForgeArchiveImpl extends ContainerBase<ForgeArchive> implements ForgeArchive, RepositoryForgeArchive
+public class ForgeArchiveImpl extends ContainerBase<ForgeArchive> implements ForgeArchive, RepositorySelector,
+         DeploymentTypeSelector
 {
    // -------------------------------------------------------------------------------------||
    // Class Members ----------------------------------------------------------------------||
@@ -193,7 +195,7 @@ public class ForgeArchiveImpl extends ContainerBase<ForgeArchive> implements For
    }
 
    @Override
-   public RepositoryForgeArchive setAddonRepository(String repository)
+   public RepositorySelector setAddonRepository(String repository)
    {
       this.repository = repository;
       return this;
@@ -215,6 +217,20 @@ public class ForgeArchiveImpl extends ContainerBase<ForgeArchive> implements For
       addAsServiceProvider(SERVICE_REGISTRATION_FILE_NAME,
                typeNames.toArray(new String[typeNames.size()]));
       return this;
+   }
+
+   private Strategy strategy;
+
+   @Override
+   public void setDeploymentStrategyType(Strategy strategy)
+   {
+      this.strategy = strategy;
+   }
+
+   @Override
+   public Strategy getDeploymentStrategyType()
+   {
+      return strategy;
    }
 
 }

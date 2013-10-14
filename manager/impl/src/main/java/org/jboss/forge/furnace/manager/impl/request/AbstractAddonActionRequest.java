@@ -55,20 +55,21 @@ public abstract class AbstractAddonActionRequest implements AddonActionRequest
       try
       {
          execute();
-         if (!furnace.getStatus().isStopped())
-         {
-            while (furnace.getStatus().isStarting() || !listener.isConfigurationScanned())
+         if (!Boolean.getBoolean("forge.repo.skip_enable"))
+            if (!furnace.getStatus().isStopped())
             {
-               try
+               while (furnace.getStatus().isStarting() || !listener.isConfigurationScanned())
                {
-                  Thread.sleep(100);
-               }
-               catch (InterruptedException e)
-               {
-                  throw new RuntimeException(e);
+                  try
+                  {
+                     Thread.sleep(100);
+                  }
+                  catch (InterruptedException e)
+                  {
+                     throw new RuntimeException(e);
+                  }
                }
             }
-         }
       }
       finally
       {

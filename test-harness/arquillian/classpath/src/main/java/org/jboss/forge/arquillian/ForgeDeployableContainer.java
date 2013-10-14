@@ -8,13 +8,11 @@ package org.jboss.forge.arquillian;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Future;
 
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
@@ -24,29 +22,18 @@ import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
 import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.annotation.Inject;
-import org.jboss.forge.arquillian.archive.ForgeArchive;
-import org.jboss.forge.arquillian.archive.ForgeRemoteAddon;
-import org.jboss.forge.arquillian.archive.RepositoryForgeArchive;
+import org.jboss.forge.arquillian.archive.DeploymentTypeSelector;
+import org.jboss.forge.arquillian.archive.RepositorySelector;
 import org.jboss.forge.arquillian.protocol.ForgeProtocolDescription;
 import org.jboss.forge.arquillian.protocol.FurnaceHolder;
-import org.jboss.forge.arquillian.util.ShrinkWrapUtil;
+import org.jboss.forge.arquillian.util.FurnaceUtil;
 import org.jboss.forge.furnace.Furnace;
-import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonId;
-import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.impl.FurnaceImpl;
 import org.jboss.forge.furnace.impl.util.Files;
-import org.jboss.forge.furnace.manager.AddonManager;
-import org.jboss.forge.furnace.manager.impl.AddonManagerImpl;
-import org.jboss.forge.furnace.manager.maven.addon.MavenAddonDependencyResolver;
-import org.jboss.forge.furnace.manager.spi.AddonDependencyResolver;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 import org.jboss.forge.furnace.repositories.MutableAddonRepository;
-import org.jboss.forge.furnace.spi.ContainerLifecycleListener;
-import org.jboss.forge.furnace.spi.ListenerRegistration;
-import org.jboss.forge.furnace.util.Addons;
-import org.jboss.forge.furnace.util.Callables;
 import org.jboss.forge.furnace.util.ClassLoaders;
 import org.jboss.forge.furnace.util.OperatingSystemUtils;
 import org.jboss.shrinkwrap.api.Archive;
@@ -75,7 +62,6 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
    @Override
    public ProtocolMetaData deploy(final Archive<?> archive) throws DeploymentException
    {
-
       Deployment deployment = deploymentInstance.get();
       final AddonId addonToDeploy = getAddonEntry(deployment);
 
@@ -85,75 +71,44 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
          cleanup();
       }
 
-      if (archive instanceof ForgeArchive)
-      {
-         final MutableAddonRepository target = selectTargetRepository(archive);
-
-         waitForConfigurationRescan(new Callable<Void>()
-         {
-            @Override
-            public Void call() throws Exception
-            {
-               deployToRepository(archive, target, addonToDeploy);
-               return null;
-            }
-         });
-
-         waitForDeploymentCompletion(deployment, addonToDeploy);
-      }
-      else if (archive instanceof ForgeRemoteAddon)
-      {
-         ForgeRemoteAddon remoteAddon = (ForgeRemoteAddon) archive;
-         AddonDependencyResolver resolver = new MavenAddonDependencyResolver();
-         AddonManager addonManager = new AddonManagerImpl(runnable.furnace, resolver);
-
-         AddonRepository target = selectTargetRepository(archive);
-         addonManager.install(remoteAddon.getAddonId(), target).perform();
-
-         waitForDeploymentCompletion(deployment, addonToDeploy);
-      }
-      else
-      {
-         throw new IllegalArgumentException(
-                  "Invalid Archive type. Ensure that your @Deployment method returns type 'ForgeArchive'.");
-      }
+      final MutableAddonRepository target = selectTargetRepository(archive);
+      DeploymentStrategyType strategy = selectDeploymentStrategy(archive);
+      strategy.deploy(runnable.furnace, target, deployment, archive, addonToDeploy);
 
       return new ProtocolMetaData().addContext(furnaceHolder);
    }
 
-   private <T> T waitForConfigurationRescan(Callable<T> action)
+   private DeploymentStrategyType selectDeploymentStrategy(Archive<?> archive)
    {
-
-      ConfigurationScanListener listener = new ConfigurationScanListener();
-      ListenerRegistration<ContainerLifecycleListener> registration = runnable.furnace
-               .addContainerLifecycleListener(listener);
-
-      T result = Callables.call(action);
-
-      while (runnable.furnace.getStatus().isStarting() || !listener.isConfigurationScanned())
+      Strategy strategyType = ((DeploymentTypeSelector) archive).getDeploymentStrategyType();
+      DeploymentStrategyType result = null;
+      switch (strategyType)
       {
-         try
-         {
-            Thread.sleep(100);
-         }
-         catch (InterruptedException e)
-         {
-            throw new RuntimeException("Sleep interrupted while waiting for configuration rescan.", e);
-         }
+      case ISOLATED:
+         result = new IsolatedDeploymentStrategy();
+         break;
+
+      case AGGREGATE:
+         result = new AggregateDeploymentStrategy();
+         break;
+
+      default:
+         break;
       }
 
-      registration.removeListener();
+      if (furnaceHolder.getDeploymentStrategy() == null)
+         furnaceHolder.setDeploymentStrategy(result);
 
-      return result;
+      return furnaceHolder.getDeploymentStrategy();
    }
 
    private MutableAddonRepository selectTargetRepository(Archive<?> archive)
    {
       MutableAddonRepository target = repository;
-      if (archive instanceof RepositoryForgeArchive
-               && ((RepositoryForgeArchive) archive).getAddonRepository() != null)
+      if (archive instanceof RepositorySelector
+               && ((RepositorySelector) archive).getAddonRepository() != null)
       {
-         String repositoryName = ((RepositoryForgeArchive) archive).getAddonRepository();
+         String repositoryName = ((RepositorySelector) archive).getAddonRepository();
          if (deploymentRepositories.get(repositoryName) == null)
          {
             stopContainer();
@@ -176,46 +131,12 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
       return target;
    }
 
-   private void waitForDeploymentCompletion(Deployment deployment, final AddonId addonToDeploy)
-            throws DeploymentException
-   {
-      AddonRegistry registry = runnable.getForge().getAddonRegistry();
-      Addon addon = registry.getAddon(addonToDeploy);
-      try
-      {
-         Future<Void> future = addon.getFuture();
-         future.get();
-         if (addon.getStatus().isFailed())
-         {
-            DeploymentException e = new DeploymentException("AddonDependency " + addonToDeploy
-                     + " failed to deploy.");
-            deployment.deployedWithError(e);
-            throw new DeploymentException("AddonDependency " + addonToDeploy + " failed to deploy.", e);
-         }
-      }
-      catch (Exception e)
-      {
-         deployment.deployedWithError(e);
-         throw new DeploymentException("AddonDependency " + addonToDeploy + " failed to deploy.", e);
-      }
-   }
-
-   private void deployToRepository(Archive<?> archive, MutableAddonRepository repository, final AddonId addonToDeploy)
-   {
-      File destDir = repository.getAddonBaseDir(addonToDeploy);
-      destDir.mkdirs();
-      ShrinkWrapUtil.toFile(new File(destDir.getAbsolutePath(), archive.getName()), archive);
-      ShrinkWrapUtil.unzip(destDir, archive);
-      System.out.println("Deploying [" + addonToDeploy + "] to repository [" + repository + "]");
-      repository.deploy(addonToDeploy, ((ForgeArchive) archive).getAddonDependencies(), new ArrayList<File>());
-      repository.enable(addonToDeploy);
-   }
-
    private void cleanup()
    {
       try
       {
          deploymentRepositories.clear();
+         furnaceHolder.setDeploymentStrategy(null);
          stop();
          start();
       }
@@ -290,7 +211,7 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
 
    private void startContainer()
    {
-      waitForConfigurationRescan(new Callable<Void>()
+      FurnaceUtil.waitForConfigurationRescan(runnable.furnace, new Callable<Void>()
       {
          @Override
          public Void call() throws Exception
@@ -326,24 +247,8 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
    {
       undeploying = true;
       AddonId addonToUndeploy = getAddonEntry(deploymentInstance.get());
-      AddonRegistry registry = runnable.getForge().getAddonRegistry();
-      System.out.println("Undeploying [" + addonToUndeploy + "] ... ");
-
-      try
-      {
-         Addon addonToStop = registry.getAddon(addonToUndeploy);
-         if (addonToStop.getStatus().isLoaded())
-            ((MutableAddonRepository) addonToStop.getRepository()).disable(addonToUndeploy);
-         Addons.waitUntilStopped(addonToStop);
-      }
-      catch (Exception e)
-      {
-         throw new DeploymentException("Failed to undeploy " + addonToUndeploy, e);
-      }
-      finally
-      {
-         repository.undeploy(addonToUndeploy);
-      }
+      DeploymentStrategyType strategy = selectDeploymentStrategy(archive);
+      strategy.undeploy(runnable.getForge(), repository, addonToUndeploy);
    }
 
    @Override

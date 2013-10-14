@@ -16,6 +16,7 @@
  */
 package org.jboss.forge.arquillian.archive;
 
+import org.jboss.forge.arquillian.Strategy;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;
@@ -28,6 +29,7 @@ public class ForgeRemoteAddonImpl extends ContainerBase<ForgeRemoteAddon> implem
 {
    private AddonId id;
    private String repository;
+   private Strategy strategy;
 
    @Override
    public AddonId getAddonId()
@@ -58,6 +60,18 @@ public class ForgeRemoteAddonImpl extends ContainerBase<ForgeRemoteAddon> implem
    public ForgeRemoteAddonImpl(Archive<?> archive)
    {
       super(ForgeRemoteAddon.class, archive);
+   }
+
+   @Override
+   public Strategy getDeploymentStrategyType()
+   {
+      return strategy;
+   }
+
+   @Override
+   public void setDeploymentStrategyType(Strategy strategy)
+   {
+      this.strategy = strategy;
    }
 
    @Override

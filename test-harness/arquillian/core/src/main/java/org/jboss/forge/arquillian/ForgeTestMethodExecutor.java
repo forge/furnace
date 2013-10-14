@@ -10,6 +10,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.test.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.test.spi.TestMethodExecutor;
 import org.jboss.arquillian.test.spi.TestResult;
@@ -31,7 +32,8 @@ import org.jboss.forge.furnace.util.ClassLoaders;
  */
 public class ForgeTestMethodExecutor implements ContainerMethodExecutor
 {
-   private Furnace forge;
+   private Furnace furnace;
+   private DeploymentStrategyType strategy;
 
    public ForgeTestMethodExecutor(ForgeProtocolConfiguration config, final FurnaceHolder holder)
    {
@@ -43,7 +45,8 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
       {
          throw new IllegalArgumentException("Furnace runtime must be provided");
       }
-      this.forge = holder.getFurnace();
+      this.furnace = holder.getFurnace();
+      this.strategy = holder.getDeploymentStrategy();
    }
 
    @Override
@@ -54,14 +57,23 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
          throw new IllegalArgumentException("TestMethodExecutor must be specified");
       }
 
+      try
+      {
+         strategy.beforeTestMethodExecution(furnace);
+      }
+      catch (DeploymentException e)
+      {
+         return new TestResult(Status.FAILED, e);
+      }
+
       Object testInstance = null;
       Class<?> testClass = null;
       try
       {
          final String testClassName = testMethodExecutor.getInstance().getClass().getName();
-         final AddonRegistry addonRegistry = forge.getAddonRegistry();
+         final AddonRegistry addonRegistry = furnace.getAddonRegistry();
 
-         waitUntilStable(forge);
+         waitUntilStable(furnace);
          System.out.println("Searching for test [" + testClassName + "]");
 
          for (Addon addon : addonRegistry.getAddons())
