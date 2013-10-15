@@ -45,12 +45,14 @@ public class ClassLoaders
 
    public static boolean containsClass(ClassLoader loader, Class<?> type)
    {
-      Assert.notNull(loader, "Class loader to inspect must not be null.");
-      Assert.notNull(type, "Class to find must not be null.");
+      if (loader == null)
+         throw new IllegalArgumentException("Class loader to inspect must not be null.");
+      if (type == null)
+         throw new IllegalArgumentException("Class to find must not be null.");
 
       try
       {
-         return loader.loadClass(type.getName()).equals(type);
+         return loader.loadClass(type.getName()) == type;
       }
       catch (ClassNotFoundException e)
       {
@@ -60,8 +62,10 @@ public class ClassLoaders
 
    public static boolean containsClass(ClassLoader loader, String type)
    {
-      Assert.notNull(loader, "Class loader to inspect must not be null.");
-      Assert.notNull(type, "Class to find must not be null.");
+      if (loader == null)
+         throw new IllegalArgumentException("Class loader to inspect must not be null.");
+      if (type == null)
+         throw new IllegalArgumentException("Class to find must not be null.");
 
       try
       {
@@ -76,8 +80,10 @@ public class ClassLoaders
 
    public static Class<?> loadClass(ClassLoader loader, String typeName)
    {
-      Assert.notNull(loader, "Class loader to inspect must not be null.");
-      Assert.notNull(typeName, "Class name to load must not be null.");
+      if (loader == null)
+         throw new IllegalArgumentException("Class loader to inspect must not be null.");
+      if (typeName == null)
+         throw new IllegalArgumentException("Class name to find must not be null.");
 
       try
       {
@@ -91,8 +97,10 @@ public class ClassLoaders
 
    public static Class<?> loadClass(ClassLoader loader, Class<?> type)
    {
-      Assert.notNull(loader, "Class loader to inspect must not be null.");
-      Assert.notNull(type, "Class to load must not be null.");
+      if (loader == null)
+         throw new IllegalArgumentException("Class loader to inspect must not be null.");
+      if (type == null)
+         throw new IllegalArgumentException("Class to find must not be null.");
 
       try
       {
@@ -106,8 +114,10 @@ public class ClassLoaders
 
    public static boolean ownsClass(ClassLoader loader, Class<?> type)
    {
-      Assert.notNull(loader, "Class loader to inspect must not be null.");
-      Assert.notNull(type, "Class to find must not be null.");
+      if (loader == null)
+         throw new IllegalArgumentException("Class loader to inspect must not be null.");
+      if (type == null)
+         throw new IllegalArgumentException("Class to find must not be null.");
 
       try
       {

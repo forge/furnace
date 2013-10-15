@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonRegistry;
@@ -32,8 +31,8 @@ import org.jboss.forge.furnace.util.Assert;
  */
 public class ImportedImpl<T> implements Imported<T>
 {
-   private Map<T, ExportedInstance<T>> instanceMap = new ConcurrentHashMap<T, ExportedInstance<T>>(
-            new WeakHashMap<T, ExportedInstance<T>>(new IdentityHashMap<T, ExportedInstance<T>>()));
+   private Map<T, ExportedInstance<T>> instanceMap = new WeakHashMap<T, ExportedInstance<T>>(
+            new IdentityHashMap<T, ExportedInstance<T>>());
 
    private AddonRegistry addonRegistry;
    private LockManager lock;
