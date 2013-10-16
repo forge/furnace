@@ -8,6 +8,8 @@ package org.jboss.forge.furnace.addons;
 
 import java.util.Set;
 
+import org.jboss.forge.furnace.event.PostStartup;
+import org.jboss.forge.furnace.event.PreShutdown;
 import org.jboss.forge.furnace.services.Imported;
 
 /**
@@ -47,4 +49,10 @@ public interface AddonRegistry extends AddonView
     * @return the {@link Set} of {@link Class} types (Never null.)
     */
    <T> Set<Class<T>> getExportedTypes(Class<T> type);
+
+   /**
+    * Return the current version of this {@link AddonRegistry}, which is incremented on every addon {@link PostStartup}
+    * and {@link PreShutdown} event for registered {@link Addon} instances. (Starts at 0 and counts up.)
+    */
+   long getVersion();
 }

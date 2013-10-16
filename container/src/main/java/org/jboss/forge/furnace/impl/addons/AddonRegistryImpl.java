@@ -169,6 +169,12 @@ public class AddonRegistryImpl implements AddonRegistry
    }
 
    @Override
+   public long getVersion()
+   {
+      return manager.getVersion(this);
+   }
+
+   @Override
    public String toString()
    {
       StringBuilder builder = new StringBuilder();

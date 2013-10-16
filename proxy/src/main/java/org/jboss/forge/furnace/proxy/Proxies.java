@@ -21,7 +21,7 @@ import javassist.util.proxy.ProxyObject;
  */
 public class Proxies
 {
-   private static Map<Class<?>, Class<?>> cache = new WeakHashMap<Class<?>, Class<?>>();
+   private static Map<Integer, Class<?>> cache = new WeakHashMap<Integer, Class<?>>();
 
    private static MethodFilter filter = new MethodFilter()
    {
@@ -46,16 +46,16 @@ public class Proxies
    @SuppressWarnings("unchecked")
    public static <T> T enhance(final ClassLoader loader, Object instance, ForgeProxy handler)
    {
-      Class<?> unwrappedInstanceType = Proxies.unwrapProxyTypes(instance.getClass(), loader);
+      Class<?> type = Proxies.unwrapProxyTypes(instance.getClass(), loader);
 
       Object result = null;
-      Class<?> proxyType = cache.get(unwrappedInstanceType);
+      Class<?> proxyType = cache.get(type.hashCode());
       if (proxyType == null)
       {
          Class<?>[] hierarchy = null;
          Class<?> superclass = null;
 
-         hierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(loader, unwrappedInstanceType);
+         hierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(loader, type);
          if (hierarchy == null || hierarchy.length == 0)
             throw new IllegalArgumentException("Must specify at least one non-final type to enhance for Object: "
                      + instance + " of type " + instance.getClass());
@@ -93,7 +93,7 @@ public class Proxies
 
          proxyType = f.createClass();
 
-         cache.put(unwrappedInstanceType, proxyType);
+         cache.put(type.hashCode(), proxyType);
       }
 
       try
@@ -103,7 +103,7 @@ public class Proxies
       catch (InstantiationException e)
       {
          throw new IllegalStateException(
-                  "Could not instantiate proxy for object [" + instance + "] of type [" + unwrappedInstanceType
+                  "Could not instantiate proxy for object [" + instance + "] of type [" + type
                            + "]. For optimal proxy compatibility, ensure " +
                            "that this type is an interface, or a class with a default constructor.", e);
       }
@@ -131,10 +131,9 @@ public class Proxies
    {
       Object result = null;
 
-      Class<?> proxyType = cache.get(type);
+      Class<?> proxyType = cache.get(type.hashCode());
       if (proxyType == null)
       {
-
          Class<?>[] hierarchy = null;
          Class<?> superclass = null;
 
@@ -161,7 +160,7 @@ public class Proxies
 
          proxyType = f.createClass();
 
-         cache.put(type, proxyType);
+         cache.put(type.hashCode(), proxyType);
       }
 
       try

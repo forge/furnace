@@ -10,8 +10,11 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -50,7 +53,7 @@ public class AddonLifecycleManager
    private AddonStateManager stateManager;
 
    private Set<Addon> addons = Sets.getConcurrentSet();
-   private final Set<AddonView> views = Sets.getConcurrentSet();
+   private final Map<AddonView, Long> views = new ConcurrentHashMap<AddonView, Long>();
    private final AtomicInteger starting = new AtomicInteger(-1);
    private final ExecutorService executor = Executors.newCachedThreadPool();
 
@@ -68,6 +71,12 @@ public class AddonLifecycleManager
       this.loader = new AddonLoader(furnace, this, stateManager, moduleLoader);
 
       logger.log(Level.FINE, "Instantiated AddonRTegistryImpl: " + this);
+   }
+
+   public long getVersion(AddonView view)
+   {
+      Long version = views.get(view);
+      return version == null ? 0 : version;
    }
 
    public Addon getAddon(Set<AddonView> views, AddonId id)
@@ -165,7 +174,7 @@ public class AddonLifecycleManager
          {
             MasterGraph master = new MasterGraph();
 
-            for (AddonView view : views)
+            for (AddonView view : views.keySet())
             {
                if (starting.get() == -1)
                   starting.set(0);
@@ -205,6 +214,18 @@ public class AddonLifecycleManager
    public void stopAddon(Addon addon)
    {
       Callables.call(new StopAddonCallable(stateManager, addon));
+      incrementViewVersions(addon);
+   }
+
+   private void incrementViewVersions(Addon addon)
+   {
+      for (Entry<AddonView, Long> entry : views.entrySet())
+      {
+         if (stateManager.getViewsOf(addon).contains(entry.getKey()))
+         {
+            entry.setValue(entry.getValue() + 1);
+         }
+      }
    }
 
    public void stopAll()
@@ -231,6 +252,7 @@ public class AddonLifecycleManager
    public void finishedStarting(Addon addon)
    {
       starting.decrementAndGet();
+      incrementViewVersions(addon);
    }
 
    /**
@@ -262,7 +284,7 @@ public class AddonLifecycleManager
 
    public void addView(AddonView view)
    {
-      this.views.add(view);
+      this.views.put(view, 0l);
    }
 
    public AddonRegistry findView(AddonRepository... repositories)
@@ -270,7 +292,7 @@ public class AddonLifecycleManager
       AddonRegistry result = null;
       List<AddonRepository> furnaceRepositories = furnace.getRepositories();
 
-      for (AddonView view : views)
+      for (AddonView view : views.keySet())
       {
          Set<AddonRepository> viewRepositories = view.getRepositories();
          if (repositories == null || repositories.length == 0)
@@ -293,7 +315,7 @@ public class AddonLifecycleManager
 
    public void removeView(AddonView view)
    {
-      if (!views.contains(view))
+      if (!views.keySet().contains(view))
          throw new IllegalArgumentException("The given view does not belong to this Furnace instance.");
    }
 

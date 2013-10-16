@@ -7,7 +7,6 @@
 package org.jboss.forge.furnace.impl.addons;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -25,6 +24,7 @@ import org.jboss.forge.furnace.services.Imported;
 import org.jboss.forge.furnace.spi.ExportedInstance;
 import org.jboss.forge.furnace.spi.ServiceRegistry;
 import org.jboss.forge.furnace.util.Assert;
+import org.jboss.forge.furnace.util.Sets;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
@@ -38,6 +38,9 @@ public class ImportedImpl<T> implements Imported<T>
    private LockManager lock;
    private Class<T> type;
    private String typeName;
+
+   private Set<ExportedInstance<T>> instanceCache = Sets.getConcurrentSet();
+   private long version = -1;
 
    public ImportedImpl(AddonRegistry addonRegistry, LockManager lock, Class<T> type)
    {
@@ -146,21 +149,25 @@ public class ImportedImpl<T> implements Imported<T>
          @Override
          public Set<ExportedInstance<T>> call() throws Exception
          {
-            Set<ExportedInstance<T>> result = new HashSet<ExportedInstance<T>>();
-
-            for (Addon addon : addonRegistry.getAddons())
+            if (addonRegistry.getVersion() != version)
             {
-               if (AddonStatus.STARTED.equals(addon.getStatus()))
+               version = addonRegistry.getVersion();
+               instanceCache.clear();
+
+               for (Addon addon : addonRegistry.getAddons())
                {
-                  ServiceRegistry serviceRegistry = addon.getServiceRegistry();
-                  if (type != null)
-                     result.addAll(serviceRegistry.getExportedInstances(type));
-                  else
-                     result.addAll((Collection) serviceRegistry.getExportedInstances(typeName));
+                  if (AddonStatus.STARTED.equals(addon.getStatus()))
+                  {
+                     ServiceRegistry serviceRegistry = addon.getServiceRegistry();
+                     if (type != null)
+                        instanceCache.addAll(serviceRegistry.getExportedInstances(type));
+                     else
+                        instanceCache.addAll((Collection) serviceRegistry.getExportedInstances(typeName));
+                  }
                }
             }
 
-            return result;
+            return instanceCache;
          }
       });
    }
