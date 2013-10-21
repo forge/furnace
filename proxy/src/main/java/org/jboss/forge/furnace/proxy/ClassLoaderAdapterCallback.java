@@ -348,12 +348,12 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
          final Class<?> delegateParameterType = delegateMethod.getParameterTypes()[i];
          final Object parameterValue = args[i];
 
-         parameterValues.add(enhanceSingleParamterValue(delegateMethod, delegateParameterType, parameterValue));
+         parameterValues.add(enhanceSingleParameterValue(delegateMethod, delegateParameterType, parameterValue));
       }
       return parameterValues;
    }
 
-   private Object enhanceSingleParamterValue(final Method delegateMethod, final Class<?> delegateParameterType,
+   private Object enhanceSingleParameterValue(final Method delegateMethod, final Class<?> delegateParameterType,
             final Object parameterValue)
    {
       if (parameterValue != null)
@@ -433,7 +433,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                            array.length);
                   for (int j = 0; j < array.length; j++)
                   {
-                     delegateArray[j] = enhanceSingleParamterValue(delegateMethod,
+                     delegateArray[j] = enhanceSingleParameterValue(delegateMethod,
                               delegateParameterType.getComponentType(), array[j]);
                   }
                   return delegateArray;
