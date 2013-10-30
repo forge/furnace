@@ -167,6 +167,7 @@ public class BootstrapClassLoader extends URLClassLoader
                            ).toURL());
                }
             }
+            zip.close();
          }
          catch (ZipException e)
          {
