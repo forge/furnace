@@ -40,11 +40,6 @@ import org.jboss.modules.log.StreamModuleLogger;
  */
 public class FurnaceImpl implements Furnace
 {
-   {
-      if (System.getProperty("modules.ignore.jdk.factory") == null)
-         System.setProperty("modules.ignore.jdk.factory", "true");
-   }
-
    private static Logger logger = Logger.getLogger(FurnaceImpl.class.getName());
 
    private volatile boolean alive = false;
@@ -52,13 +47,13 @@ public class FurnaceImpl implements Furnace
 
    private boolean serverMode = true;
    private AddonLifecycleManager manager;
-   private List<ContainerLifecycleListener> registeredListeners = new ArrayList<ContainerLifecycleListener>();
-   private List<ListenerRegistration<ContainerLifecycleListener>> loadedListenerRegistrations = new ArrayList<ListenerRegistration<ContainerLifecycleListener>>();
+   private final List<ContainerLifecycleListener> registeredListeners = new ArrayList<ContainerLifecycleListener>();
+   private final List<ListenerRegistration<ContainerLifecycleListener>> loadedListenerRegistrations = new ArrayList<ListenerRegistration<ContainerLifecycleListener>>();
 
    private ClassLoader loader;
 
-   private List<AddonRepository> repositories = new ArrayList<AddonRepository>();
-   private Map<AddonRepository, Integer> lastRepoVersionSeen = new HashMap<AddonRepository, Integer>();
+   private final List<AddonRepository> repositories = new ArrayList<AddonRepository>();
+   private final Map<AddonRepository, Integer> lastRepoVersionSeen = new HashMap<AddonRepository, Integer>();
 
    private final LockManager lock = new LockManagerImpl();
 
@@ -363,7 +358,8 @@ public class FurnaceImpl implements Furnace
       {
          if (registeredRepo.getRootDirectory().equals(repository.getRootDirectory()))
          {
-            throw new IllegalArgumentException("There is already a repository defined with this path: " + repository.getRootDirectory());
+            throw new IllegalArgumentException("There is already a repository defined with this path: "
+                     + repository.getRootDirectory());
          }
       }
 
