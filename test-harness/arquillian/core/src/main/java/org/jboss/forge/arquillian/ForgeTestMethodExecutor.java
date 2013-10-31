@@ -31,7 +31,7 @@ import org.jboss.forge.furnace.util.ClassLoaders;
  */
 public class ForgeTestMethodExecutor implements ContainerMethodExecutor
 {
-   private Furnace forge;
+   private Furnace furnace;
 
    public ForgeTestMethodExecutor(ForgeProtocolConfiguration config, final FurnaceHolder holder)
    {
@@ -43,142 +43,52 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
       {
          throw new IllegalArgumentException("Furnace runtime must be provided");
       }
-      this.forge = holder.getFurnace();
+      this.furnace = holder.getFurnace();
    }
 
    @Override
    public TestResult invoke(final TestMethodExecutor testMethodExecutor)
    {
-      if (testMethodExecutor == null)
-      {
-         throw new IllegalArgumentException("TestMethodExecutor must be specified");
-      }
-
-      Object testInstance = null;
-      Class<?> testClass = null;
       try
       {
-         final String testClassName = testMethodExecutor.getInstance().getClass().getName();
-         final AddonRegistry addonRegistry = forge.getAddonRegistry();
-
-         waitUntilStable(forge);
-         System.out.println("Searching for test [" + testClassName + "]");
-
-         for (Addon addon : addonRegistry.getAddons())
+         if (testMethodExecutor == null)
          {
-            if (addon.getStatus().isStarted())
-            {
-               ServiceRegistry registry = addon.getServiceRegistry();
-               ExportedInstance<?> exportedInstance = registry.getExportedInstance(testClassName);
-
-               if (exportedInstance != null)
-               {
-                  if (testInstance == null)
-                  {
-                     testInstance = exportedInstance.get();
-                     testClass = ClassLoaders.loadClass(addon.getClassLoader(), testClassName);
-                  }
-                  else
-                  {
-                     throw new IllegalStateException(
-                              "Multiple test classes found in deployed addons. " +
-                                       "You must have only one @Deployment(testable=true\"); deployment");
-                  }
-               }
-            }
+            throw new IllegalArgumentException("TestMethodExecutor must be specified");
          }
-      }
-      catch (Exception e)
-      {
-         String message = "Error launching test "
-                  + testMethodExecutor.getInstance().getClass().getName() + "."
-                  + testMethodExecutor.getMethod().getName() + "()";
-         System.out.println(message);
-         throw new IllegalStateException(message, e);
-      }
 
-      if (testInstance != null)
-      {
+         Object testInstance = null;
+         Class<?> testClass = null;
          try
          {
-            TestResult result = null;
-            try
+            final String testClassName = testMethodExecutor.getInstance().getClass().getName();
+            final AddonRegistry addonRegistry = furnace.getAddonRegistry();
+
+            waitUntilStable(furnace);
+            System.out.println("Searching for test [" + testClassName + "]");
+
+            for (Addon addon : addonRegistry.getAddons())
             {
-               try
+               if (addon.getStatus().isStarted())
                {
-                  testInstance = ClassLoaderAdapterCallback.enhance(getClass().getClassLoader(),
-                           testInstance.getClass().getClassLoader(), testInstance, testClass);
-                  testInstance.getClass();
-               }
-               catch (Exception e)
-               {
-                  System.out.println("Could not enhance test class. Falling back to un-proxied invocation.");
-               }
+                  ServiceRegistry registry = addon.getServiceRegistry();
+                  ExportedInstance<?> exportedInstance = registry.getExportedInstance(testClassName);
 
-               Method method = testInstance.getClass().getMethod(testMethodExecutor.getMethod().getName());
-               Annotation[] annotations = method.getAnnotations();
-
-               for (Annotation annotation : annotations)
-               {
-                  if ("org.junit.Ignore".equals(annotation.getClass().getName()))
+                  if (exportedInstance != null)
                   {
-                     result = new TestResult(Status.SKIPPED);
-                  }
-               }
-
-               if (result == null)
-               {
-                  try
-                  {
-                     System.out.println("Executing test method: "
-                              + testMethodExecutor.getInstance().getClass().getName() + "."
-                              + testMethodExecutor.getMethod().getName() + "()");
-
-                     try
+                     if (testInstance == null)
                      {
-                        invokeBefore(testInstance.getClass(), testInstance);
-                        method.invoke(testInstance);
+                        testInstance = exportedInstance.get();
+                        testClass = ClassLoaders.loadClass(addon.getClassLoader(), testClassName);
                      }
-                     catch (Exception e)
-                     {
-                        throw e;
-                     }
-                     finally
-                     {
-                        invokeAfter(testInstance.getClass(), testInstance);
-                     }
-
-                     result = new TestResult(Status.PASSED);
-                  }
-                  catch (InvocationTargetException e)
-                  {
-                     if (e.getCause() != null && e.getCause() instanceof Exception)
-                        throw (Exception) e.getCause();
                      else
-                        throw e;
+                     {
+                        throw new IllegalStateException(
+                                 "Multiple test classes found in deployed addons. " +
+                                          "You must have only one @Deployment(testable=true\"); deployment");
+                     }
                   }
                }
             }
-            catch (AssertionError e)
-            {
-               result = new TestResult(Status.FAILED, e);
-            }
-            catch (Exception e)
-            {
-               result = new TestResult(Status.FAILED, e);
-
-               Throwable cause = e.getCause();
-               while (cause != null)
-               {
-                  if (cause instanceof AssertionError)
-                  {
-                     result = new TestResult(Status.FAILED, cause);
-                     break;
-                  }
-                  cause = cause.getCause();
-               }
-            }
-            return result;
          }
          catch (Exception e)
          {
@@ -188,13 +98,110 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
             System.out.println(message);
             throw new IllegalStateException(message, e);
          }
+
+         if (testInstance != null)
+         {
+            try
+            {
+               TestResult result = null;
+               try
+               {
+                  try
+                  {
+                     testInstance = ClassLoaderAdapterCallback.enhance(getClass().getClassLoader(),
+                              testInstance.getClass().getClassLoader(), testInstance, testClass);
+                     testInstance.getClass();
+                  }
+                  catch (Exception e)
+                  {
+                     System.out.println("Could not enhance test class. Falling back to un-proxied invocation.");
+                  }
+
+                  Method method = testInstance.getClass().getMethod(testMethodExecutor.getMethod().getName());
+                  Annotation[] annotations = method.getAnnotations();
+
+                  for (Annotation annotation : annotations)
+                  {
+                     if ("org.junit.Ignore".equals(annotation.getClass().getName()))
+                     {
+                        result = new TestResult(Status.SKIPPED);
+                     }
+                  }
+
+                  if (result == null)
+                  {
+                     try
+                     {
+                        System.out.println("Executing test method: "
+                                 + testMethodExecutor.getInstance().getClass().getName() + "."
+                                 + testMethodExecutor.getMethod().getName() + "()");
+
+                        try
+                        {
+                           invokeBefore(testInstance.getClass(), testInstance);
+                           method.invoke(testInstance);
+                        }
+                        catch (Exception e)
+                        {
+                           throw e;
+                        }
+                        finally
+                        {
+                           invokeAfter(testInstance.getClass(), testInstance);
+                        }
+
+                        result = new TestResult(Status.PASSED);
+                     }
+                     catch (InvocationTargetException e)
+                     {
+                        if (e.getCause() != null && e.getCause() instanceof Exception)
+                           throw (Exception) e.getCause();
+                        else
+                           throw e;
+                     }
+                  }
+               }
+               catch (AssertionError e)
+               {
+                  result = new TestResult(Status.FAILED, e);
+               }
+               catch (Exception e)
+               {
+                  result = new TestResult(Status.FAILED, e);
+
+                  Throwable cause = e.getCause();
+                  while (cause != null)
+                  {
+                     if (cause instanceof AssertionError)
+                     {
+                        result = new TestResult(Status.FAILED, cause);
+                        break;
+                     }
+                     cause = cause.getCause();
+                  }
+               }
+               return result;
+            }
+            catch (Exception e)
+            {
+               String message = "Error launching test "
+                        + testMethodExecutor.getInstance().getClass().getName() + "."
+                        + testMethodExecutor.getMethod().getName() + "()";
+               System.out.println(message);
+               throw new IllegalStateException(message, e);
+            }
+         }
+         else
+         {
+            throw new IllegalStateException(
+                     "Test runner could not locate test class in any deployment. "
+                              + "Verify that your test case is deployed in an addon that supports remote " +
+                              "services (Did you forget beans.xml in your deployment?)");
+         }
       }
-      else
+      finally
       {
-         throw new IllegalStateException(
-                  "Test runner could not locate test class in any deployment. "
-                           + "Verify that your test case is deployed in an addon that supports remote " +
-                           "services (Did you forget beans.xml in your deployment?)");
+         furnace = null;
       }
    }
 
