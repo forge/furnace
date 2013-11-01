@@ -24,7 +24,7 @@ import org.jboss.modules.ModuleIdentifier;
 class AddonModuleJarFileCache
 {
    private static final Logger logger = Logger.getLogger(AddonModuleJarFileCache.class.getName());
-   private Map<ModuleIdentifier, Set<JarFile>> map = new ConcurrentHashMap<ModuleIdentifier, Set<JarFile>>();
+   private final Map<ModuleIdentifier, Set<JarFile>> map = new ConcurrentHashMap<ModuleIdentifier, Set<JarFile>>();
 
    public void closeJarFileReferences(ModuleIdentifier id)
    {
@@ -62,6 +62,15 @@ class AddonModuleJarFileCache
       }
 
       files.add(file);
+   }
+
+   public void dispose()
+   {
+      for (ModuleIdentifier id : map.keySet())
+      {
+         closeJarFileReferences(id);
+      }
+      map.clear();
    }
 
 }

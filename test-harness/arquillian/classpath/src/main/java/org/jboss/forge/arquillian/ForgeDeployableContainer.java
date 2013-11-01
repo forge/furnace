@@ -49,6 +49,7 @@ import org.jboss.forge.furnace.util.Addons;
 import org.jboss.forge.furnace.util.Callables;
 import org.jboss.forge.furnace.util.ClassLoaders;
 import org.jboss.forge.furnace.util.OperatingSystemUtils;
+import org.jboss.forge.furnace.util.SecurityActions;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 
@@ -60,14 +61,14 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
    @Inject
    private Instance<Deployment> deploymentInstance;
 
-   private FurnaceHolder furnaceHolder = new FurnaceHolder();
+   private final FurnaceHolder furnaceHolder = new FurnaceHolder();
    private ForgeRunnable runnable;
    private File addonDir;
 
    private MutableAddonRepository repository;
-   private Map<String, MutableAddonRepository> deploymentRepositories = new ConcurrentHashMap<String, MutableAddonRepository>();
+   private final Map<String, MutableAddonRepository> deploymentRepositories = new ConcurrentHashMap<String, MutableAddonRepository>();
 
-   private Map<Deployment, AddonId> deployedAddons = new HashMap<Deployment, AddonId>();
+   private final Map<Deployment, AddonId> deployedAddons = new HashMap<Deployment, AddonId>();
    private Thread thread;
 
    private boolean undeploying = false;
@@ -215,7 +216,6 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
    {
       try
       {
-         deploymentRepositories.clear();
          stop();
          start();
       }
@@ -318,7 +318,12 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
 
    private void stopContainer()
    {
+
+      this.repository = null;
+      this.deployedAddons.clear();
+      this.deploymentRepositories.clear();
       this.runnable.stop();
+      this.thread = null;
    }
 
    @Override
@@ -354,8 +359,8 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
 
    private class ForgeRunnable implements Runnable
    {
-      private Furnace furnace;
-      private ClassLoader loader;
+      private final Furnace furnace;
+      private final ClassLoader loader;
 
       public ForgeRunnable(ClassLoader loader)
       {
@@ -380,7 +385,9 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
                {
                   furnace.setServerMode(true);
                   furnace.start(loader);
-                  return furnace;
+
+                  SecurityActions.cleanupThreadLocals(thread);
+                  return null;
                }
             });
          }

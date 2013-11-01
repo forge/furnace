@@ -25,6 +25,7 @@ import org.jboss.forge.furnace.lifecycle.ControlType;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.util.Addons;
 import org.jboss.forge.furnace.util.ClassLoaders;
+import org.jboss.forge.furnace.util.SecurityActions;
 
 /**
  * Loads an {@link Addon}
@@ -35,11 +36,11 @@ public final class AddonRunnable implements Runnable
    private static final Logger logger = Logger.getLogger(AddonRunnable.class.getName());
 
    private boolean shutdownRequested = false;
-   private Furnace furnace;
-   private Addon addon;
+   private final Furnace furnace;
+   private final Addon addon;
 
-   private AddonLifecycleManager lifecycleManager;
-   private AddonStateManager stateManager;
+   private final AddonLifecycleManager lifecycleManager;
+   private final AddonStateManager stateManager;
 
    private AddonLifecycleProviderEntry lifecycleProviderEntry;
 
@@ -108,6 +109,7 @@ public final class AddonRunnable implements Runnable
       finally
       {
          lifecycleManager.finishedStarting(addon);
+         SecurityActions.cleanupThreadLocals(Thread.currentThread());
          currentThread.setName(name);
          currentThread.setContextClassLoader(null);
       }
@@ -327,8 +329,8 @@ public final class AddonRunnable implements Runnable
 
    private class AddonLifecycleProviderEntry
    {
-      private AddonLifecycleProvider provider;
-      private Addon addon;
+      private final AddonLifecycleProvider provider;
+      private final Addon addon;
 
       public AddonLifecycleProviderEntry(Addon addon, AddonLifecycleProvider value)
       {

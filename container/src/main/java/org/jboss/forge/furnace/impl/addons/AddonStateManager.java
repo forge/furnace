@@ -25,12 +25,20 @@ public class AddonStateManager
 {
    private LockManager lock;
    private MasterGraph graph;
-   private Map<Addon, AddonState> states = new HashMap<Addon, AddonState>();
+   private final Map<Addon, AddonState> states = new HashMap<Addon, AddonState>();
    private AddonModuleLoader loader;
 
    public AddonStateManager(LockManager lock)
    {
       this.lock = lock;
+   }
+
+   public void dispose()
+   {
+      this.lock = null;
+      this.graph = null;
+      this.states.clear();
+      this.loader = null;
    }
 
    public void setModuleLoader(AddonModuleLoader loader)

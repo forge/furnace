@@ -40,6 +40,15 @@ class PlexusContainer
       }
    }
 
+   public void shutdown()
+   {
+      if (plexusContainer != null)
+      {
+         plexusContainer.dispose();
+         plexusContainer = null;
+      }
+   }
+
    private org.codehaus.plexus.PlexusContainer getPlexusContainer() throws Exception
    {
       if (plexusContainer == null)

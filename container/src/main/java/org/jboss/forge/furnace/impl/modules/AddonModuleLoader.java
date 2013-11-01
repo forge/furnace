@@ -53,13 +53,13 @@ public class AddonModuleLoader extends ModuleLoader
 
    private Iterable<ModuleSpecProvider> moduleProviders;
 
-   private AddonModuleIdentifierCache moduleCache;
-   private AddonModuleJarFileCache moduleJarFileCache;
+   private final AddonModuleIdentifierCache moduleCache;
+   private final AddonModuleJarFileCache moduleJarFileCache;
 
    private AddonLifecycleManager lifecycleManager;
    private AddonStateManager stateManager;
 
-   private ThreadLocal<Addon> currentAddon = new ThreadLocal<Addon>();
+   private final ThreadLocal<Addon> currentAddon = new ThreadLocal<Addon>();
 
    private Furnace furnace;
 
@@ -71,6 +71,16 @@ public class AddonModuleLoader extends ModuleLoader
       this.moduleCache = new AddonModuleIdentifierCache();
       this.moduleJarFileCache = new AddonModuleJarFileCache();
       installModuleMBeanServer();
+   }
+
+   public void dispose()
+   {
+      this.furnace = null;
+      this.lifecycleManager = null;
+      this.stateManager = null;
+      this.moduleCache.dispose();
+      this.moduleJarFileCache.dispose();
+      this.moduleProviders = null;
    }
 
    /**

@@ -34,12 +34,6 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
 {
    Map<String, String> dependencyMap;
 
-   ProjectHelper projectHelper;
-   
-   public ForgeDeploymentScenarioGenerator() {
-      this.projectHelper = new ProjectHelper();
-   }
-   
    @Override
    public List<DeploymentDescription> generate(TestClass testClass)
    {
@@ -105,6 +99,7 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
     */
    private String resolveVersionFromPOM(Class<?> classUnderTest, String name)
    {
+      ProjectHelper projectHelper = new ProjectHelper();
       if (dependencyMap == null)
       {
          dependencyMap = new HashMap<String, String>();

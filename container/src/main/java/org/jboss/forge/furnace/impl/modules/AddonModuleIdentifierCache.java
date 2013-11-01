@@ -22,11 +22,16 @@ import org.jboss.modules.ModuleIdentifier;
  */
 class AddonModuleIdentifierCache
 {
-   private Map<Addon, ModuleIdentifier> map = new HashMap<Addon, ModuleIdentifier>();
+   private final Map<Addon, ModuleIdentifier> map = new HashMap<Addon, ModuleIdentifier>();
 
    public void clear(Addon addon)
    {
       map.remove(addon);
+   }
+
+   public void dispose()
+   {
+      map.clear();
    }
 
    public ModuleIdentifier getModuleId(Addon addon)

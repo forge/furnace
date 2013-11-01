@@ -41,14 +41,12 @@ import org.jboss.forge.furnace.manager.maven.MavenContainer;
 
 public class ProjectHelper
 {
-   private MavenContainer mavenContainer;
-   private PlexusContainer plexus;
-   private ProjectBuildingRequest projectBuildingRequest;
+   private final MavenContainer mavenContainer;
+   private ProjectBuildingRequest request;
 
    public ProjectHelper()
    {
       this.mavenContainer = new MavenContainer();
-      this.plexus = new PlexusContainer();
    }
 
    public Model loadPomFromFile(File pomFile, String... profiles)
@@ -88,108 +86,117 @@ public class ProjectHelper
 
    public List<Dependency> resolveDependenciesFromPOM(File pomFile) throws Exception
    {
-      ProjectBuildingRequest request = getBuildingRequest();
-      request.setResolveDependencies(true);
-      ProjectBuilder builder = plexus.lookup(ProjectBuilder.class);
-      ProjectBuildingResult build = builder.build(pomFile, request);
-      return build.getDependencyResolutionResult().getDependencies();
-   }
-
-   private ProjectBuildingRequest getBuildingRequest()
-   {
-      if (projectBuildingRequest != null)
-      {
-         return projectBuildingRequest;
-      }
-      ClassLoader cl = Thread.currentThread().getContextClassLoader();
+      PlexusContainer plexus = new PlexusContainer();
+      List<Dependency> result;
       try
       {
-         Settings settings = mavenContainer.getSettings();
-         // TODO this needs to be configurable via .forge
-         // TODO this reference to the M2_REPO should probably be centralized
-         MavenExecutionRequest executionRequest = new DefaultMavenExecutionRequest();
-
-         RepositorySystem repositorySystem = plexus.lookup(RepositorySystem.class);
-         MavenExecutionRequestPopulator requestPopulator = plexus.lookup(MavenExecutionRequestPopulator.class);
-
-         requestPopulator.populateFromSettings(executionRequest, settings);
-         requestPopulator.populateDefaults(executionRequest);
-
-         ProjectBuildingRequest request = executionRequest.getProjectBuildingRequest();
-
-         org.apache.maven.artifact.repository.ArtifactRepository localRepository = RepositoryUtils
-                  .toArtifactRepository("local",
-                           new File(settings.getLocalRepository()).toURI().toURL().toString(), null, true, true);
-         request.setLocalRepository(localRepository);
-
-         List<org.apache.maven.artifact.repository.ArtifactRepository> settingsRepos = new ArrayList<org.apache.maven.artifact.repository.ArtifactRepository>(
-                  request.getRemoteRepositories());
-         List<String> activeProfiles = settings.getActiveProfiles();
-
-         Map<String, Profile> profiles = settings.getProfilesAsMap();
-
-         for (String id : activeProfiles)
-         {
-            Profile profile = profiles.get(id);
-            if (profile != null)
-            {
-               List<Repository> repositories = profile.getRepositories();
-               for (Repository repository : repositories)
-               {
-                  settingsRepos.add(RepositoryUtils.convertFromMavenSettingsRepository(repository));
-               }
-            }
-         }
-         request.setRemoteRepositories(settingsRepos);
-         request.setSystemProperties(System.getProperties());
-
-         DefaultRepositorySystemSession repositorySession = MavenRepositorySystemUtils.newSession();
-         Proxy activeProxy = settings.getActiveProxy();
-         if (activeProxy != null)
-         {
-            DefaultProxySelector dps = new DefaultProxySelector();
-            dps.add(RepositoryUtils.convertFromMavenProxy(activeProxy), activeProxy.getNonProxyHosts());
-            repositorySession.setProxySelector(dps);
-         }
-         LocalRepository localRepo = new LocalRepository(settings.getLocalRepository());
-
-         repositorySession.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(repositorySession,
-                  localRepo));
-         repositorySession.setOffline(settings.isOffline());
-         List<Mirror> mirrors = executionRequest.getMirrors();
-         if (mirrors != null)
-         {
-            DefaultMirrorSelector mirrorSelector = new DefaultMirrorSelector();
-            for (Mirror mirror : mirrors)
-            {
-               mirrorSelector.add(mirror.getId(), mirror.getUrl(), mirror.getLayout(), false, mirror.getMirrorOf(),
-                        mirror.getMirrorOfLayouts());
-            }
-            repositorySession.setMirrorSelector(mirrorSelector);
-         }
-
-         request.setRepositorySession(repositorySession);
-         request.setProcessPlugins(false);
-         request.setResolveDependencies(false);
-         projectBuildingRequest = request;
-         return projectBuildingRequest;
-      }
-      catch (RuntimeException e)
-      {
-         throw e;
-      }
-      catch (Exception e)
-      {
-         throw new RuntimeException(
-                  "Could not create Maven project building request", e);
+         ProjectBuildingRequest request = getBuildingRequest(plexus);
+         request.setResolveDependencies(true);
+         ProjectBuilder builder = plexus.lookup(ProjectBuilder.class);
+         ProjectBuildingResult build = builder.build(pomFile, request);
+         result = build.getDependencyResolutionResult().getDependencies();
       }
       finally
       {
-         /*
-          * We reset the classloader to prevent potential modules bugs if Classwords container changes classloaders on
-          * us
-          */
-         Thread.currentThread().setContextClassLoader(cl);
+         plexus.shutdown();
       }
+      return result;
+   }
+
+   private ProjectBuildingRequest getBuildingRequest(PlexusContainer plexus)
+   {
+      if (this.request == null)
+      {
+         ClassLoader cl = Thread.currentThread().getContextClassLoader();
+         try
+         {
+            Settings settings = mavenContainer.getSettings();
+            // TODO this needs to be configurable via .forge
+            // TODO this reference to the M2_REPO should probably be centralized
+            MavenExecutionRequest executionRequest = new DefaultMavenExecutionRequest();
+
+            RepositorySystem repositorySystem = plexus.lookup(RepositorySystem.class);
+            MavenExecutionRequestPopulator requestPopulator = plexus.lookup(MavenExecutionRequestPopulator.class);
+
+            requestPopulator.populateFromSettings(executionRequest, settings);
+            requestPopulator.populateDefaults(executionRequest);
+
+            ProjectBuildingRequest request = executionRequest.getProjectBuildingRequest();
+
+            org.apache.maven.artifact.repository.ArtifactRepository localRepository = RepositoryUtils
+                     .toArtifactRepository("local",
+                              new File(settings.getLocalRepository()).toURI().toURL().toString(), null, true, true);
+            request.setLocalRepository(localRepository);
+
+            List<org.apache.maven.artifact.repository.ArtifactRepository> settingsRepos = new ArrayList<org.apache.maven.artifact.repository.ArtifactRepository>(
+                     request.getRemoteRepositories());
+            List<String> activeProfiles = settings.getActiveProfiles();
+
+            Map<String, Profile> profiles = settings.getProfilesAsMap();
+
+            for (String id : activeProfiles)
+            {
+               Profile profile = profiles.get(id);
+               if (profile != null)
+               {
+                  List<Repository> repositories = profile.getRepositories();
+                  for (Repository repository : repositories)
+                  {
+                     settingsRepos.add(RepositoryUtils.convertFromMavenSettingsRepository(repository));
+                  }
+               }
+            }
+            request.setRemoteRepositories(settingsRepos);
+            request.setSystemProperties(System.getProperties());
+
+            DefaultRepositorySystemSession repositorySession = MavenRepositorySystemUtils.newSession();
+            Proxy activeProxy = settings.getActiveProxy();
+            if (activeProxy != null)
+            {
+               DefaultProxySelector dps = new DefaultProxySelector();
+               dps.add(RepositoryUtils.convertFromMavenProxy(activeProxy), activeProxy.getNonProxyHosts());
+               repositorySession.setProxySelector(dps);
+            }
+            LocalRepository localRepo = new LocalRepository(settings.getLocalRepository());
+
+            repositorySession.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(repositorySession,
+                     localRepo));
+            repositorySession.setOffline(settings.isOffline());
+            List<Mirror> mirrors = executionRequest.getMirrors();
+            if (mirrors != null)
+            {
+               DefaultMirrorSelector mirrorSelector = new DefaultMirrorSelector();
+               for (Mirror mirror : mirrors)
+               {
+                  mirrorSelector.add(mirror.getId(), mirror.getUrl(), mirror.getLayout(), false, mirror.getMirrorOf(),
+                           mirror.getMirrorOfLayouts());
+               }
+               repositorySession.setMirrorSelector(mirrorSelector);
+            }
+
+            request.setRepositorySession(repositorySession);
+            request.setProcessPlugins(false);
+            request.setResolveDependencies(false);
+            this.request = request;
+         }
+         catch (RuntimeException e)
+         {
+            throw e;
+         }
+         catch (Exception e)
+         {
+            throw new RuntimeException(
+                     "Could not create Maven project building request", e);
+         }
+         finally
+         {
+            /*
+             * We reset the classloader to prevent potential modules bugs if Classwords container changes classloaders
+             * on us
+             */
+            Thread.currentThread().setContextClassLoader(cl);
+         }
+      }
+      return request;
    }
 }

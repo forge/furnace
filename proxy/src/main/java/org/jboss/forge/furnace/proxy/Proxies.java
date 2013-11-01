@@ -6,10 +6,11 @@
  */
 package org.jboss.forge.furnace.proxy;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.Proxy;
@@ -21,7 +22,7 @@ import javassist.util.proxy.ProxyObject;
  */
 public class Proxies
 {
-   private static Map<Integer, Class<?>> cache = new WeakHashMap<Integer, Class<?>>();
+   private static Map<Integer, WeakReference<Class<?>>> cache = new ConcurrentHashMap<Integer, WeakReference<Class<?>>>();
 
    private static MethodFilter filter = new MethodFilter()
    {
@@ -49,7 +50,14 @@ public class Proxies
       Class<?> type = Proxies.unwrapProxyTypes(instance.getClass(), loader);
 
       Object result = null;
-      Class<?> proxyType = cache.get(type.hashCode());
+      Class<?> proxyType = null;
+
+      WeakReference<Class<?>> ref = cache.get(type.hashCode());
+      if (ref != null)
+      {
+         proxyType = ref.get();
+      }
+
       if (proxyType == null)
       {
          Class<?>[] hierarchy = null;
@@ -93,7 +101,7 @@ public class Proxies
 
          proxyType = f.createClass();
 
-         cache.put(type.hashCode(), proxyType);
+         cache.put(type.hashCode(), new WeakReference<Class<?>>(proxyType));
       }
 
       try
@@ -130,8 +138,14 @@ public class Proxies
    public static <T> T enhance(Class<T> type, ForgeProxy handler)
    {
       Object result = null;
+      Class<?> proxyType = null;
 
-      Class<?> proxyType = cache.get(type.hashCode());
+      WeakReference<Class<?>> ref = cache.get(type.hashCode());
+      if (ref != null)
+      {
+         proxyType = ref.get();
+      }
+
       if (proxyType == null)
       {
          Class<?>[] hierarchy = null;
@@ -160,7 +174,7 @@ public class Proxies
 
          proxyType = f.createClass();
 
-         cache.put(type.hashCode(), proxyType);
+         cache.put(type.hashCode(), new WeakReference<Class<?>>(proxyType));
       }
 
       try

@@ -190,11 +190,22 @@ public class FurnaceImpl implements Furnace
       }
 
       fireAfterContainerStoppedEvent();
+      cleanup();
+      return this;
+   }
+
+   private void cleanup()
+   {
       for (ListenerRegistration<ContainerLifecycleListener> registation : loadedListenerRegistrations)
       {
          registation.removeListener();
       }
-      return this;
+      registeredListeners.clear();
+      lastRepoVersionSeen.clear();
+      loader = null;
+      manager.dispose();
+      manager = null;
+      repositories.clear();
    }
 
    private void fireBeforeConfigurationScanEvent()

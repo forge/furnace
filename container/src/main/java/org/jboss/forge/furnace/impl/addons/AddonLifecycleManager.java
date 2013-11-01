@@ -48,16 +48,16 @@ public class AddonLifecycleManager
    private static final Logger logger = Logger.getLogger(AddonLifecycleManager.class.getName());
 
    private final LockManager lock;
-   private FurnaceImpl furnace;
-   private AddonLoader loader;
-   private AddonStateManager stateManager;
+   private final FurnaceImpl furnace;
+   private final AddonLoader loader;
+   private final AddonStateManager stateManager;
 
-   private Set<Addon> addons = Sets.getConcurrentSet();
+   private final Set<Addon> addons = Sets.getConcurrentSet();
    private final Map<AddonView, Long> views = new ConcurrentHashMap<AddonView, Long>();
    private final AtomicInteger starting = new AtomicInteger(-1);
    private final ExecutorService executor = Executors.newCachedThreadPool();
 
-   private AddonModuleLoader moduleLoader;
+   private final AddonModuleLoader moduleLoader;
 
    public AddonLifecycleManager(FurnaceImpl furnace)
    {
@@ -71,6 +71,18 @@ public class AddonLifecycleManager
       this.loader = new AddonLoader(furnace, this, stateManager, moduleLoader);
 
       logger.log(Level.FINE, "Instantiated AddonRTegistryImpl: " + this);
+   }
+
+   public void dispose()
+   {
+      for (AddonView view : views.keySet())
+      {
+         view.dispose();
+      }
+      this.views.clear();
+      this.stateManager.dispose();
+      this.loader.dispose();
+      this.moduleLoader.dispose();
    }
 
    public long getVersion(AddonView view)
@@ -266,11 +278,6 @@ public class AddonLifecycleManager
       return starting.get() > 0;
    }
 
-   public void dispose(AddonView view)
-   {
-      furnace.disposeAddonView(view);
-   }
-
    public void startAddon(Addon addon)
    {
       Assert.notNull(addon, "Addon to start must not be null.");
@@ -317,6 +324,7 @@ public class AddonLifecycleManager
    {
       if (!views.keySet().contains(view))
          throw new IllegalArgumentException("The given view does not belong to this Furnace instance.");
+      views.remove(view);
    }
 
    @Override
