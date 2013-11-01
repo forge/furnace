@@ -34,6 +34,12 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
 {
    Map<String, String> dependencyMap;
 
+   ProjectHelper projectHelper;
+   
+   public ForgeDeploymentScenarioGenerator() {
+      this.projectHelper = new ProjectHelper();
+   }
+   
    @Override
    public List<DeploymentDescription> generate(TestClass testClass)
    {
@@ -105,7 +111,7 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
          File pomFile = getPomFileFor(classUnderTest);
          try
          {
-            List<Dependency> dependencies = ProjectHelper.INSTANCE.resolveDependenciesFromPOM(pomFile);
+            List<Dependency> dependencies = projectHelper.resolveDependenciesFromPOM(pomFile);
             for (Dependency dependency : dependencies)
             {
                Artifact artifact = dependency.getArtifact();

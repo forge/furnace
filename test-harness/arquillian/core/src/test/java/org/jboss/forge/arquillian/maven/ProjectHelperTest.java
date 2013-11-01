@@ -18,7 +18,7 @@ import org.junit.Test;
 public class ProjectHelperTest
 {
 
-   ProjectHelper projectHelper = ProjectHelper.INSTANCE;
+   ProjectHelper projectHelper = new ProjectHelper();
 
    @Test
    public void testLoadPomFromFile()

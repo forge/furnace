@@ -39,15 +39,13 @@ import org.eclipse.aether.util.repository.DefaultMirrorSelector;
 import org.eclipse.aether.util.repository.DefaultProxySelector;
 import org.jboss.forge.furnace.manager.maven.MavenContainer;
 
-public enum ProjectHelper
+public class ProjectHelper
 {
-   INSTANCE;
-   
    private MavenContainer mavenContainer;
    private PlexusContainer plexus;
-   private static ProjectBuildingRequest projectBuildingRequest;
+   private ProjectBuildingRequest projectBuildingRequest;
 
-   private ProjectHelper()
+   public ProjectHelper()
    {
       this.mavenContainer = new MavenContainer();
       this.plexus = new PlexusContainer();
