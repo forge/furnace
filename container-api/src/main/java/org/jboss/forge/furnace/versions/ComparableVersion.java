@@ -19,6 +19,7 @@ package org.jboss.forge.furnace.versions;
  * under the License.
  */
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -87,18 +88,20 @@ public class ComparableVersion
    private static class IntegerItem
             implements Item
    {
-      private final Integer value;
+      private static final BigInteger BigInteger_ZERO = new BigInteger("0");
+
+      private final BigInteger value;
 
       public static final IntegerItem ZERO = new IntegerItem();
 
       private IntegerItem()
       {
-         this.value = 0;
+         this.value = BigInteger_ZERO;
       }
 
       public IntegerItem(String str)
       {
-         this.value = Integer.valueOf(str);
+         this.value = new BigInteger(str);
       }
 
       @Override
@@ -110,7 +113,7 @@ public class ComparableVersion
       @Override
       public boolean isNull()
       {
-         return value == 0;
+         return BigInteger_ZERO.equals(value);
       }
 
       @Override
@@ -118,7 +121,7 @@ public class ComparableVersion
       {
          if (item == null)
          {
-            return value == 0 ? 0 : 1; // 1.0 == 1, 1.1 > 1
+            return BigInteger_ZERO.equals(value) ? 0 : 1; // 1.0 == 1, 1.1 > 1
          }
 
          switch (item.getType())
