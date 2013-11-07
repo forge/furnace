@@ -82,6 +82,7 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
 
       if (undeploying)
       {
+         System.out.println("Cleaning test runtime.");
          undeploying = false;
          cleanup();
       }
@@ -154,22 +155,19 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
       if (archive instanceof RepositoryForgeArchive
                && ((RepositoryForgeArchive) archive).getAddonRepository() != null)
       {
-         String repositoryName = ((RepositoryForgeArchive) archive).getAddonRepository();
+         final String repositoryName = ((RepositoryForgeArchive) archive).getAddonRepository();
          if (deploymentRepositories.get(repositoryName) == null)
          {
-            stopContainer();
-            initContainer();
-            for (String name : deploymentRepositories.keySet())
+            target = waitForConfigurationRescan(new Callable<MutableAddonRepository>()
             {
-               MutableAddonRepository repository = (MutableAddonRepository) runnable.furnace.addRepository(
-                        AddonRepositoryMode.MUTABLE,
-                        new File(addonDir, OperatingSystemUtils.getSafeFilename(name)));
-               deploymentRepositories.put(name, repository);
-            }
-            target = (MutableAddonRepository) runnable.furnace.addRepository(AddonRepositoryMode.MUTABLE,
-                     new File(addonDir, OperatingSystemUtils.getSafeFilename(repositoryName)));
+               @Override
+               public MutableAddonRepository call() throws Exception
+               {
+                  return (MutableAddonRepository) runnable.furnace.addRepository(AddonRepositoryMode.MUTABLE,
+                           new File(addonDir, OperatingSystemUtils.getSafeFilename(repositoryName)));
+               }
+            });
             deploymentRepositories.put(repositoryName, target);
-            startContainer();
          }
          else
             target = deploymentRepositories.get(repositoryName);
@@ -318,7 +316,6 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
 
    private void stopContainer()
    {
-
       this.repository = null;
       this.deployedAddons.clear();
       this.deploymentRepositories.clear();

@@ -15,10 +15,10 @@ public class AddonVertex
    /*
     * Key fields must be immutable in order for JGraphT to function properly
     */
-   private String name;
-   private Version version;
-   private Set<AddonView> views = new HashSet<AddonView>();
-   
+   private final String name;
+   private final Version version;
+   private final Set<AddonView> views = new HashSet<AddonView>();
+
    /*
     * Mutable fields
     */

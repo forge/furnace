@@ -11,6 +11,6 @@
 
    <artifactId>furnace-api</artifactId>
 
-   <name>Furnace - Addon Container API</name>
+   <name>Furnace - Runtime API</name>
 
 </project>

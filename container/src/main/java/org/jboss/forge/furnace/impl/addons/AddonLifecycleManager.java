@@ -196,9 +196,10 @@ public class AddonLifecycleManager
 
                master.merge(graph);
 
-               logger.log(Level.INFO, " ------------ VIEW [" + view.getName() + "]------------ ");
-               logger.log(Level.INFO, master.toString());
-               logger.log(Level.INFO, " ------------ END [" + view.getName() + "]------------ ");
+               String graphOutput = master.toString();
+               logger.log(Level.INFO, "\n ------------ VIEW [" + view.getName() + "]------------ "
+                        + (graphOutput.isEmpty() ? "EMPTY" : graphOutput)
+                        + " ------------ END [" + view.getName() + "]------------ ");
             }
 
             MasterGraph last = stateManager.getCurrentGraph();

@@ -36,9 +36,9 @@ public class AddonRegistryImpl implements AddonRegistry
 {
    private static final Logger logger = Logger.getLogger(AddonRegistryImpl.class.getName());
 
-   private LockManager lock;
-   private List<AddonRepository> repositories;
-   private AddonLifecycleManager manager;
+   private final LockManager lock;
+   private final List<AddonRepository> repositories;
+   private final AddonLifecycleManager manager;
    private final String name;
 
    public AddonRegistryImpl(LockManager lock, AddonLifecycleManager manager, List<AddonRepository> repositories,
@@ -61,9 +61,7 @@ public class AddonRegistryImpl implements AddonRegistry
    public void dispose()
    {
       manager.removeView(this);
-      repositories = null;
-      manager = null;
-      lock = null;
+      repositories.clear();
    }
 
    @Override

@@ -38,7 +38,7 @@
    </prerequisites>
 
    <properties>
-      <version.arquillian>1.1.1.Final</version.arquillian>
+      <version.arquillian>1.1.2.Final-SNAPSHOT</version.arquillian>
       <version.arquillian.container>1.0.0.CR5</version.arquillian.container>
    </properties>
 

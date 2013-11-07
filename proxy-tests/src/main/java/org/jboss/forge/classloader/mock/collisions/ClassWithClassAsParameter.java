@@ -36,4 +36,9 @@ public class ClassWithClassAsParameter
    {
       return Proxies.isProxyType(type);
    }
+
+   public boolean isProxyObject(Object enhancedValue)
+   {
+      return Proxies.isForgeProxy(enhancedValue);
+   }
 }

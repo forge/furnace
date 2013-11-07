@@ -8,7 +8,7 @@
    </parent>
 
    <artifactId>furnace-tests</artifactId>
-   <name>Furnace - Addon Container Tests</name>
+   <name>Furnace - Runtime Tests</name>
 
    <dependencies>
       <dependency>

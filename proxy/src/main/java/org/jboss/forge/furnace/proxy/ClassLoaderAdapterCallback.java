@@ -390,7 +390,8 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
             Object unwrappedValue = Proxies.unwrapOnce(parameterValue);
             if (delegateParameterType.isAssignableFrom(unwrappedValue.getClass())
                      && !Proxies.isLanguageType(unwrappedValue.getClass())
-                     && !isEquals(delegateMethod))
+                     && (!isEquals(delegateMethod) || (isEquals(delegateMethod) && ClassLoaders.containsClass(
+                              delegateLoader, unwrappedValue.getClass()))))
             {
                // https://issues.jboss.org/browse/FORGE-939
                return unwrappedValue;

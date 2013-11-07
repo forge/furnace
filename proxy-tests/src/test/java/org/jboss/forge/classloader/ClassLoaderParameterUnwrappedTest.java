@@ -137,4 +137,41 @@ public class ClassLoaderParameterUnwrappedTest
       Assert.assertFalse(classFilter.isProxyType(foreignType));
 
    }
+
+   @Test
+   public void testUnwrapParameterIfDelegateClassLoaderIsShared() throws Exception
+   {
+      AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
+               .getAddonRegistry();
+      ClassLoader thisLoader = ClassLoaderParameterUnwrappedTest.class.getClassLoader();
+      ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep1", "1")).getClassLoader();
+      ClassLoader dep2Loader = registry.getAddon(AddonId.from("dep2", "2")).getClassLoader();
+
+      Class<?> foreignType = dep2Loader.loadClass(MockResult.class.getName());
+      Object delegate = foreignType.newInstance();
+      MockResult enhancedValue = (MockResult) ClassLoaderAdapterBuilder.callingLoader(thisLoader)
+               .delegateLoader(dep2Loader).enhance(delegate);
+      Assert.assertTrue(Proxies.isForgeProxy(enhancedValue));
+
+      Object foreignInstance = dep1Loader
+               .loadClass(ClassWithClassAsParameter.class.getName())
+               .getConstructor(Class.class)
+               .newInstance(foreignType);
+
+      ClassLoaderAdapterBuilderDelegateLoader builder = ClassLoaderAdapterBuilder
+               .callingLoader(thisLoader)
+               .delegateLoader(dep1Loader);
+
+      Object enhancedFilter = builder.enhance(foreignInstance);
+
+      ClassWithClassAsParameter classFilter = (ClassWithClassAsParameter) enhancedFilter;
+
+      Assert.assertTrue(Proxies.isForgeProxy(classFilter));
+
+      Assert.assertTrue(Proxies.isForgeProxy(enhancedValue));
+      Assert.assertFalse(classFilter.isProxyObject(enhancedValue));
+      Assert.assertTrue(classFilter.equals(classFilter));
+      Assert.assertTrue(Proxies.isForgeProxy(classFilter));
+      Assert.assertFalse(classFilter.isProxyObject(classFilter));
+   }
 }

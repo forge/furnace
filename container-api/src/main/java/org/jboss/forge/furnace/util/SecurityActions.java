@@ -97,8 +97,11 @@ public final class SecurityActions
    {
       try
       {
-         cleanField(thread, Thread.class.getDeclaredField("threadLocals"));
-         cleanField(thread, Thread.class.getDeclaredField("inheritableThreadLocals"));
+         if (thread != null)
+         {
+            cleanField(thread, Thread.class.getDeclaredField("threadLocals"));
+            cleanField(thread, Thread.class.getDeclaredField("inheritableThreadLocals"));
+         }
       }
       catch (Exception e)
       {
@@ -117,24 +120,27 @@ public final class SecurityActions
       Class<?> threadLocalMapClass = Class.forName("java.lang.ThreadLocal$ThreadLocalMap");
       Field tableField = threadLocalMapClass.getDeclaredField("table");
       tableField.setAccessible(true);
-      Object table = tableField.get(threadLocalTable);
-
-      // The key to the ThreadLocalMap is a WeakReference object. The referent field of this object
-      // is a reference to the actual ThreadLocal variable
-      Field referentField = Reference.class.getDeclaredField("referent");
-      referentField.setAccessible(true);
-
-      for (int i = 0; i < Array.getLength(table); i++)
+      if (threadLocalTable != null)
       {
-         // Each entry in the table array of ThreadLocalMap is an Entry object
-         // representing the thread local reference and its value
-         Object entry = Array.get(table, i);
-         if (entry != null)
+         Object table = tableField.get(threadLocalTable);
+
+         // The key to the ThreadLocalMap is a WeakReference object. The referent field of this object
+         // is a reference to the actual ThreadLocal variable
+         Field referentField = Reference.class.getDeclaredField("referent");
+         referentField.setAccessible(true);
+
+         for (int i = 0; i < Array.getLength(table); i++)
          {
-            // Get a reference to the thread local object and remove it from the table
-            ThreadLocal<?> threadLocal = (ThreadLocal<?>) referentField.get(entry);
-            if (threadLocal != null)
-               threadLocal.remove();
+            // Each entry in the table array of ThreadLocalMap is an Entry object
+            // representing the thread local reference and its value
+            Object entry = Array.get(table, i);
+            if (entry != null)
+            {
+               // Get a reference to the thread local object and remove it from the table
+               ThreadLocal<?> threadLocal = (ThreadLocal<?>) referentField.get(entry);
+               if (threadLocal != null)
+                  threadLocal.remove();
+            }
          }
       }
    }

@@ -8,6 +8,7 @@ package org.jboss.forge.furnace.impl.graph;
 
 import org.jgrapht.ext.EdgeNameProvider;
 
+
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * 

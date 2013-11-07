@@ -287,7 +287,8 @@ public class FurnaceImpl implements Furnace
       {
          if (repositories == null || repositories.length == 0)
          {
-            result = new AddonRegistryImpl(lock, getLifecycleManager(), getRepositories(), "ROOT");
+            result = new AddonRegistryImpl(lock, getLifecycleManager(), new ArrayList<AddonRepository>(
+                     getRepositories()), "ROOT");
             getLifecycleManager().addView(result);
          }
          else
@@ -345,8 +346,6 @@ public class FurnaceImpl implements Furnace
    @Override
    public AddonRepository addRepository(AddonRepositoryMode mode, File directory)
    {
-      assertNotAlive();
-
       Assert.notNull(mode, "Addon repository mode must not be null.");
       Assert.notNull(directory, "Addon repository directory must not be null.");
 
@@ -361,16 +360,13 @@ public class FurnaceImpl implements Furnace
    @Override
    public AddonRepository addRepository(AddonRepository repository)
    {
-      assertNotAlive();
-
       Assert.notNull(repository, "Addon repository must not be null.");
 
       for (AddonRepository registeredRepo : repositories)
       {
          if (registeredRepo.getRootDirectory().equals(repository.getRootDirectory()))
          {
-            throw new IllegalArgumentException("There is already a repository defined with this path: "
-                     + repository.getRootDirectory());
+            return registeredRepo;
          }
       }
 

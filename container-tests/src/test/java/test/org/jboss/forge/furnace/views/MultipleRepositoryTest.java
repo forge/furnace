@@ -189,12 +189,13 @@ public class MultipleRepositoryTest
       furnace.stop();
    }
 
-   @Test(expected = IllegalArgumentException.class)
-   public void testCannotAddTwoRepositoriesToSameLocation() throws IOException
+   @Test
+   public void testAddTwoRepositoriesToSameLocationIsIdempotent() throws IOException
    {
       Furnace forge = FurnaceFactory.getInstance(Furnace.class.getClassLoader());
-      forge.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
-      forge.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
+      AddonRepository repo1 = forge.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
+      AddonRepository repo2 = forge.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
+      Assert.assertEquals(repo1, repo2);
    }
 
 }

@@ -20,7 +20,7 @@ import org.jgrapht.traverse.DepthFirstIterator;
 
 public class MasterGraph
 {
-   private DirectedGraph<AddonVertex, AddonDependencyEdge> graph = new SimpleDirectedGraph<AddonVertex, AddonDependencyEdge>(
+   private final DirectedGraph<AddonVertex, AddonDependencyEdge> graph = new SimpleDirectedGraph<AddonVertex, AddonDependencyEdge>(
             AddonDependencyEdge.class);
 
    public DirectedGraph<AddonVertex, AddonDependencyEdge> getGraph()

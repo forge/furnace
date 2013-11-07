@@ -18,50 +18,55 @@ import org.junit.Test;
 public class FurnaceImplTest
 {
    @Test(expected = IllegalArgumentException.class)
-   public void shouldValidateAddRepositoryArgumentMode() throws Exception {
+   public void shouldValidateAddRepositoryArgumentMode() throws Exception
+   {
       Furnace f = new FurnaceImpl();
       f.addRepository(null, new File("."));
    }
 
    @Test(expected = IllegalArgumentException.class)
-   public void shouldValidateAddRepositoryArgumentDirectory() throws Exception {
+   public void shouldValidateAddRepositoryArgumentDirectory() throws Exception
+   {
       Furnace f = new FurnaceImpl();
       f.addRepository(AddonRepositoryMode.IMMUTABLE, null);
    }
 
    @Test(expected = IllegalArgumentException.class)
-   public void shouldValidateAddRepositoryArgumentRepository() throws Exception {
+   public void shouldValidateAddRepositoryArgumentRepository() throws Exception
+   {
       Furnace f = new FurnaceImpl();
-      f.addRepository((AddonRepository)null);
-   }
-
-   @Test(expected = IllegalArgumentException.class)
-   public void shouldNotAllowMultipleDiskRepositoriesWithSameRootDirectory() throws Exception {
-      Furnace f = new FurnaceImpl();
-
-      f.addRepository(AddonRepositoryMode.IMMUTABLE, new File("target"));
-      f.addRepository(AddonRepositoryMode.IMMUTABLE, new File("target"));
-   }
-
-   @Test(expected = IllegalArgumentException.class)
-   public void shouldNotAllowMultipleRepositoriesWithSameRootDirectory() throws Exception {
-      Furnace f = new FurnaceImpl();
-
-      f.addRepository(AddonRepositoryMode.IMMUTABLE, new File("target"));
-      f.addRepository(new TestAddonRepository(new File("target")));
+      f.addRepository((AddonRepository) null);
    }
 
    @Test
-   public void shouldAllowToAddDiskRepository() throws Exception {
+   public void testAddMultipleDiskRepositoriesWithSameRootDirectoryIsIdempotent() throws Exception
+   {
       Furnace f = new FurnaceImpl();
+      AddonRepository repo1 = f.addRepository(AddonRepositoryMode.IMMUTABLE, new File("target"));
+      AddonRepository repo2 = f.addRepository(AddonRepositoryMode.IMMUTABLE, new File("target"));
+      Assert.assertEquals(repo1, repo2);
+   }
 
+   @Test
+   public void shouldNotAllowMultipleRepositoriesWithSameRootDirectory() throws Exception
+   {
+      Furnace f = new FurnaceImpl();
+      AddonRepository repo1 = f.addRepository(AddonRepositoryMode.IMMUTABLE, new File("target"));
+      AddonRepository repo2 = f.addRepository(new TestAddonRepository(new File("target")));
+      Assert.assertEquals(repo1, repo2);
+   }
+
+   @Test
+   public void shouldAllowToAddDiskRepository() throws Exception
+   {
+      Furnace f = new FurnaceImpl();
       f.addRepository(AddonRepositoryMode.IMMUTABLE, new File("target"));
-
       Assert.assertEquals(1, f.getRepositories().size());
    }
 
    @Test
-   public void shouldAllowToAddCustomRepository() throws Exception {
+   public void shouldAllowToAddCustomRepository() throws Exception
+   {
       Furnace f = new FurnaceImpl();
 
       AddonRepository repository = new TestAddonRepository(new File("target"));
@@ -71,9 +76,10 @@ public class FurnaceImplTest
       Assert.assertEquals(repository, f.getRepositories().get(0));
    }
 
-   private static class TestAddonRepository implements AddonRepository {
-      private Date modified;
-      private File rootDir;
+   private static class TestAddonRepository implements AddonRepository
+   {
+      private final Date modified;
+      private final File rootDir;
 
       public TestAddonRepository(File rootDir)
       {
