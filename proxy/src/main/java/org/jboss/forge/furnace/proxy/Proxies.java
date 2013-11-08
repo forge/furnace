@@ -309,7 +309,7 @@ public class Proxies
          }
 
          if (superclass != null && !superclass.getName().equals(Object.class.getName()))
-            return superclass;
+            result = superclass;
 
          String typeName = unwrapProxyClassName(result);
          for (ClassLoader loader : loaders)

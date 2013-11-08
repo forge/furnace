@@ -168,6 +168,7 @@ public class ClassLoaderParameterUnwrappedTest
 
       Assert.assertTrue(Proxies.isForgeProxy(classFilter));
 
+      Assert.assertEquals(foreignInstance.hashCode(), classFilter.hashCode());
       Assert.assertTrue(Proxies.isForgeProxy(enhancedValue));
       Assert.assertFalse(classFilter.isProxyObject(enhancedValue));
       Assert.assertTrue(classFilter.equals(classFilter));

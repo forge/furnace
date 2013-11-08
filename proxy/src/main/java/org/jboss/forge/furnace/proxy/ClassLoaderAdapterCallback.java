@@ -481,6 +481,15 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       return false;
    }
 
+   private static boolean isHashCode(Method method)
+   {
+      if (int.class.equals(method.getReturnType())
+               && "hashCode".equals(method.getName())
+               && method.getParameterTypes().length == 0)
+         return true;
+      return false;
+   }
+
    private List<Class<?>> translateParameterTypes(final Method method) throws ClassNotFoundException
    {
       List<Class<?>> parameterTypes = new ArrayList<Class<?>>();
@@ -551,7 +560,8 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                         if (!method.getDeclaringClass().getName().contains("java.lang")
                                  || !Proxies.isPassthroughType(method.getDeclaringClass())
                                  || ("toString".equals(method.getName()) && method.getParameterTypes().length == 0)
-                                 || isEquals(method))
+                                 || isEquals(method)
+                                 || isHashCode(method))
                            return true;
                         return false;
                      }

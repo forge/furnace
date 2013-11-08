@@ -58,11 +58,34 @@ public class ProxiesTest
    }
 
    @Test
+   public void testUnwrapProxyTypes()
+   {
+      BeanWithSuperClass enhancedObj = Proxies.enhance(BeanWithSuperClass.class, new ForgeProxy()
+      {
+         private final Object bean = new BeanWithSuperClass();
+
+         @Override
+         public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable
+         {
+            return proceed.invoke(self, args);
+         }
+
+         @Override
+         public Object getDelegate()
+         {
+            return bean;
+         }
+      });
+      Assert.assertNotEquals(BeanWithSuperClass.class.getName(), enhancedObj.getClass().getName());
+      Class<?> result = Proxies.unwrapProxyTypes(enhancedObj.getClass());
+      Assert.assertEquals(BeanWithSuperClass.class, result);
+   }
+
+   @Test
    public void testUnwrapProxyClassName()
    {
       Bean enhancedObj = Proxies.enhance(Bean.class, new ForgeProxy()
       {
-
          @Override
          public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable
          {

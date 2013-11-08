@@ -39,6 +39,7 @@ import org.jboss.modules.log.NoopModuleLogger;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="mailto:jbailey@redhat.com">John Bailey</a>
  * @author <a href="mailto:flavia.rainone@jboss.com">Flavia Rainone</a>
+ * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * @author Jason T. Greene
  * @author thomas.diesler@jboss.com
  *
@@ -64,7 +65,6 @@ public final class Module {
         final List<String> list = new ArrayList<String>();
         list.add("java.");
         list.add("sun.reflect.");
-        list.add("__redirected.");
         if (pkgsString != null) {
             int i;
             int nc = -1;

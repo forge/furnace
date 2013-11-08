@@ -21,6 +21,7 @@ import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
 import org.jboss.forge.furnace.proxy.Proxies;
+import org.jboss.forge.furnace.util.ClassLoaders;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.junit.Assert;
 import org.junit.Test;
@@ -58,6 +59,42 @@ public class ClassLoaderAdapterResultProxyTest
                .addBeansXML();
 
       return archive;
+   }
+
+   @Test
+   public void testProxiesUpwrapProxyTypeUsesSpecifiedClassloader() throws Exception
+   {
+      AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
+               .getAddonRegistry();
+      ClassLoader thisLoader = ClassLoaderAdapterResultProxyTest.class.getClassLoader();
+      ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep", "1")).getClassLoader();
+
+      Class<?> foreignType = dep1Loader.loadClass(InstanceFactoryImpl.class.getName());
+      try
+      {
+         Implementation local = (Implementation) foreignType.getMethod("getInstance")
+                  .invoke(foreignType.newInstance());
+
+         Assert.fail("Should have received a " + ClassCastException.class.getName() + " but got a real object ["
+                  + local + "]");
+      }
+      catch (ClassCastException e)
+      {
+      }
+      catch (Exception e)
+      {
+         Assert.fail("Should have received a " + ClassCastException.class.getName() + " but was: " + e);
+      }
+
+      Object delegate = foreignType.newInstance();
+      InstanceFactoryImpl enhancedFactory = (InstanceFactoryImpl) ClassLoaderAdapterBuilder.callingLoader(thisLoader)
+               .delegateLoader(dep1Loader).enhance(delegate);
+
+      Assert.assertTrue(Proxies.isForgeProxy(enhancedFactory));
+      Implementation enhancedInstance = enhancedFactory.getInstance();
+
+      Class<?> unwrappedType = Proxies.unwrapProxyTypes(enhancedInstance.getClass(), dep1Loader);
+      Assert.assertEquals(ClassLoaders.loadClass(dep1Loader, Implementation.class.getName()), unwrappedType);
    }
 
    @Test
