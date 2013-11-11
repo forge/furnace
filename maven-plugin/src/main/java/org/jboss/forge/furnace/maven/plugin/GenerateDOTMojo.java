@@ -105,12 +105,6 @@ public class GenerateDOTMojo extends AbstractMojo
       AddonDependencyResolver addonResolver = new MavenAddonDependencyResolver(classifier);
       if (addonIds == null || addonIds.length == 0)
       {
-         // XXX
-         // if (!"forge-addon".equals(mavenProject.getArtifact().getClassifier()))
-         // {
-         // getLog().warn("No <addonIds> informed and current project is not a forge-addon. Skipping");
-         // return;
-         // }
          AddonId id = AddonId.from(mavenProject.getGroupId() + ":" + mavenProject.getArtifactId(),
                   mavenProject.getVersion());
          String fileName = outputFileName == null ? id.getName().substring(id.getName().indexOf(':') + 1) + "-"

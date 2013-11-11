@@ -66,11 +66,11 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
    private static final String DEPENDENCY_TAG_NAME = "dependency";
    private static final String DEPENDENCIES_TAG_NAME = "dependencies";
 
-   private LockManager lock;
+   private final LockManager lock;
 
-   public static MutableAddonRepository forDirectory(Furnace forge, File dir)
+   public static MutableAddonRepository forDirectory(Furnace furnace, File dir)
    {
-      return new AddonRepositoryImpl(forge.getLockManager(), dir);
+      return new AddonRepositoryImpl(furnace.getLockManager(), dir);
    }
 
    public static MutableAddonRepository forDefaultDirectory(Furnace forge)
@@ -102,13 +102,13 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
       return Versions.isApiCompatible(runtimeVersion, entry.getApiVersion());
    }
 
-   private File addonDir;
+   private final File addonDir;
 
    private int version = 1;
 
    private AddonRepositoryImpl(LockManager lock, File dir)
    {
-      // TODO Assert.notNull(lock, "LockManager must not be null.");
+      Assert.notNull(lock, "LockManager must not be null.");
       Assert.notNull(dir, "Addon directory must not be null.");
       this.addonDir = dir;
       this.lock = lock;
