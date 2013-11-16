@@ -15,8 +15,12 @@ import java.util.Map;
 import org.apache.maven.model.building.DefaultModelBuilderFactory;
 import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
+import org.apache.maven.settings.Activation;
+import org.apache.maven.settings.Mirror;
 import org.apache.maven.settings.Profile;
+import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Repository;
+import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.building.DefaultSettingsBuilderFactory;
 import org.apache.maven.settings.building.DefaultSettingsBuildingRequest;
@@ -36,6 +40,8 @@ import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
 import org.eclipse.aether.util.repository.AuthenticationBuilder;
+import org.eclipse.aether.util.repository.DefaultMirrorSelector;
+import org.eclipse.aether.util.repository.DefaultProxySelector;
 import org.eclipse.aether.util.repository.SimpleResolutionErrorPolicy;
 
 /**
@@ -66,6 +72,16 @@ public class MavenContainer
    {
       List<RemoteRepository> settingsRepos = new ArrayList<RemoteRepository>();
       List<String> activeProfiles = settings.getActiveProfiles();
+      
+      // "Active by default" profiles must be added separately, since they are not recognized as active ones
+      for (Profile profile : settings.getProfiles())
+      {
+         Activation activation = profile.getActivation();
+         if (activation != null && activation.isActiveByDefault())
+         {
+            activeProfiles.add(profile.getId());
+         }
+      }
 
       Map<String, Profile> profiles = settings.getProfilesAsMap();
 
@@ -174,6 +190,36 @@ public class MavenContainer
    {
       DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
       session.setOffline(false);
+      
+      Proxy activeProxy = settings.getActiveProxy();
+      if (activeProxy != null)
+      {
+         DefaultProxySelector dps = new DefaultProxySelector();
+         dps.add(convertFromMavenProxy(activeProxy), activeProxy.getNonProxyHosts());
+         session.setProxySelector(dps);
+      }
+
+      final DefaultMirrorSelector mirrorSelector = new DefaultMirrorSelector();
+      final List<Mirror> mirrors = settings.getMirrors();
+      if (mirrors != null)
+      {
+         for (Mirror mirror : mirrors)
+         {
+            mirrorSelector.add(mirror.getId(), mirror.getUrl(), mirror.getLayout(), false, mirror.getMirrorOf(),
+                     mirror.getMirrorOfLayouts());
+         }
+         session.setMirrorSelector(mirrorSelector);
+      }
+
+      LazyAuthenticationSelector authSelector = new LazyAuthenticationSelector(mirrorSelector);
+      for (Server server : settings.getServers())
+      {
+         authSelector.add(
+                  server.getId(),
+                  new AuthenticationBuilder().addUsername(server.getUsername()).addPassword(server.getPassword())
+                           .addPrivateKey(server.getPrivateKey(), server.getPassphrase()).build());
+      }
+      session.setAuthenticationSelector(authSelector);
 
       LocalRepository localRepo = new LocalRepository(new File(settings.getLocalRepository()));
       session.setLocalRepositoryManager(repoSystem.newLocalRepositoryManager(session, localRepo));
