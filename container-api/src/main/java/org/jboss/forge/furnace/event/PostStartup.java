@@ -8,6 +8,7 @@
 package org.jboss.forge.furnace.event;
 
 import org.jboss.forge.furnace.addons.Addon;
+import org.jboss.forge.furnace.util.Assert;
 
 /**
  * Fired by the container to signal that the current addon should begin its work.
@@ -17,10 +18,11 @@ import org.jboss.forge.furnace.addons.Addon;
  */
 public final class PostStartup
 {
-   private Addon addon;
+   private final Addon addon;
 
    public PostStartup(Addon addon)
    {
+      Assert.notNull(addon, "Addon must not be null.");
       this.addon = addon;
    }
 
@@ -28,4 +30,11 @@ public final class PostStartup
    {
       return addon;
    }
+
+   @Override
+   public String toString()
+   {
+      return addon.toString();
+   }
+
 }

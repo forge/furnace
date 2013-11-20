@@ -8,6 +8,7 @@
 package org.jboss.forge.furnace.event;
 
 import org.jboss.forge.furnace.addons.Addon;
+import org.jboss.forge.furnace.util.Assert;
 
 /**
  * Fired before the container begins its shutdown process.
@@ -17,15 +18,22 @@ import org.jboss.forge.furnace.addons.Addon;
  */
 public final class PreShutdown
 {
-   private Addon addon;
+   private final Addon addon;
 
    public PreShutdown(Addon addon)
    {
+      Assert.notNull(addon, "Addon must not be null.");
       this.addon = addon;
    }
 
    public Addon getAddon()
    {
       return addon;
+   }
+
+   @Override
+   public String toString()
+   {
+      return addon.toString();
    }
 }

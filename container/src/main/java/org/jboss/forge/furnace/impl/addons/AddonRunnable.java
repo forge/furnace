@@ -18,6 +18,10 @@ import java.util.logging.Logger;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonDependency;
+import org.jboss.forge.furnace.addons.AddonFilter;
+import org.jboss.forge.furnace.addons.AddonView;
+import org.jboss.forge.furnace.event.PostStartup;
+import org.jboss.forge.furnace.event.PreShutdown;
 import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.impl.util.Iterators;
 import org.jboss.forge.furnace.lifecycle.AddonLifecycleProvider;
@@ -43,6 +47,15 @@ public final class AddonRunnable implements Runnable
    private final AddonStateManager stateManager;
 
    private AddonLifecycleProviderEntry lifecycleProviderEntry;
+
+   private final AddonFilter notThisAddonFilter = new AddonFilter()
+   {
+      @Override
+      public boolean accept(Addon other)
+      {
+         return !other.equals(addon);
+      }
+   };
 
    public AddonRunnable(Furnace furnace, AddonLifecycleManager lifecycleManager, AddonStateManager stateManager,
             Addon addon)
@@ -86,6 +99,13 @@ public final class AddonRunnable implements Runnable
                   }
 
                   lifecycleProvider.postStartup(addon);
+                  for (AddonView view : stateManager.getViewsOf(addon))
+                  {
+                     for (Addon a : view.getAddons(notThisAddonFilter))
+                     {
+                        a.getEventManager().fireEvent(new PostStartup(addon));
+                     }
+                  }
                   return null;
                }
             });
@@ -134,11 +154,19 @@ public final class AddonRunnable implements Runnable
             final AddonLifecycleProvider lifecycleProvider = lifecycleProviderEntry.getProvider();
             ClassLoaders.executeIn(addon.getClassLoader(), new Callable<Void>()
             {
+
                @Override
                public Void call() throws Exception
                {
                   try
                   {
+                     for (AddonView view : stateManager.getViewsOf(addon))
+                     {
+                        for (Addon a : view.getAddons(notThisAddonFilter))
+                        {
+                           a.getEventManager().fireEvent(new PreShutdown(addon));
+                        }
+                     }
                      lifecycleProvider.preShutdown(addon);
                   }
                   catch (Throwable e)

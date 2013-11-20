@@ -23,6 +23,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import test.org.jboss.forge.furnace.mocks.MockImpl1;
+import test.org.jboss.forge.furnace.mocks.MockInterface;
+
 @RunWith(Arquillian.class)
 public class PreShutdownEventTest
 {
@@ -43,10 +46,9 @@ public class PreShutdownEventTest
    public static ForgeArchive getDeployment2()
    {
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
-               .addAsLocalServices(RecordingEventManager.class)
-               .addAsAddonDependencies(
-                        AddonDependencyEntry.create("dep1")
-               );
+               .addAsLocalServices(MockImpl1.class)
+               .addClasses(MockImpl1.class, MockInterface.class)
+               .addBeansXML();
       return archive;
    }
 
@@ -65,8 +67,8 @@ public class PreShutdownEventTest
       Furnace furnace = LocalServices.getFurnace(getClass().getClassLoader());
       AddonRegistry registry = furnace.getAddonRegistry();
       Addon dep2 = registry.getAddon(AddonId.from("dep2", "2"));
-      RecordingEventManager manager = dep2.getServiceRegistry().getExportedInstance(RecordingEventManager.class).get();
-      Assert.assertEquals(2, manager.getPostStartupCount());
+      RecordingEventManager manager = registry.getServices(RecordingEventManager.class).get();
+      Assert.assertEquals(3, manager.getPostStartupCount());
       MutableAddonRepository repository = (MutableAddonRepository) furnace.getRepositories().get(0);
       repository.disable(dep2.getId());
       Addons.waitUntilStopped(dep2);

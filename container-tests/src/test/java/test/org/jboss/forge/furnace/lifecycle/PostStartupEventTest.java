@@ -50,6 +50,6 @@ public class PostStartupEventTest
       Furnace furnace = LocalServices.getFurnace(getClass().getClassLoader());
       AddonRegistry registry = furnace.getAddonRegistry();
       RecordingEventManager manager = registry.getServices(RecordingEventManager.class).get();
-      Assert.assertEquals(1, manager.getPostStartupCount());
+      Assert.assertEquals(2, manager.getPostStartupCount());
    }
 }
