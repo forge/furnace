@@ -23,7 +23,7 @@ import org.jboss.forge.furnace.util.Assert;
 
 public class AddonStateManager
 {
-   private LockManager lock;
+   private final LockManager lock;
    private MasterGraph graph;
    private final Map<Addon, AddonState> states = new HashMap<Addon, AddonState>();
    private AddonModuleLoader loader;
@@ -35,7 +35,6 @@ public class AddonStateManager
 
    public void dispose()
    {
-      this.lock = null;
       this.graph = null;
       this.states.clear();
       this.loader = null;
@@ -216,7 +215,8 @@ public class AddonStateManager
       }
       finally
       {
-         loader.releaseAddonModule(addon);
+         if (loader != null)
+            loader.releaseAddonModule(addon);
          reset(addon);
       }
 
