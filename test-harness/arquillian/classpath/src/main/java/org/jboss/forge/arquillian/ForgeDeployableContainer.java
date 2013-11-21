@@ -183,7 +183,10 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
       try
       {
          Future<Void> future = addon.getFuture();
-         future.get();
+         if (!future.isDone())
+         {
+            future.get();
+         }
          if (addon.getStatus().isFailed())
          {
             DeploymentException e = new DeploymentException("AddonDependency " + addonToDeploy
