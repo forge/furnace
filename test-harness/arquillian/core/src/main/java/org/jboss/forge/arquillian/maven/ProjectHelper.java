@@ -30,11 +30,13 @@ import org.apache.maven.settings.Mirror;
 import org.apache.maven.settings.Profile;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Repository;
+import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.util.repository.AuthenticationBuilder;
 import org.eclipse.aether.util.repository.DefaultMirrorSelector;
 import org.eclipse.aether.util.repository.DefaultProxySelector;
 import org.jboss.forge.furnace.manager.maven.MavenContainer;
@@ -163,16 +165,26 @@ public class ProjectHelper
                      localRepo));
             repositorySession.setOffline(settings.isOffline());
             List<Mirror> mirrors = executionRequest.getMirrors();
+            DefaultMirrorSelector mirrorSelector = new DefaultMirrorSelector();
             if (mirrors != null)
             {
-               DefaultMirrorSelector mirrorSelector = new DefaultMirrorSelector();
                for (Mirror mirror : mirrors)
                {
                   mirrorSelector.add(mirror.getId(), mirror.getUrl(), mirror.getLayout(), false, mirror.getMirrorOf(),
                            mirror.getMirrorOfLayouts());
                }
-               repositorySession.setMirrorSelector(mirrorSelector);
             }
+            repositorySession.setMirrorSelector(mirrorSelector);
+            
+            LazyAuthenticationSelector authSelector = new LazyAuthenticationSelector(mirrorSelector);
+            for (Server server : settings.getServers())
+            {
+               authSelector.add(
+                        server.getId(),
+                        new AuthenticationBuilder().addUsername(server.getUsername()).addPassword(server.getPassword())
+                                 .addPrivateKey(server.getPrivateKey(), server.getPassphrase()).build());
+            }
+            repositorySession.setAuthenticationSelector(authSelector);
 
             request.setRepositorySession(repositorySession);
             request.setProcessPlugins(false);
