@@ -138,24 +138,26 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       Settings settings = container.getSettings();
       DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
       List<RemoteRepository> repositories = MavenRepositories.getRemoteRepositories(container, settings);
-      VersionRangeResult versions = getVersions(system, settings, session, addonNameSplit, version);
-      // Furnace API is in provided scope.
-      session.setDependencySelector(new ScopeDependencySelector(Arrays.asList("provided", "compile"), null));
+      VersionRangeResult versions = getVersions(system, settings, session, repositories, addonNameSplit, version);
       List<Version> versionsList = versions.getVersions();
       int size = versionsList.size();
       AddonId[] addons = new AddonId[size];
       for (int i = 0; i < size; i++)
       {
-         addons[i] = resolveAPIVersion(system, settings, session, repositories,
-                  AddonId.from(addonName, versionsList.get(i).toString()));
+         addons[i] = AddonId.from(addonName, versionsList.get(i).toString());
       }
       return addons;
    }
 
-   private AddonId resolveAPIVersion(RepositorySystem system, Settings settings, RepositorySystemSession session,
-            List<RemoteRepository> repositories,
-            AddonId addonId)
+   @Override
+   public String resolveAPIVersion(AddonId addonId)
    {
+      RepositorySystem system = container.getRepositorySystem();
+      Settings settings = container.getSettings();
+      DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
+      List<RemoteRepository> repositories = MavenRepositories.getRemoteRepositories(container, settings);
+      // Furnace API is in provided scope.
+      session.setDependencySelector(new ScopeDependencySelector(Arrays.asList("provided", "compile"), null));
       String mavenCoords = toMavenCoords(addonId);
       Artifact queryArtifact = new DefaultArtifact(mavenCoords);
       CollectRequest collectRequest = new CollectRequest(new Dependency(queryArtifact, null), repositories);
@@ -169,7 +171,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
          throw new RuntimeException(e);
       }
       String apiVersion = findVersion(result.getRoot(), FURNACE_API_GROUP_ID, FURNACE_API_ARTIFACT_ID);
-      return AddonId.from(addonId.getName(), addonId.getVersion().toString(), apiVersion);
+      return apiVersion;
    }
 
    private String findVersion(DependencyNode node, String groupId, String artifactId)
@@ -188,6 +190,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    }
 
    private VersionRangeResult getVersions(RepositorySystem system, Settings settings, RepositorySystemSession session,
+            List<RemoteRepository> repositories,
             String addonName,
             String version)
    {
@@ -208,11 +211,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
          }
 
          Artifact artifact = new DefaultArtifact(toMavenCoords(AddonId.from(addonName, version)));
-
-         List<RemoteRepository> repositories = MavenRepositories.getRemoteRepositories(container, settings);
-
          VersionRangeRequest rangeRequest = new VersionRangeRequest(artifact, repositories, null);
-
          VersionRangeResult rangeResult = system.resolveVersionRange(session, rangeRequest);
          return rangeResult;
       }

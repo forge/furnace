@@ -24,12 +24,17 @@ public interface AddonDependencyResolver
    public AddonInfo resolveAddonDependencyHierarchy(final AddonId addonId);
 
    /**
-    * Resolve an artifact given an AddonId coordinate
+    * Resolve an artifact given an {@link AddonId} coordinate
     */
    public File[] resolveResources(final AddonId addonId);
 
    /**
-    * Resolve all versions of a given AddonId
+    * Resolve all versions of a given {@link AddonId}
     */
    public AddonId[] resolveVersions(final String addonName);
+
+   /**
+    * Resolve the API version for a given {@link AddonId}
+    */
+   public String resolveAPIVersion(final AddonId addonId);
 }
