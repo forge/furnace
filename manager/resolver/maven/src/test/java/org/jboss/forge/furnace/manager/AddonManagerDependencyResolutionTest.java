@@ -24,6 +24,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class AddonManagerDependencyResolutionTest
@@ -123,5 +124,17 @@ public class AddonManagerDependencyResolutionTest
       Assert.assertNotNull(info);
       Assert.assertTrue(info.getRequiredAddons().isEmpty());
       Assert.assertEquals(2, info.getResources().size());
+   }
+
+   @Test
+   @Ignore("Fails. Aether API?")
+   public void testResolveVersionsWithAPIVersion() throws Exception
+   {
+      AddonId[] versions = resolver.resolveVersions("test:furnace_api_dep");
+      Assert.assertNotNull(versions);
+      Assert.assertEquals(1, versions.length);
+      AddonId sut = versions[0];
+      Assert.assertNotNull(sut.getApiVersion());
+      Assert.assertEquals("2.0.0.Beta3", sut.getApiVersion().toString());
    }
 }
