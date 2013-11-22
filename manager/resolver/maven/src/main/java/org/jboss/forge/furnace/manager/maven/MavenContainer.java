@@ -9,6 +9,7 @@ package org.jboss.forge.furnace.manager.maven;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -68,6 +69,15 @@ public class MavenContainer
     */
    public static final String ALT_LOCAL_REPOSITORY_LOCATION = "maven.repo.local";
 
+   /**
+    * Get a list of all {@link RemoteRepository} instances from the Maven settings.
+    * The returned list can be used as is in a CollectRequest or a VersionRangeRequest,
+    * since all repositories and mirrors have been enriched with the required
+    * authentication info.
+    * 
+    * @param settings The Maven settings instance.
+    * @return A list of {@link RemoteRepository} instances
+    */
    public List<RemoteRepository> getEnabledRepositoriesFromProfile(Settings settings)
    {
       List<RemoteRepository> settingsRepos = new ArrayList<RemoteRepository>();
@@ -85,6 +95,7 @@ public class MavenContainer
 
       Map<String, Profile> profiles = settings.getProfilesAsMap();
 
+      // Collect all repositories declared in all active profiles
       for (String id : activeProfiles)
       {
          Profile profile = profiles.get(id);
@@ -98,7 +109,35 @@ public class MavenContainer
             }
          }
       }
-      return settingsRepos;
+      
+      final DefaultMirrorSelector mirrorSelector = createMirrorSelector(settings);
+      
+      final List<RemoteRepository> mirrorsForSettingsRepos = new ArrayList<RemoteRepository>();
+      for(Iterator<RemoteRepository> iter  = settingsRepos.iterator(); iter.hasNext();)
+      {
+         RemoteRepository settingsRepository = iter.next();
+         RemoteRepository repoMirror = mirrorSelector.getMirror(settingsRepository);
+         // If a mirror is available for a repository, then remove the repo, and use the mirror instead
+         if(repoMirror != null)
+         {
+            iter.remove();
+            mirrorsForSettingsRepos.add(repoMirror);
+         }
+      }
+      // We now have a collection of mirrors and unmirrored repositories. 
+      settingsRepos.addAll(mirrorsForSettingsRepos);
+      
+      List<RemoteRepository> enrichedRepos = new ArrayList<RemoteRepository>();
+      LazyAuthenticationSelector authSelector = createAuthSelector(settings, mirrorSelector);
+      for(RemoteRepository settingsRepo: settingsRepos)
+      {
+         // Obtain the Authentication for the repository or it's mirror
+         Authentication auth = authSelector.getAuthentication(settingsRepo);
+         // All RemoteRepositories (Mirrors and Repositories) constructed so far lack Authentication info.
+         // Use the settings repo as the prototype and create an enriched repo with the Authentication.
+         enrichedRepos.add(new RemoteRepository.Builder(settingsRepo).setAuthentication(auth).build());
+      }
+      return enrichedRepos;
    }
 
    public Settings getSettings()
@@ -199,26 +238,10 @@ public class MavenContainer
          session.setProxySelector(dps);
       }
 
-      final DefaultMirrorSelector mirrorSelector = new DefaultMirrorSelector();
-      final List<Mirror> mirrors = settings.getMirrors();
-      if (mirrors != null)
-      {
-         for (Mirror mirror : mirrors)
-         {
-            mirrorSelector.add(mirror.getId(), mirror.getUrl(), mirror.getLayout(), false, mirror.getMirrorOf(),
-                     mirror.getMirrorOfLayouts());
-         }
-         session.setMirrorSelector(mirrorSelector);
-      }
+      final DefaultMirrorSelector mirrorSelector = createMirrorSelector(settings);
+      final LazyAuthenticationSelector authSelector = createAuthSelector(settings, mirrorSelector);
 
-      LazyAuthenticationSelector authSelector = new LazyAuthenticationSelector(mirrorSelector);
-      for (Server server : settings.getServers())
-      {
-         authSelector.add(
-                  server.getId(),
-                  new AuthenticationBuilder().addUsername(server.getUsername()).addPassword(server.getPassword())
-                           .addPrivateKey(server.getPrivateKey(), server.getPassphrase()).build());
-      }
+      session.setMirrorSelector(mirrorSelector);
       session.setAuthenticationSelector(authSelector);
 
       LocalRepository localRepo = new LocalRepository(new File(settings.getLocalRepository()));
@@ -231,6 +254,35 @@ public class MavenContainer
       session.setWorkspaceReader(new ClasspathWorkspaceReader());
       session.setTransferListener(new LogTransferListener(System.out));
       return session;
+   }
+   
+   private DefaultMirrorSelector createMirrorSelector(Settings settings)
+   {
+      final DefaultMirrorSelector mirrorSelector = new DefaultMirrorSelector();
+      final List<Mirror> mirrors = settings.getMirrors();
+      if (mirrors != null)
+      {
+         for (Mirror mirror : mirrors)
+         {
+            mirrorSelector.add(mirror.getId(), mirror.getUrl(), mirror.getLayout(), false, mirror.getMirrorOf(),
+                     mirror.getMirrorOfLayouts());
+         }
+      }
+      return mirrorSelector;
+   }
+
+   private LazyAuthenticationSelector createAuthSelector(final Settings settings,
+            final DefaultMirrorSelector mirrorSelector)
+   {
+      LazyAuthenticationSelector authSelector = new LazyAuthenticationSelector(mirrorSelector);
+      for (Server server : settings.getServers())
+      {
+         authSelector.add(
+                  server.getId(),
+                  new AuthenticationBuilder().addUsername(server.getUsername()).addPassword(server.getPassword())
+                           .addPrivateKey(server.getPrivateKey(), server.getPassphrase()).build());
+      }
+      return authSelector;
    }
 
 }
