@@ -8,6 +8,7 @@
 package org.jboss.forge.furnace.manager.maven.addon;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -15,6 +16,7 @@ import java.util.Set;
 import org.apache.maven.settings.Settings;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
@@ -29,6 +31,7 @@ import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.resolution.DependencyResult;
 import org.eclipse.aether.resolution.VersionRangeRequest;
 import org.eclipse.aether.resolution.VersionRangeResult;
+import org.eclipse.aether.util.graph.selector.ScopeDependencySelector;
 import org.eclipse.aether.version.Version;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.manager.maven.MavenContainer;
@@ -45,6 +48,9 @@ import org.jboss.forge.furnace.util.Assert;
  */
 public class MavenAddonDependencyResolver implements AddonDependencyResolver
 {
+   private static final String FURNACE_API_GROUP_ID = "org.jboss.forge.furnace";
+   private static final String FURNACE_API_ARTIFACT_ID = "furnace-api";
+
    private static final String FORGE_ADDON_CLASSIFIER = "forge-addon";
    private final String classifier;
    private final MavenContainer container = new MavenContainer();
@@ -128,19 +134,62 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
          addonNameSplit = addonName;
          version = null;
       }
-
-      VersionRangeResult versions = getVersions(addonNameSplit, version);
+      RepositorySystem system = container.getRepositorySystem();
+      Settings settings = container.getSettings();
+      DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
+      List<RemoteRepository> repositories = MavenRepositories.getRemoteRepositories(container, settings);
+      VersionRangeResult versions = getVersions(system, settings, session, addonNameSplit, version);
+      // Furnace API is in provided scope.
+      session.setDependencySelector(new ScopeDependencySelector(Arrays.asList("provided", "compile"), null));
       List<Version> versionsList = versions.getVersions();
       int size = versionsList.size();
       AddonId[] addons = new AddonId[size];
       for (int i = 0; i < size; i++)
       {
-         addons[i] = AddonId.from(addonName, versionsList.get(i).toString());
+         addons[i] = resolveAPIVersion(system, settings, session, repositories,
+                  AddonId.from(addonName, versionsList.get(i).toString()));
       }
       return addons;
    }
 
-   private VersionRangeResult getVersions(String addonName, String version)
+   private AddonId resolveAPIVersion(RepositorySystem system, Settings settings, RepositorySystemSession session,
+            List<RemoteRepository> repositories,
+            AddonId addonId)
+   {
+      String mavenCoords = toMavenCoords(addonId);
+      Artifact queryArtifact = new DefaultArtifact(mavenCoords);
+      CollectRequest collectRequest = new CollectRequest(new Dependency(queryArtifact, null), repositories);
+      CollectResult result;
+      try
+      {
+         result = system.collectDependencies(session, collectRequest);
+      }
+      catch (DependencyCollectionException e)
+      {
+         throw new RuntimeException(e);
+      }
+      String apiVersion = findVersion(result.getRoot(), FURNACE_API_GROUP_ID, FURNACE_API_ARTIFACT_ID);
+      return AddonId.from(addonId.getName(), addonId.getVersion().toString(), apiVersion);
+   }
+
+   private String findVersion(DependencyNode node, String groupId, String artifactId)
+   {
+      for (DependencyNode child : node.getChildren())
+      {
+         Artifact childArtifact = child.getArtifact();
+
+         if (groupId.equals(childArtifact.getGroupId())
+                  && artifactId.equals(childArtifact.getArtifactId()))
+         {
+            return childArtifact.getBaseVersion();
+         }
+      }
+      return null;
+   }
+
+   private VersionRangeResult getVersions(RepositorySystem system, Settings settings, RepositorySystemSession session,
+            String addonName,
+            String version)
    {
       try
       {
@@ -157,10 +206,6 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
          {
             version = "[" + version + "]";
          }
-
-         RepositorySystem system = container.getRepositorySystem();
-         Settings settings = container.getSettings();
-         DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
 
          Artifact artifact = new DefaultArtifact(toMavenCoords(AddonId.from(addonName, version)));
 
