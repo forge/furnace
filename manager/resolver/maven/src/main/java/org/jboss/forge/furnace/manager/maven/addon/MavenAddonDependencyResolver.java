@@ -156,27 +156,29 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       Settings settings = container.getSettings();
       DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
       List<RemoteRepository> repositories = MavenRepositories.getRemoteRepositories(container, settings);
-      // Furnace API is in provided scope.
-      session.setDependencySelector(new ScopeDependencySelector(Arrays.asList("provided", "compile"), null));
       String mavenCoords = toMavenCoords(addonId);
       Artifact queryArtifact = new DefaultArtifact(mavenCoords);
-      CollectRequest collectRequest = new CollectRequest(new Dependency(queryArtifact, null), repositories);
+
+      session.setDependencySelector(new ScopeDependencySelector(Arrays.asList("provided", "compile"), Arrays
+               .asList("test")));
+
+      CollectRequest request = new CollectRequest(new Dependency(queryArtifact, null), repositories);
       CollectResult result;
       try
       {
-         result = system.collectDependencies(session, collectRequest);
+         result = system.collectDependencies(session, request);
       }
       catch (DependencyCollectionException e)
       {
          throw new RuntimeException(e);
       }
-      String apiVersion = findVersion(result.getRoot(), FURNACE_API_GROUP_ID, FURNACE_API_ARTIFACT_ID);
+      String apiVersion = findVersion(result.getRoot().getChildren(), FURNACE_API_GROUP_ID, FURNACE_API_ARTIFACT_ID);
       return apiVersion;
    }
 
-   private String findVersion(DependencyNode node, String groupId, String artifactId)
+   private String findVersion(List<DependencyNode> dependencies, String groupId, String artifactId)
    {
-      for (DependencyNode child : node.getChildren())
+      for (DependencyNode child : dependencies)
       {
          Artifact childArtifact = child.getArtifact();
 
@@ -184,6 +186,14 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
                   && artifactId.equals(childArtifact.getArtifactId()))
          {
             return childArtifact.getBaseVersion();
+         }
+         else
+         {
+            String version = findVersion(child.getChildren(), groupId, artifactId);
+            if (version != null)
+            {
+               return version;
+            }
          }
       }
       return null;

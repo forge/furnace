@@ -143,4 +143,12 @@ public class AddonManagerDependencyResolutionTest
       Assert.assertEquals("2.0.0.Beta3", apiVersion);
    }
 
+   @Test
+   public void testResolveIndirectAPIVersion() throws Exception
+   {
+      AddonId sut = AddonId.from("test:furnace_api_indirect_dep", "1.0.0.Final");
+      String apiVersion = resolver.resolveAPIVersion(sut);
+      Assert.assertEquals("2.0.0.Beta3", apiVersion);
+   }
+
 }
