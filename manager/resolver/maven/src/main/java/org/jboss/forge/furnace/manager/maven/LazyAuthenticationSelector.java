@@ -8,9 +8,9 @@ package org.jboss.forge.furnace.manager.maven;
 
 import org.eclipse.aether.repository.Authentication;
 import org.eclipse.aether.repository.AuthenticationSelector;
+import org.eclipse.aether.repository.MirrorSelector;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.util.repository.DefaultAuthenticationSelector;
-import org.eclipse.aether.util.repository.DefaultMirrorSelector;
 
 /**
  * An {@link AuthenticationSelector} that resolves the Authentication info lazily at runtime. This selector determines
@@ -19,10 +19,10 @@ import org.eclipse.aether.util.repository.DefaultMirrorSelector;
  */
 final class LazyAuthenticationSelector implements AuthenticationSelector
 {
-   private final DefaultMirrorSelector mirrorSelector;
-   private DefaultAuthenticationSelector defaultAuthSelector;
+   private final MirrorSelector mirrorSelector;
+   private final DefaultAuthenticationSelector defaultAuthSelector;
 
-   LazyAuthenticationSelector(DefaultMirrorSelector mirrorSelector)
+   LazyAuthenticationSelector(MirrorSelector mirrorSelector)
    {
       this.mirrorSelector = mirrorSelector;
       this.defaultAuthSelector = new DefaultAuthenticationSelector();
