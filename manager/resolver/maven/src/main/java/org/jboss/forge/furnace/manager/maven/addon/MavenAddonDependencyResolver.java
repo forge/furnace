@@ -8,7 +8,6 @@
 package org.jboss.forge.furnace.manager.maven.addon;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,7 +20,9 @@ import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.collection.CollectResult;
+import org.eclipse.aether.collection.DependencyCollectionContext;
 import org.eclipse.aether.collection.DependencyCollectionException;
+import org.eclipse.aether.collection.DependencySelector;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -31,7 +32,6 @@ import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.resolution.DependencyResult;
 import org.eclipse.aether.resolution.VersionRangeRequest;
 import org.eclipse.aether.resolution.VersionRangeResult;
-import org.eclipse.aether.util.graph.selector.ScopeDependencySelector;
 import org.eclipse.aether.version.Version;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.manager.maven.MavenContainer;
@@ -159,9 +159,28 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       String mavenCoords = toMavenCoords(addonId);
       Artifact queryArtifact = new DefaultArtifact(mavenCoords);
 
-      session.setDependencySelector(new ScopeDependencySelector(Arrays.asList("provided", "compile"), Arrays
-               .asList("test")));
+      session.setDependencyTraverser(new AddonDependencyTraverser(classifier));
+      session.setDependencySelector(new DependencySelector()
+      {
 
+         @Override
+         public boolean selectDependency(Dependency dependency)
+         {
+            Artifact artifact = dependency.getArtifact();
+            if (classifier.equals(artifact.getClassifier()))
+            {
+               return true;
+            }
+            return (FURNACE_API_GROUP_ID.equals(artifact.getGroupId()) && FURNACE_API_ARTIFACT_ID.equals(artifact
+                     .getArtifactId()));
+         }
+
+         @Override
+         public DependencySelector deriveChildSelector(DependencyCollectionContext context)
+         {
+            return this;
+         }
+      });
       CollectRequest request = new CollectRequest(new Dependency(queryArtifact, null), repositories);
       CollectResult result;
       try
