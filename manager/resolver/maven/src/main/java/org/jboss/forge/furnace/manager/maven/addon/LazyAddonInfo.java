@@ -13,6 +13,7 @@ import java.util.Set;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.manager.spi.AddonDependencyResolver;
 import org.jboss.forge.furnace.manager.spi.AddonInfo;
+import org.jboss.forge.furnace.manager.spi.Response;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 
 /**
@@ -84,8 +85,8 @@ class LazyAddonInfo implements AddonInfo
    public void resolveResources(AddonInfoBuilder addonInfo)
    {
       AddonId addon = addonInfo.getAddon();
-      File[] resources = resolver.resolveResources(addon);
-      for (File resource : resources)
+      Response<File[]> resources = resolver.resolveResources(addon);
+      for (File resource : resources.get())
       {
          addonInfo.addResource(resource);
       }

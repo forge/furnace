@@ -35,9 +35,11 @@ import org.eclipse.aether.resolution.VersionRangeResult;
 import org.eclipse.aether.version.Version;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.manager.maven.MavenContainer;
+import org.jboss.forge.furnace.manager.maven.result.MavenResponseBuilder;
 import org.jboss.forge.furnace.manager.maven.util.MavenRepositories;
 import org.jboss.forge.furnace.manager.spi.AddonDependencyResolver;
 import org.jboss.forge.furnace.manager.spi.AddonInfo;
+import org.jboss.forge.furnace.manager.spi.Response;
 import org.jboss.forge.furnace.util.Assert;
 
 /**
@@ -79,7 +81,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    }
 
    @Override
-   public File[] resolveResources(final AddonId addonId)
+   public Response<File[]> resolveResources(final AddonId addonId)
    {
       RepositorySystem system = container.getRepositorySystem();
       Settings settings = container.getSettings();
@@ -102,6 +104,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       {
          throw new RuntimeException(e);
       }
+      List<Exception> collectExceptions = result.getCollectExceptions();
       Set<File> files = new HashSet<File>();
       List<ArtifactResult> artifactResults = result.getArtifactResults();
       for (ArtifactResult artifactResult : artifactResults)
@@ -114,11 +117,11 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
          }
          files.add(artifact.getFile());
       }
-      return files.toArray(new File[files.size()]);
+      return new MavenResponseBuilder<File[]>(files.toArray(new File[files.size()])).setExceptions(collectExceptions);
    }
 
    @Override
-   public AddonId[] resolveVersions(final String addonName)
+   public Response<AddonId[]> resolveVersions(final String addonName)
    {
       String addonNameSplit;
       String version;
@@ -139,6 +142,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
       List<RemoteRepository> repositories = MavenRepositories.getRemoteRepositories(container, settings);
       VersionRangeResult versions = getVersions(system, settings, session, repositories, addonNameSplit, version);
+      List<Exception> exceptions = versions.getExceptions();
       List<Version> versionsList = versions.getVersions();
       int size = versionsList.size();
       AddonId[] addons = new AddonId[size];
@@ -146,11 +150,11 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       {
          addons[i] = AddonId.from(addonName, versionsList.get(i).toString());
       }
-      return addons;
+      return new MavenResponseBuilder<AddonId[]>(addons).setExceptions(exceptions);
    }
 
    @Override
-   public String resolveAPIVersion(AddonId addonId)
+   public Response<String> resolveAPIVersion(AddonId addonId)
    {
       RepositorySystem system = container.getRepositorySystem();
       Settings settings = container.getSettings();
@@ -191,8 +195,9 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       {
          throw new RuntimeException(e);
       }
+      List<Exception> exceptions = result.getExceptions();
       String apiVersion = findVersion(result.getRoot().getChildren(), FURNACE_API_GROUP_ID, FURNACE_API_ARTIFACT_ID);
-      return apiVersion;
+      return new MavenResponseBuilder<String>(apiVersion).setExceptions(exceptions);
    }
 
    private String findVersion(List<DependencyNode> dependencies, String groupId, String artifactId)

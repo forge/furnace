@@ -26,15 +26,15 @@ public interface AddonDependencyResolver
    /**
     * Resolve an artifact given an {@link AddonId} coordinate
     */
-   public File[] resolveResources(final AddonId addonId);
+   public Response<File[]> resolveResources(final AddonId addonId);
 
    /**
     * Resolve all versions of a given {@link AddonId}
     */
-   public AddonId[] resolveVersions(final String addonName);
+   public Response<AddonId[]> resolveVersions(final String addonName);
 
    /**
     * Resolve the API version for a given {@link AddonId}
     */
-   public String resolveAPIVersion(final AddonId addonId);
+   public Response<String> resolveAPIVersion(final AddonId addonId);
 }
