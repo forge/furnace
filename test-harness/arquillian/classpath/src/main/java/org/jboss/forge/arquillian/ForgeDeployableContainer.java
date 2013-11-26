@@ -72,6 +72,7 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
    private Thread thread;
 
    private boolean undeploying = false;
+   private ForgeContainerConfiguration configuration;
 
    @Override
    public ProtocolMetaData deploy(final Archive<?> archive) throws DeploymentException
@@ -106,7 +107,7 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
       else if (archive instanceof ForgeRemoteAddon)
       {
          ForgeRemoteAddon remoteAddon = (ForgeRemoteAddon) archive;
-         AddonDependencyResolver resolver = new MavenAddonDependencyResolver();
+         AddonDependencyResolver resolver = new MavenAddonDependencyResolver(configuration.getClassifier());
          AddonManager addonManager = new AddonManagerImpl(runnable.furnace, resolver);
 
          AddonRepository target = selectTargetRepository(archive);
@@ -267,6 +268,7 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
    @Override
    public void setup(ForgeContainerConfiguration configuration)
    {
+      this.configuration = configuration;
    }
 
    @Override

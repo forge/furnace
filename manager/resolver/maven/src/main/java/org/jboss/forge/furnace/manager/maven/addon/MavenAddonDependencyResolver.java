@@ -51,7 +51,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    private static final String FURNACE_API_GROUP_ID = "org.jboss.forge.furnace";
    private static final String FURNACE_API_ARTIFACT_ID = "furnace-api";
 
-   private static final String FORGE_ADDON_CLASSIFIER = "forge-addon";
+   public static final String FORGE_ADDON_CLASSIFIER = "forge-addon";
    private final String classifier;
    private final MavenContainer container = new MavenContainer();
 
