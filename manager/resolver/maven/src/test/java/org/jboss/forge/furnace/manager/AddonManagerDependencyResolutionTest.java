@@ -136,6 +136,16 @@ public class AddonManagerDependencyResolutionTest
    }
 
    @Test
+   public void testResolveVersionsSnapshot() throws Exception
+   {
+      AddonId[] versions = resolver.resolveVersions("test:furnace_api_snapshot").get();
+      Assert.assertNotNull(versions);
+      Assert.assertEquals(1, versions.length);
+      AddonId sut = versions[0];
+      Assert.assertEquals("1.0.0-SNAPSHOT", sut.getVersion().toString());
+   }
+
+   @Test
    public void testResolveAPIVersion() throws Exception
    {
       AddonId sut = AddonId.from("test:furnace_api_dep", "1.0.0.Final");

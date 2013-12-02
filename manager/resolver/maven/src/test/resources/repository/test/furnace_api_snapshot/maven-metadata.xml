@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <metadata>
    <groupId>test</groupId>
-   <artifactId>furnace_api_dep</artifactId>
+   <artifactId>furnace_api_snapshot</artifactId>
    <versioning>
-      <latest>1.0.0-SNAPSHOT</latest>
-      <release>1.0.0.Final</release>
       <versions>
          <version>1.0.0-SNAPSHOT</version>
-         <version>1.0.0.Final</version>
       </versions>
       <lastUpdated>20130310152137</lastUpdated>
    </versioning>

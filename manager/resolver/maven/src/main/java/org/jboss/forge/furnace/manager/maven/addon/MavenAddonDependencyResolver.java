@@ -8,6 +8,7 @@
 package org.jboss.forge.furnace.manager.maven.addon;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -41,6 +42,7 @@ import org.jboss.forge.furnace.manager.spi.AddonDependencyResolver;
 import org.jboss.forge.furnace.manager.spi.AddonInfo;
 import org.jboss.forge.furnace.manager.spi.Response;
 import org.jboss.forge.furnace.util.Assert;
+import org.jboss.forge.furnace.versions.Versions;
 
 /**
  * Maven implementation of the {@link AddonDependencyResolver} used by the AddonManager
@@ -144,13 +146,25 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       VersionRangeResult versions = getVersions(system, settings, session, repositories, addonNameSplit, version);
       List<Exception> exceptions = versions.getExceptions();
       List<Version> versionsList = versions.getVersions();
-      int size = versionsList.size();
-      AddonId[] addons = new AddonId[size];
-      for (int i = 0; i < size; i++)
+      List<AddonId> addons = new ArrayList<AddonId>();
+      List<AddonId> snapshots = new ArrayList<AddonId>();
+      for (Version artifactVersion : versionsList)
       {
-         addons[i] = AddonId.from(addonName, versionsList.get(i).toString());
+         AddonId addonId = AddonId.from(addonName, artifactVersion.toString());
+         if (Versions.isSnapshot(addonId.getVersion()))
+         {
+            snapshots.add(addonId);
+         }
+         else
+         {
+            addons.add(addonId);
+         }
       }
-      return new MavenResponseBuilder<AddonId[]>(addons).setExceptions(exceptions);
+      if (addons.isEmpty())
+      {
+         addons = snapshots;
+      }
+      return new MavenResponseBuilder<AddonId[]>(addons.toArray(new AddonId[addons.size()])).setExceptions(exceptions);
    }
 
    @Override
