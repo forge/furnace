@@ -164,7 +164,15 @@ public final class AddonRunnable implements Runnable
                      {
                         for (Addon a : view.getAddons(notThisAddonFilter))
                         {
-                           a.getEventManager().fireEvent(new PreShutdown(addon));
+                           try
+                           {
+                              a.getEventManager().fireEvent(new PreShutdown(addon));
+                           }
+                           catch (Throwable t)
+                           {
+                              logger.log(Level.FINE, "Failed to execute pre-shutdown task for [" + addon
+                                       + "] in event manager from " + a.getId(), t);
+                           }
                         }
                      }
                      lifecycleProvider.preShutdown(addon);
