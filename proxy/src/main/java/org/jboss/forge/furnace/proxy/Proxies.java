@@ -22,7 +22,7 @@ import javassist.util.proxy.ProxyObject;
  */
 public class Proxies
 {
-   private static Map<Integer, WeakReference<Class<?>>> cache = new ConcurrentHashMap<Integer, WeakReference<Class<?>>>();
+   private static Map<Integer, WeakReference<Class<?>>> cache = new ConcurrentHashMap<>();
 
    private static MethodFilter filter = new MethodFilter()
    {
@@ -33,6 +33,7 @@ public class Proxies
          Class<?>[] parameterTypes = method.getParameterTypes();
          if (!method.getDeclaringClass().getName().contains("java.lang")
                   || ("clone".equals(name) && parameterTypes.length == 0)
+                  || ("close".equals(name) && parameterTypes.length == 0)
                   || ("equals".equals(name) && parameterTypes.length == 1)
                   || ("hashCode".equals(name) && parameterTypes.length == 0)
                   || ("toString".equals(name) && parameterTypes.length == 0))

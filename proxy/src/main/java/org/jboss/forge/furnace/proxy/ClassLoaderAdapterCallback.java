@@ -500,6 +500,15 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       return false;
    }
 
+   private static boolean isAutoCloseableClose(Method method)
+   {
+      if (void.class.equals(method.getReturnType())
+               && "close".equals(method.getName())
+               && method.getParameterTypes().length == 0)
+         return true;
+      return false;
+   }
+
    private List<Class<?>> translateParameterTypes(final Method method) throws ClassNotFoundException
    {
       List<Class<?>> parameterTypes = new ArrayList<>();
@@ -571,7 +580,8 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                                  || !Proxies.isPassthroughType(method.getDeclaringClass())
                                  || ("toString".equals(method.getName()) && method.getParameterTypes().length == 0)
                                  || isEquals(method)
-                                 || isHashCode(method))
+                                 || isHashCode(method)
+                                 || isAutoCloseableClose(method))
                            return true;
                         return false;
                      }
