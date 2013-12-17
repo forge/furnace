@@ -17,8 +17,10 @@ import org.jboss.forge.furnace.util.ClassLoaders;
  */
 public class ClassLoaderInterceptor implements ForgeProxy
 {
-   private ClassLoader loader;
-   private Object delegate;
+   private static final ThreadLocal<ClassLoader> currentLoader = new ThreadLocal<>();
+
+   private final ClassLoader loader;
+   private final Object delegate;
 
    public ClassLoaderInterceptor(ClassLoader loader, Object delegate)
    {
@@ -46,9 +48,11 @@ public class ClassLoaderInterceptor implements ForgeProxy
             {
             }
 
+            ClassLoader previousLoader = null;
             Object result;
             try
             {
+               previousLoader = setCurrentLoader(loader);
                result = thisMethod.invoke(delegate, args);
             }
             catch (InvocationTargetException e)
@@ -57,11 +61,27 @@ public class ClassLoaderInterceptor implements ForgeProxy
                   throw (Exception) e.getCause();
                throw e;
             }
+            finally
+            {
+               setCurrentLoader(previousLoader);
+            }
             return result;
          }
       };
 
       return ClassLoaders.executeIn(loader, task);
+   }
+
+   public static ClassLoader getCurrentloader()
+   {
+      return currentLoader.get();
+   }
+
+   private static ClassLoader setCurrentLoader(ClassLoader loader)
+   {
+      ClassLoader previous = currentLoader.get();
+      currentLoader.set(loader);
+      return previous;
    }
 
    @Override
