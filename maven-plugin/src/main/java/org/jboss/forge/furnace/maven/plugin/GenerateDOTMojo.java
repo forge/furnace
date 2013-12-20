@@ -20,6 +20,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
+import org.apache.maven.settings.Settings;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.impl.graph.AddonDependencyEdge;
 import org.jboss.forge.furnace.impl.graph.AddonDependencyEdgeNameProvider;
@@ -94,6 +95,12 @@ public class GenerateDOTMojo extends AbstractMojo
    @Component
    private MavenProjectHelper projectHelper;
 
+   /**
+    * The current settings
+    */
+   @Parameter(defaultValue = "${settings}", required = true, readonly = true)
+   private Settings settings;
+
    @Override
    public void execute() throws MojoExecutionException, MojoFailureException
    {
@@ -102,7 +109,8 @@ public class GenerateDOTMojo extends AbstractMojo
          getLog().info("Execution skipped.");
          return;
       }
-      AddonDependencyResolver addonResolver = new MavenAddonDependencyResolver(classifier);
+      MavenAddonDependencyResolver addonResolver = new MavenAddonDependencyResolver(classifier);
+      addonResolver.setSettings(settings);
       if (addonIds == null || addonIds.length == 0)
       {
          AddonId id = AddonId.from(mavenProject.getGroupId() + ":" + mavenProject.getArtifactId(),

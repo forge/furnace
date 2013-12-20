@@ -15,6 +15,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.settings.Settings;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.impl.FurnaceImpl;
@@ -22,7 +23,6 @@ import org.jboss.forge.furnace.manager.AddonManager;
 import org.jboss.forge.furnace.manager.impl.AddonManagerImpl;
 import org.jboss.forge.furnace.manager.maven.addon.MavenAddonDependencyResolver;
 import org.jboss.forge.furnace.manager.request.InstallRequest;
-import org.jboss.forge.furnace.manager.spi.AddonDependencyResolver;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 
@@ -50,6 +50,12 @@ public class AddonInstallMojo extends AbstractMojo
    @Parameter(defaultValue = "forge-addon")
    private String classifier;
 
+   /**
+    * The current settings
+    */
+   @Parameter(defaultValue = "${settings}", required = true, readonly = true)
+   private Settings settings;
+
    @Override
    public void execute() throws MojoExecutionException, MojoFailureException
    {
@@ -59,7 +65,8 @@ public class AddonInstallMojo extends AbstractMojo
          addonRepository.mkdirs();
       }
       AddonRepository repository = forge.addRepository(AddonRepositoryMode.MUTABLE, addonRepository);
-      AddonDependencyResolver addonResolver = new MavenAddonDependencyResolver(this.classifier);
+      MavenAddonDependencyResolver addonResolver = new MavenAddonDependencyResolver(this.classifier);
+      addonResolver.setSettings(settings);
       AddonManager addonManager = new AddonManagerImpl(forge, addonResolver);
 
       for (String addonId : addonIds)
