@@ -6,8 +6,10 @@
  */
 package org.jboss.forge.furnace.manager.maven.util;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Settings;
@@ -26,14 +28,14 @@ public class MavenRepositories
 
    public static List<RemoteRepository> getRemoteRepositories(MavenContainer container, Settings settings)
    {
-      List<RemoteRepository> remoteRepos = new ArrayList<RemoteRepository>();
+      Set<RemoteRepository> remoteRepos = new HashSet<>();
       remoteRepos.addAll(container.getEnabledRepositoriesFromProfile(settings));
       if (remoteRepos.isEmpty())
       {
          // Add central in case remote repo list is empty
          remoteRepos.add(convertToMavenRepo("central", MAVEN_CENTRAL_REPO, settings));
       }
-      return remoteRepos;
+      return Arrays.asList(remoteRepos.toArray(new RemoteRepository[] {}));
    }
 
    static RemoteRepository convertToMavenRepo(final String id, String url, final Settings settings)

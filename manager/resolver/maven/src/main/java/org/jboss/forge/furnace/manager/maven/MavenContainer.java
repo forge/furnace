@@ -9,9 +9,12 @@ package org.jboss.forge.furnace.manager.maven;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.maven.model.building.DefaultModelBuilderFactory;
 import org.apache.maven.model.building.ModelBuilder;
@@ -70,19 +73,18 @@ public class MavenContainer
    public static final String ALT_LOCAL_REPOSITORY_LOCATION = "maven.repo.local";
 
    /**
-    * Get a list of all {@link RemoteRepository} instances from the Maven settings.
-    * The returned list can be used as is in a CollectRequest or a VersionRangeRequest,
-    * since all repositories and mirrors have been enriched with the required
-    * authentication info.
+    * Get a list of all {@link RemoteRepository} instances from the Maven settings. The returned list can be used as is
+    * in a CollectRequest or a VersionRangeRequest, since all repositories and mirrors have been enriched with the
+    * required authentication info.
     * 
     * @param settings The Maven settings instance.
     * @return A list of {@link RemoteRepository} instances
     */
    public List<RemoteRepository> getEnabledRepositoriesFromProfile(Settings settings)
    {
-      List<RemoteRepository> settingsRepos = new ArrayList<RemoteRepository>();
+      Set<RemoteRepository> settingsRepos = new HashSet<>();
       List<String> activeProfiles = settings.getActiveProfiles();
-      
+
       // "Active by default" profiles must be added separately, since they are not recognized as active ones
       for (Profile profile : settings.getProfiles())
       {
@@ -109,27 +111,27 @@ public class MavenContainer
             }
          }
       }
-      
+
       final DefaultMirrorSelector mirrorSelector = createMirrorSelector(settings);
-      
-      final List<RemoteRepository> mirrorsForSettingsRepos = new ArrayList<RemoteRepository>();
-      for(Iterator<RemoteRepository> iter  = settingsRepos.iterator(); iter.hasNext();)
+
+      final List<RemoteRepository> mirrorsForSettingsRepos = new ArrayList<>();
+      for (Iterator<RemoteRepository> iter = settingsRepos.iterator(); iter.hasNext();)
       {
          RemoteRepository settingsRepository = iter.next();
          RemoteRepository repoMirror = mirrorSelector.getMirror(settingsRepository);
          // If a mirror is available for a repository, then remove the repo, and use the mirror instead
-         if(repoMirror != null)
+         if (repoMirror != null)
          {
             iter.remove();
             mirrorsForSettingsRepos.add(repoMirror);
          }
       }
-      // We now have a collection of mirrors and unmirrored repositories. 
+      // We now have a collection of mirrors and unmirrored repositories.
       settingsRepos.addAll(mirrorsForSettingsRepos);
-      
-      List<RemoteRepository> enrichedRepos = new ArrayList<RemoteRepository>();
+
+      Set<RemoteRepository> enrichedRepos = new HashSet<>();
       LazyAuthenticationSelector authSelector = createAuthSelector(settings, mirrorSelector);
-      for(RemoteRepository settingsRepo: settingsRepos)
+      for (RemoteRepository settingsRepo : settingsRepos)
       {
          // Obtain the Authentication for the repository or it's mirror
          Authentication auth = authSelector.getAuthentication(settingsRepo);
@@ -137,7 +139,7 @@ public class MavenContainer
          // Use the settings repo as the prototype and create an enriched repo with the Authentication.
          enrichedRepos.add(new RemoteRepository.Builder(settingsRepo).setAuthentication(auth).build());
       }
-      return enrichedRepos;
+      return Arrays.asList(enrichedRepos.toArray(new RemoteRepository[] {}));
    }
 
    public Settings getSettings()
@@ -229,7 +231,7 @@ public class MavenContainer
    {
       DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
       session.setOffline(false);
-      
+
       Proxy activeProxy = settings.getActiveProxy();
       if (activeProxy != null)
       {
@@ -255,7 +257,7 @@ public class MavenContainer
       session.setTransferListener(new LogTransferListener(System.out));
       return session;
    }
-   
+
    private DefaultMirrorSelector createMirrorSelector(Settings settings)
    {
       final DefaultMirrorSelector mirrorSelector = new DefaultMirrorSelector();
