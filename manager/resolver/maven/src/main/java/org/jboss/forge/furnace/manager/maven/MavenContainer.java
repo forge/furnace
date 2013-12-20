@@ -9,7 +9,6 @@ package org.jboss.forge.furnace.manager.maven;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -139,7 +138,7 @@ public class MavenContainer
          // Use the settings repo as the prototype and create an enriched repo with the Authentication.
          enrichedRepos.add(new RemoteRepository.Builder(settingsRepo).setAuthentication(auth).build());
       }
-      return Arrays.asList(enrichedRepos.toArray(new RemoteRepository[] {}));
+      return new ArrayList<>(enrichedRepos);
    }
 
    public Settings getSettings()

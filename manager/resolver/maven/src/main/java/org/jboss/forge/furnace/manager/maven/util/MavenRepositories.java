@@ -6,7 +6,7 @@
  */
 package org.jboss.forge.furnace.manager.maven.util;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,7 +35,7 @@ public class MavenRepositories
          // Add central in case remote repo list is empty
          remoteRepos.add(convertToMavenRepo("central", MAVEN_CENTRAL_REPO, settings));
       }
-      return Arrays.asList(remoteRepos.toArray(new RemoteRepository[] {}));
+      return new ArrayList<>(remoteRepos);
    }
 
    static RemoteRepository convertToMavenRepo(final String id, String url, final Settings settings)
