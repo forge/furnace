@@ -415,7 +415,8 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                // Trying with delegate ClassLoader;
                try
                {
-                  loadedClass = unwrappedDelegateLoader.loadClass(Proxies.unwrapProxyClassName(paramClassValue));
+                  if (unwrappedDelegateLoader != null)
+                     loadedClass = unwrappedDelegateLoader.loadClass(Proxies.unwrapProxyClassName(paramClassValue));
                }
                catch (ClassNotFoundException cnfe)
                {
@@ -423,8 +424,8 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                    * No way, here is the original class and god bless you :) Also unwrap any proxy types since we don't
                    * know about this object, there is no reason to pass a proxied class type.
                    */
-                  loadedClass = Proxies.unwrapProxyTypes(paramClassValue);
                }
+               loadedClass = Proxies.unwrapProxyTypes(paramClassValue);
             }
             return loadedClass;
          }
