@@ -40,9 +40,6 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
 
    private final ClassLoader initialCallingLoader;
    private final ClassLoader delegateLoader;
-
-   private final Object unwrappedDelegate;
-   private final Class<?> unwrappedDelegateType;
    private final ClassLoader unwrappedDelegateLoader;
 
    private ClassLoader getCallingLoader()
@@ -64,8 +61,9 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       this.delegateLoader = delegateLoader;
       this.delegate = delegate;
 
-      unwrappedDelegate = Proxies.unwrap(delegate);
-      unwrappedDelegateType = Proxies.unwrapProxyTypes(unwrappedDelegate.getClass(), callingLoader, delegateLoader,
+      Object unwrappedDelegate = Proxies.unwrap(delegate);
+      Class<?> unwrappedDelegateType = Proxies.unwrapProxyTypes(unwrappedDelegate.getClass(), callingLoader,
+               delegateLoader,
                unwrappedDelegate.getClass().getClassLoader());
       unwrappedDelegateLoader = unwrappedDelegateType.getClassLoader();
    }
@@ -165,8 +163,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
    {
       if (result != null)
       {
-         Object unwrappedResult = Proxies.unwrap(result);
-         Class<?> unwrappedResultType = unwrappedResult.getClass();
+         Class<?> unwrappedResultType = Proxies.unwrap(result).getClass();
 
          ClassLoader callingLoader = getCallingLoader();
          if (getCallingLoader().equals(delegateLoader))
@@ -217,7 +214,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                               && handler.getCallingLoader().equals(getCallingLoader())
                               && handler.getDelegateLoader().equals(getDelegateLoader()))
                      {
-                        delegateObject = unwrappedResult;
+                        delegateObject = stripClassLoaderAdapters(result);
                      }
                   }
 
@@ -258,8 +255,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       {
          if (exception != null)
          {
-            Exception unwrappedException = Proxies.unwrap(exception);
-            Class<?> unwrappedExceptionType = unwrappedException.getClass();
+            Class<?> unwrappedExceptionType = Proxies.unwrap(exception).getClass();
 
             ClassLoader exceptionLoader = delegateLoader;
             if (!ClassLoaders.containsClass(delegateLoader, unwrappedExceptionType))
@@ -434,8 +430,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
          }
          else
          {
-            Object unwrappedValue = Proxies.unwrapOnce(parameterValue);
-
+            Object unwrappedValue = stripClassLoaderAdapters(parameterValue);
             if (delegateParameterType.isAssignableFrom(unwrappedValue.getClass())
                      && !Proxies.isLanguageType(unwrappedValue.getClass())
                      && (!isEquals(delegateMethod) || (isEquals(delegateMethod) && ClassLoaders.containsClass(
@@ -446,7 +441,6 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
             }
             else
             {
-               unwrappedValue = Proxies.unwrap(parameterValue);
                Class<?> unwrappedValueType = Proxies.unwrapProxyTypes(unwrappedValue.getClass(), delegateMethod
                         .getDeclaringClass().getClassLoader(), getCallingLoader(),
                         delegateLoader, unwrappedValue.getClass()
