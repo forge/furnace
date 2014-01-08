@@ -463,4 +463,17 @@ public class Proxies
 
       return result;
    }
+
+   public static Object getForgeProxyHandler(Object result)
+   {
+      try
+      {
+         if (isForgeProxy(result))
+            return result.getClass().getMethod("getHandler").invoke(result);
+      }
+      catch (Exception e)
+      {
+      }
+      return null;
+   }
 }

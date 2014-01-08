@@ -83,7 +83,10 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
             {
                if (thisMethod.getDeclaringClass().equals(getCallingLoader().loadClass(ForgeProxy.class.getName())))
                {
-                  return delegate;
+                  if (thisMethod.getName().equals("getDelegate"))
+                     return ClassLoaderAdapterCallback.this.getDelegate();
+                  if (thisMethod.getName().equals("getHandler"))
+                     return ClassLoaderAdapterCallback.this.getHandler();
                }
             }
             catch (Exception e)
@@ -158,12 +161,16 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       });
    }
 
-   private Object enhanceResult(final Method method, Object result)
+   private Object enhanceResult(final Method method, Object result) throws Exception
    {
       if (result != null)
       {
          Object unwrappedResult = Proxies.unwrap(result);
          Class<?> unwrappedResultType = unwrappedResult.getClass();
+
+         ClassLoader callingLoader = getCallingLoader();
+         if (getCallingLoader().equals(delegateLoader))
+            callingLoader = getInitialCallingLoader();
 
          ClassLoader resultInstanceLoader = delegateLoader;
          if (!ClassLoaders.containsClass(delegateLoader, unwrappedResultType))
@@ -180,18 +187,19 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
          Class<?> returnType = method.getReturnType();
          if (returnTypeNeedsEnhancement(returnType, result, unwrappedResultType))
          {
-            Class<?>[] resultHierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(getCallingLoader(),
-                     Proxies.unwrapProxyTypes(result.getClass(), getCallingLoader(), delegateLoader,
+            result = stripClassLoaderAdapters(result);
+            Class<?>[] resultHierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(callingLoader,
+                     Proxies.unwrapProxyTypes(result.getClass(), callingLoader, delegateLoader,
                               resultInstanceLoader));
 
-            Class<?>[] returnTypeHierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(getCallingLoader(),
-                     Proxies.unwrapProxyTypes(returnType, getCallingLoader(), delegateLoader, resultInstanceLoader));
+            Class<?>[] returnTypeHierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(callingLoader,
+                     Proxies.unwrapProxyTypes(returnType, callingLoader, delegateLoader, resultInstanceLoader));
 
             if (!Modifier.isFinal(returnType.getModifiers()))
             {
                if (Object.class.equals(returnType) && !Object.class.equals(result))
                {
-                  result = enhance(getCallingLoader(), resultInstanceLoader, method, result, resultHierarchy);
+                  result = enhance(callingLoader, resultInstanceLoader, method, result, resultHierarchy);
                }
                else
                {
@@ -199,20 +207,48 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                   {
                      returnTypeHierarchy = new Class[] { returnType };
                   }
-                  result = enhance(getCallingLoader(), resultInstanceLoader, method, result,
+
+                  Object delegateObject = result;
+                  if (result instanceof ForgeProxy)
+                  {
+                     ClassLoaderAdapterCallback handler = (ClassLoaderAdapterCallback) (((ForgeProxy) result)
+                              .getHandler());
+                     if ((((ForgeProxy) result).getHandler() instanceof ClassLoaderAdapterCallback)
+                              && handler.getCallingLoader().equals(getCallingLoader())
+                              && handler.getDelegateLoader().equals(getDelegateLoader()))
+                     {
+                        delegateObject = unwrappedResult;
+                     }
+                  }
+
+                  result = enhance(callingLoader, resultInstanceLoader, method, delegateObject,
                            mergeHierarchies(returnTypeHierarchy, resultHierarchy));
                }
             }
             else
             {
                if (result.getClass().isEnum())
-                  result = enhanceEnum(getCallingLoader(), result);
+                  result = enhanceEnum(callingLoader, result);
                else
-                  result = enhance(getCallingLoader(), resultInstanceLoader, method, returnTypeHierarchy);
+                  result = enhance(callingLoader, resultInstanceLoader, method, returnTypeHierarchy);
             }
          }
       }
       return result;
+   }
+
+   private Object stripClassLoaderAdapters(Object value)
+   {
+      while (Proxies.isForgeProxy(value))
+      {
+         Object handler = Proxies.getForgeProxyHandler(value);
+         if (handler.getClass().getName().equals(ClassLoaderAdapterCallback.class.getName()))
+            value = Proxies.unwrapOnce(value);
+         else
+            break;
+      }
+
+      return value;
    }
 
    private Exception enhanceException(final Method method, final Exception exception)
@@ -350,7 +386,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       return true;
    }
 
-   private List<Object> enhanceParameterValues(final Object[] args, Method delegateMethod)
+   private List<Object> enhanceParameterValues(final Object[] args, Method delegateMethod) throws Exception
    {
       List<Object> parameterValues = new ArrayList<>();
       for (int i = 0; i < delegateMethod.getParameterTypes().length; i++)
@@ -358,13 +394,14 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
          final Class<?> delegateParameterType = delegateMethod.getParameterTypes()[i];
          final Object parameterValue = args[i];
 
-         parameterValues.add(enhanceSingleParameterValue(delegateMethod, delegateParameterType, parameterValue));
+         parameterValues.add(enhanceSingleParameterValue(delegateMethod, delegateParameterType,
+                  stripClassLoaderAdapters(parameterValue)));
       }
       return parameterValues;
    }
 
    private Object enhanceSingleParameterValue(final Method delegateMethod, final Class<?> delegateParameterType,
-            final Object parameterValue)
+            final Object parameterValue) throws Exception
    {
       if (parameterValue != null)
       {
@@ -398,6 +435,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
          else
          {
             Object unwrappedValue = Proxies.unwrapOnce(parameterValue);
+
             if (delegateParameterType.isAssignableFrom(unwrappedValue.getClass())
                      && !Proxies.isLanguageType(unwrappedValue.getClass())
                      && (!isEquals(delegateMethod) || (isEquals(delegateMethod) && ClassLoaders.containsClass(
@@ -445,7 +483,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                   for (int j = 0; j < array.length; j++)
                   {
                      delegateArray[j] = enhanceSingleParameterValue(delegateMethod,
-                              delegateParameterType.getComponentType(), array[j]);
+                              delegateParameterType.getComponentType(), stripClassLoaderAdapters(array[j]));
                   }
                   return delegateArray;
                }
@@ -465,7 +503,21 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                         compatibleClassHierarchy = new Class[] { delegateParameterType };
                      }
 
-                     Object delegateParameterValue = enhance(valueDelegateLoader, valueCallingLoader, parameterValue,
+                     Object delegateObject = parameterValue;
+                     if (parameterValue instanceof ForgeProxy)
+                     {
+                        ClassLoaderAdapterCallback handler = (ClassLoaderAdapterCallback) (((ForgeProxy) parameterValue)
+                                 .getHandler());
+                        if ((((ForgeProxy) parameterValue).getHandler() instanceof ClassLoaderAdapterCallback)
+                                 && handler.getCallingLoader().equals(getCallingLoader())
+                                 && handler.getDelegateLoader().equals(getDelegateLoader())
+                                 && delegateParameterType.isAssignableFrom(unwrappedValue.getClass()))
+                        {
+                           delegateObject = unwrappedValue;
+                        }
+                     }
+
+                     Object delegateParameterValue = enhance(valueDelegateLoader, valueCallingLoader, delegateObject,
                               compatibleClassHierarchy);
 
                      return delegateParameterValue;
@@ -673,5 +725,21 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
    public Object getDelegate() throws Exception
    {
       return delegate;
+   }
+
+   @Override
+   public Object getHandler() throws Exception
+   {
+      return this;
+   }
+
+   public ClassLoader getDelegateLoader()
+   {
+      return delegateLoader;
+   }
+
+   public ClassLoader getInitialCallingLoader()
+   {
+      return initialCallingLoader;
    }
 }

@@ -41,7 +41,10 @@ public class ClassLoaderInterceptor implements ForgeProxy
             {
                if (thisMethod.getDeclaringClass().getName().equals(ForgeProxy.class.getName()))
                {
-                  return delegate;
+                  if (thisMethod.getName().equals("getDelegate"))
+                     return ClassLoaderInterceptor.this.getDelegate();
+                  if (thisMethod.getName().equals("getHandler"))
+                     return ClassLoaderInterceptor.this.getHandler();
                }
             }
             catch (Exception e)
@@ -88,6 +91,12 @@ public class ClassLoaderInterceptor implements ForgeProxy
    public Object getDelegate() throws Exception
    {
       return delegate;
+   }
+
+   @Override
+   public Object getHandler() throws Exception
+   {
+      return this;
    }
 
 }

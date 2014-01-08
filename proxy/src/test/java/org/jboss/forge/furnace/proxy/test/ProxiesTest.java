@@ -38,6 +38,12 @@ public class ProxiesTest
       {
          return new MockType();
       }
+
+      @Override
+      public Object getHandler() throws Exception
+      {
+         return this;
+      }
    };
 
    public class MemberClass
@@ -75,6 +81,12 @@ public class ProxiesTest
          {
             return bean;
          }
+
+         @Override
+         public Object getHandler() throws Exception
+         {
+            return this;
+         }
       });
       Assert.assertNotEquals(BeanWithSuperClass.class.getName(), enhancedObj.getClass().getName());
       Class<?> result = Proxies.unwrapProxyTypes(enhancedObj.getClass());
@@ -96,6 +108,12 @@ public class ProxiesTest
          public Object getDelegate()
          {
             return null;
+         }
+
+         @Override
+         public Object getHandler() throws Exception
+         {
+            return this;
          }
       });
       Assert.assertNotEquals(Bean.class.getName(), enhancedObj.getClass().getName());
@@ -119,6 +137,12 @@ public class ProxiesTest
          public Object getDelegate()
          {
             return null;
+         }
+
+         @Override
+         public Object getHandler() throws Exception
+         {
+            return this;
          }
       });
       enhancedObj.setAtt("String");
@@ -144,6 +168,12 @@ public class ProxiesTest
          public Object getDelegate() throws Exception
          {
             return null;
+         }
+
+         @Override
+         public Object getHandler() throws Exception
+         {
+            return this;
          }
       });
       Assert.assertTrue(Proxies.isInstance(Bean.class, enhancedObj));

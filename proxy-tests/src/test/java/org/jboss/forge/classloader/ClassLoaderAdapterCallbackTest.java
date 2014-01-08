@@ -34,6 +34,12 @@ public class ClassLoaderAdapterCallbackTest
       {
          return new MockService();
       }
+
+      @Override
+      public Object getHandler() throws Exception
+      {
+         return this;
+      }
    };
 
    @Test

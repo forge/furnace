@@ -5,7 +5,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.jboss.forge.classloader;
+package org.jboss.forge.classloader.collections;
 
 import java.util.Iterator;
 
@@ -24,7 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
-public class ClassLoaderIterableProxiedTest
+public class CLACProxiedIterableTest
 {
    @Deployment(order = 3)
    public static ForgeArchive getDeployment()
@@ -32,7 +32,7 @@ public class ClassLoaderIterableProxiedTest
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
                .addBeansXML()
                .addClasses(IterableFactory.class)
-               .addAsLocalServices(ClassLoaderIterableProxiedTest.class);
+               .addAsLocalServices(CLACProxiedIterableTest.class);
 
       return archive;
    }
@@ -52,7 +52,7 @@ public class ClassLoaderIterableProxiedTest
    {
       AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
                .getAddonRegistry();
-      ClassLoader thisLoader = ClassLoaderIterableProxiedTest.class.getClassLoader();
+      ClassLoader thisLoader = CLACProxiedIterableTest.class.getClassLoader();
       ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep", "1")).getClassLoader();
 
       Class<?> foreignType = dep1Loader.loadClass(IterableFactory.class.getName());
@@ -77,7 +77,7 @@ public class ClassLoaderIterableProxiedTest
    {
       AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
                .getAddonRegistry();
-      ClassLoader thisLoader = ClassLoaderIterableProxiedTest.class.getClassLoader();
+      ClassLoader thisLoader = CLACProxiedIterableTest.class.getClassLoader();
       ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep", "1")).getClassLoader();
 
       Class<?> foreignType = dep1Loader.loadClass(IterableFactory.class.getName());

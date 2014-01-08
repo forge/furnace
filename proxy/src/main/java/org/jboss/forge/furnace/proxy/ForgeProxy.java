@@ -19,4 +19,9 @@ public interface ForgeProxy extends MethodHandler
     * Get the underlying delegate instance, if possible.
     */
    Object getDelegate() throws Exception;
+
+   /**
+    * Get the underlying proxy handler instance, if possible.
+    */
+   Object getHandler() throws Exception;
 }
