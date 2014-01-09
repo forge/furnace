@@ -10,6 +10,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,13 +48,14 @@ public class FurnaceImpl implements Furnace
 
    private boolean serverMode = true;
    private AddonLifecycleManager manager;
-   private final List<ContainerLifecycleListener> registeredListeners = new ArrayList<ContainerLifecycleListener>();
-   private final List<ListenerRegistration<ContainerLifecycleListener>> loadedListenerRegistrations = new ArrayList<ListenerRegistration<ContainerLifecycleListener>>();
+   private final List<ContainerLifecycleListener> registeredListeners = new ArrayList<>();
+   private final List<ListenerRegistration<ContainerLifecycleListener>> loadedListenerRegistrations = new ArrayList<>();
 
    private ClassLoader loader;
 
-   private final List<AddonRepository> repositories = new ArrayList<AddonRepository>();
-   private final Map<AddonRepository, Integer> lastRepoVersionSeen = new HashMap<AddonRepository, Integer>();
+   private final List<AddonRepository> repositories = new ArrayList<>();
+   private final Map<AddonRepository, Integer> lastRepoVersionSeen = new HashMap<>();
+   private final Map<AddonRepository, Date> lastRepoUpdateSeen = new HashMap<>();
 
    private final LockManager lock = new LockManagerImpl();
 
@@ -145,10 +147,13 @@ public class FurnaceImpl implements Furnace
                for (AddonRepository repository : repositories)
                {
                   int repoVersion = repository.getVersion();
-                  if (repoVersion > lastRepoVersionSeen.get(repository))
+                  Date lastRepoUpdate = repository.getLastModified();
+                  if (repoVersion > lastRepoVersionSeen.get(repository)
+                           || lastRepoUpdate.after(lastRepoUpdateSeen.get(repository)))
                   {
                      logger.log(Level.INFO, "Detected changes in repository [" + repository + "].");
                      lastRepoVersionSeen.put(repository, repoVersion);
+                     lastRepoUpdateSeen.put(repository, lastRepoUpdate);
                      dirty = true;
                   }
                }
@@ -287,8 +292,7 @@ public class FurnaceImpl implements Furnace
       {
          if (repositories == null || repositories.length == 0)
          {
-            result = new AddonRegistryImpl(lock, getLifecycleManager(), new ArrayList<AddonRepository>(
-                     getRepositories()), "ROOT");
+            result = new AddonRegistryImpl(lock, getLifecycleManager(), new ArrayList<>(getRepositories()), "ROOT");
             getLifecycleManager().addView(result);
          }
          else
@@ -372,6 +376,7 @@ public class FurnaceImpl implements Furnace
 
       this.repositories.add(repository);
       lastRepoVersionSeen.put(repository, 0);
+      lastRepoUpdateSeen.put(repository, new Date());
 
       return repository;
    }
