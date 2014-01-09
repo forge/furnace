@@ -61,7 +61,7 @@ public class PreShutdownEventTest
       return archive;
    }
 
-   @Test
+   @Test(timeout = 5000)
    public void testPreShutdownIsCalled() throws Exception
    {
       Furnace furnace = LocalServices.getFurnace(getClass().getClassLoader());

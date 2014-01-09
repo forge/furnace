@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.concurrent.TimeoutException;
 
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
@@ -108,8 +109,8 @@ public class AddonManagerHotswapTest
       Assert.assertEquals(1, furnace.getAddonRegistry().getAddons().size());
    }
 
-   @Test(timeout = 5000)
-   public void testFurnaceLoadsInstalledAddonFromSeparateInstance() throws IOException
+   @Test(timeout = 20000)
+   public void testFurnaceLoadsInstalledAddonFromSeparateInstance() throws IOException, TimeoutException
    {
       Assert.assertEquals(1, furnace.getRepositories().size());
       Assert.assertEquals(0, furnace.getAddonRegistry().getAddons().size());

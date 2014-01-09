@@ -7,10 +7,14 @@
 package org.jboss.forge.furnace.impl;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,13 +59,14 @@ public class FurnaceImpl implements Furnace
 
    private final List<AddonRepository> repositories = new ArrayList<>();
    private final Map<AddonRepository, Integer> lastRepoVersionSeen = new HashMap<>();
-   private final Map<AddonRepository, Date> lastRepoUpdateSeen = new HashMap<>();
 
    private final LockManager lock = new LockManagerImpl();
 
    private String[] args;
 
    private int registryCount = 0;
+
+   private WatchService watcher;
 
    public FurnaceImpl()
    {
@@ -70,6 +75,14 @@ public class FurnaceImpl implements Furnace
                   "loading all addons, but failures may occur if versions are not compatible.");
       if (Boolean.getBoolean("furnace.debug"))
          enableLogging();
+      try
+      {
+         watcher = FileSystems.getDefault().newWatchService();
+      }
+      catch (IOException e)
+      {
+         logger.log(Level.WARNING, "File monitoring could not be started.", e);
+      }
    }
 
    @Override
@@ -147,14 +160,21 @@ public class FurnaceImpl implements Furnace
                for (AddonRepository repository : repositories)
                {
                   int repoVersion = repository.getVersion();
-                  Date lastRepoUpdate = repository.getLastModified();
-                  if (repoVersion > lastRepoVersionSeen.get(repository)
-                           || lastRepoUpdate.after(lastRepoUpdateSeen.get(repository)))
+                  if (repoVersion > lastRepoVersionSeen.get(repository))
                   {
                      logger.log(Level.INFO, "Detected changes in repository [" + repository + "].");
                      lastRepoVersionSeen.put(repository, repoVersion);
-                     lastRepoUpdateSeen.put(repository, lastRepoUpdate);
                      dirty = true;
+                  }
+
+                  WatchKey key = watcher.poll();
+                  while (key != null)
+                  {
+                     if (!key.pollEvents().isEmpty())
+                     {
+                        dirty = true;
+                     }
+                     key = watcher.poll();
                   }
                }
 
@@ -292,7 +312,7 @@ public class FurnaceImpl implements Furnace
       {
          if (repositories == null || repositories.length == 0)
          {
-            result = new AddonRegistryImpl(lock, getLifecycleManager(), new ArrayList<>(getRepositories()), "ROOT");
+            result = new AddonRegistryImpl(lock, getLifecycleManager(), getRepositories(), "ROOT");
             getLifecycleManager().addView(result);
          }
          else
@@ -358,6 +378,22 @@ public class FurnaceImpl implements Furnace
       if (mode.isImmutable())
          repository = new ImmutableAddonRepository(repository);
 
+      try
+      {
+         if (watcher != null)
+         {
+            if (directory.exists())
+               directory.toPath().register(watcher, StandardWatchEventKinds.ENTRY_MODIFY);
+            else
+               logger.log(Level.WARNING, "Cannot monitor repository [" + directory
+                        + "] for changes because it does not exist.");
+         }
+      }
+      catch (IOException e)
+      {
+         logger.log(Level.WARNING, "Could not monitor repository [" + directory.toString() + "] for file changes.", e);
+      }
+
       return addRepository(repository);
    }
 
@@ -376,7 +412,6 @@ public class FurnaceImpl implements Furnace
 
       this.repositories.add(repository);
       lastRepoVersionSeen.put(repository, 0);
-      lastRepoUpdateSeen.put(repository, new Date());
 
       return repository;
    }

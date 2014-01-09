@@ -93,7 +93,7 @@ public class AddonRegistryImpl implements AddonRegistry
          @Override
          public Set<Addon> call() throws Exception
          {
-            HashSet<Addon> result = new HashSet<Addon>();
+            HashSet<Addon> result = new HashSet<>();
 
             for (Addon addon : manager.getAddons(AddonRegistryImpl.this))
             {
@@ -109,19 +109,19 @@ public class AddonRegistryImpl implements AddonRegistry
    @Override
    public Set<AddonRepository> getRepositories()
    {
-      return Collections.unmodifiableSet(new LinkedHashSet<AddonRepository>(repositories));
+      return Collections.unmodifiableSet(new LinkedHashSet<>(repositories));
    }
 
    @Override
    public <T> Imported<T> getServices(final Class<T> type)
    {
-      return new ImportedImpl<T>(this, lock, type);
+      return new ImportedImpl<>(this, lock, type);
    }
 
    @Override
    public <T> Imported<T> getServices(final String typeName)
    {
-      return new ImportedImpl<T>(this, lock, typeName);
+      return new ImportedImpl<>(this, lock, typeName);
    }
 
    @Override
@@ -132,7 +132,7 @@ public class AddonRegistryImpl implements AddonRegistry
          @Override
          public Set<Class<?>> call() throws Exception
          {
-            Set<Class<?>> result = new HashSet<Class<?>>();
+            Set<Class<?>> result = new HashSet<>();
             for (Addon addon : getAddons())
             {
                if (AddonStatus.STARTED.equals(addon.getStatus()))
@@ -154,7 +154,7 @@ public class AddonRegistryImpl implements AddonRegistry
          @Override
          public Set<Class<T>> call() throws Exception
          {
-            Set<Class<T>> result = new HashSet<Class<T>>();
+            Set<Class<T>> result = new HashSet<>();
             for (Addon addon : getAddons())
             {
                if (AddonStatus.STARTED.equals(addon.getStatus()))
