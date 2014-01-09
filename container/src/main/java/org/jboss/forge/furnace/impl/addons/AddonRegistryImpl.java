@@ -6,6 +6,7 @@
  */
 package org.jboss.forge.furnace.impl.addons;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -51,7 +52,7 @@ public class AddonRegistryImpl implements AddonRegistry
 
       this.lock = lock;
       this.manager = manager;
-      this.repositories = repositories;
+      this.repositories = new ArrayList<>(repositories);
       this.name = name;
 
       logger.log(Level.FINE, "Instantiated AddonRegistryImpl: " + this);
@@ -180,12 +181,12 @@ public class AddonRegistryImpl implements AddonRegistry
 
       builder.append("REPOSITORIES:").append("\n");
 
-      Iterator<AddonRepository> repostioryIterator = getRepositories().iterator();
-      while (repostioryIterator.hasNext())
+      Iterator<AddonRepository> repositoryIterator = getRepositories().iterator();
+      while (repositoryIterator.hasNext())
       {
-         AddonRepository addon = repostioryIterator.next();
+         AddonRepository addon = repositoryIterator.next();
          builder.append(addon.toString());
-         if (repostioryIterator.hasNext())
+         if (repositoryIterator.hasNext())
             builder.append("\n");
       }
 
