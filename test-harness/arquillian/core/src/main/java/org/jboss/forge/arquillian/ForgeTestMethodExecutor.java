@@ -194,9 +194,7 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
          else
          {
             throw new IllegalStateException(
-                     "Test runner could not locate test class in any deployment. "
-                              + "Verify that your test case is deployed in an addon that supports remote " +
-                              "services (Did you forget beans.xml in your deployment?)");
+                     "Test runner could not locate test class [" + testClass.getName() + "] in any deployed Addon.");
          }
       }
       finally
