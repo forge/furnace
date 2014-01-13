@@ -255,7 +255,7 @@ public class ClasspathWorkspaceReader implements WorkspaceReader
       File pomFileInfo = pomFileInfoCache.get(childFile);
       if (pomFileInfo == null)
       {
-         pomFileInfo = new File(childFile.getParentFile().getParentFile(), "pom.xml");
+         pomFileInfo = new File(childFile.getAbsoluteFile().getParentFile().getParentFile(), "pom.xml");
          pomFileInfoCache.put(childFile, pomFileInfo);
       }
       return pomFileInfo;
