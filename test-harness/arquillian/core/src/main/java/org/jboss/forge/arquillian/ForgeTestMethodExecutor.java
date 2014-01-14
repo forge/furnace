@@ -56,11 +56,12 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
             throw new IllegalArgumentException("TestMethodExecutor must be specified");
          }
 
+         final String testClassName = testMethodExecutor.getInstance().getClass().getName();
+
          Object testInstance = null;
          Class<?> testClass = null;
          try
          {
-            final String testClassName = testMethodExecutor.getInstance().getClass().getName();
             final AddonRegistry addonRegistry = furnace.getAddonRegistry();
 
             waitUntilStable(furnace);
@@ -194,7 +195,7 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
          else
          {
             throw new IllegalStateException(
-                     "Test runner could not locate test class [" + testClass.getName() + "] in any deployed Addon.");
+                     "Test runner could not locate test class [" + testClassName + "] in any deployed Addon.");
          }
       }
       finally
