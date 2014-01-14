@@ -300,6 +300,12 @@ public class FurnaceImpl implements Furnace
    }
 
    @Override
+   public boolean isServerMode()
+   {
+      return serverMode;
+   }
+
+   @Override
    public Furnace setServerMode(boolean server)
    {
       assertNotAlive();

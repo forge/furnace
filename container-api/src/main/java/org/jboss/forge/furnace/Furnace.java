@@ -53,6 +53,11 @@ public interface Furnace
    public Furnace stop();
 
    /**
+    * Returns <code>true</code> or <code>false</code> if {@link Furnace#setServerMode(boolean)} has been set.
+    */
+   public boolean isServerMode();
+
+   /**
     * When server mode is set to <code>true</code>, {@link Furnace} will run as a server process until explicitly
     * stopped. When server mode is false, {@link Furnace} will process all inputs and exit once addons have completed
     * any requested operations.
