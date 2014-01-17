@@ -208,13 +208,15 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                   Object delegateObject = result;
                   if (result instanceof ForgeProxy)
                   {
-                     ClassLoaderAdapterCallback handler = (ClassLoaderAdapterCallback) (((ForgeProxy) result)
-                              .getHandler());
-                     if ((((ForgeProxy) result).getHandler() instanceof ClassLoaderAdapterCallback)
-                              && handler.getCallingLoader().equals(getCallingLoader())
-                              && handler.getDelegateLoader().equals(getDelegateLoader()))
+                     if ((((ForgeProxy) result).getHandler() instanceof ClassLoaderAdapterCallback))
                      {
-                        delegateObject = stripClassLoaderAdapters(result);
+                        ClassLoaderAdapterCallback handler = (ClassLoaderAdapterCallback) ((ForgeProxy) result)
+                                 .getHandler();
+                        if (handler.getCallingLoader().equals(getCallingLoader())
+                                 && handler.getDelegateLoader().equals(getDelegateLoader()))
+                        {
+                           delegateObject = stripClassLoaderAdapters(result);
+                        }
                      }
                   }
 
@@ -501,14 +503,16 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                      Object delegateObject = parameterValue;
                      if (parameterValue instanceof ForgeProxy)
                      {
-                        ClassLoaderAdapterCallback handler = (ClassLoaderAdapterCallback) (((ForgeProxy) parameterValue)
-                                 .getHandler());
-                        if ((((ForgeProxy) parameterValue).getHandler() instanceof ClassLoaderAdapterCallback)
-                                 && handler.getCallingLoader().equals(getCallingLoader())
-                                 && handler.getDelegateLoader().equals(getDelegateLoader())
-                                 && delegateParameterType.isAssignableFrom(unwrappedValue.getClass()))
+                        if ((((ForgeProxy) parameterValue).getHandler() instanceof ClassLoaderAdapterCallback))
                         {
-                           delegateObject = unwrappedValue;
+                           ClassLoaderAdapterCallback handler = (ClassLoaderAdapterCallback) (((ForgeProxy) parameterValue)
+                                    .getHandler());
+                           if (handler.getCallingLoader().equals(getCallingLoader())
+                                    && handler.getDelegateLoader().equals(getDelegateLoader())
+                                    && delegateParameterType.isAssignableFrom(unwrappedValue.getClass()))
+                           {
+                              delegateObject = unwrappedValue;
+                           }
                         }
                      }
 
