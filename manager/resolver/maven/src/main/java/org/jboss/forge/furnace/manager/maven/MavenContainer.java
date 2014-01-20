@@ -148,9 +148,15 @@ public class MavenContainer
          SettingsBuilder settingsBuilder = new DefaultSettingsBuilderFactory().newInstance();
          SettingsBuildingRequest settingsRequest = new DefaultSettingsBuildingRequest();
          String userSettingsLocation = System.getProperty(ALT_USER_SETTINGS_XML_LOCATION);
+         // TeamCity sets the settings.xml in a different system property
+         String teamCitySettingsLocation = System.getProperty("teamcity.maven.userSettings.path");
          if (userSettingsLocation != null)
          {
             settingsRequest.setUserSettingsFile(new File(userSettingsLocation));
+         }
+         else if (teamCitySettingsLocation != null)
+         {
+            settingsRequest.setUserSettingsFile(new File(teamCitySettingsLocation));
          }
          else
          {
