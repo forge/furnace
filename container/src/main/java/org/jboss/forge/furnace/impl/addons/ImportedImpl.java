@@ -31,15 +31,14 @@ import org.jboss.forge.furnace.util.Sets;
  */
 public class ImportedImpl<T> implements Imported<T>
 {
-   private Map<T, ExportedInstance<T>> instanceMap = new WeakHashMap<T, ExportedInstance<T>>(
-            new IdentityHashMap<T, ExportedInstance<T>>());
+   private final Map<T, ExportedInstance<T>> instanceMap = new WeakHashMap<>(new IdentityHashMap<T, ExportedInstance<T>>());
 
-   private AddonRegistry addonRegistry;
-   private LockManager lock;
+   private final AddonRegistry addonRegistry;
+   private final LockManager lock;
    private Class<T> type;
-   private String typeName;
+   private final String typeName;
 
-   private Set<ExportedInstance<T>> instanceCache = Sets.getConcurrentSet();
+   private final Set<ExportedInstance<T>> instanceCache = Sets.getConcurrentSet();
    private long version = -1;
 
    public ImportedImpl(AddonRegistry addonRegistry, LockManager lock, Class<T> type)
@@ -174,8 +173,8 @@ public class ImportedImpl<T> implements Imported<T>
 
    private class ImportedIteratorImpl implements Iterator<T>
    {
-      private ImportedImpl<T> imported;
-      private Iterator<ExportedInstance<T>> iterator;
+      private final ImportedImpl<T> imported;
+      private final Iterator<ExportedInstance<T>> iterator;
 
       public ImportedIteratorImpl(ImportedImpl<T> imported, Set<ExportedInstance<T>> instances)
       {
