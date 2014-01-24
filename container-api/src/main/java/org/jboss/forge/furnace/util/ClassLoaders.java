@@ -54,7 +54,7 @@ public class ClassLoaders
       {
          return loader.loadClass(type.getName()) == type;
       }
-      catch (ClassNotFoundException e)
+      catch (ClassNotFoundException | LinkageError e)
       {
          return false;
       }
@@ -72,7 +72,7 @@ public class ClassLoaders
          loader.loadClass(type);
          return true;
       }
-      catch (ClassNotFoundException e)
+      catch (ClassNotFoundException | LinkageError e)
       {
          return false;
       }
@@ -89,7 +89,7 @@ public class ClassLoaders
       {
          return loader.loadClass(typeName);
       }
-      catch (ClassNotFoundException e)
+      catch (ClassNotFoundException | LinkageError e)
       {
          throw new ContainerException("Could not locate class [" + typeName + "] in Loader [" + loader + "]", e);
       }
@@ -106,7 +106,7 @@ public class ClassLoaders
       {
          return loader.loadClass(type.getName());
       }
-      catch (ClassNotFoundException e)
+      catch (ClassNotFoundException | LinkageError e)
       {
          throw new ContainerException("Could not locate class [" + type.getName() + "] in Loader [" + loader + "]", e);
       }
@@ -124,9 +124,22 @@ public class ClassLoaders
          Class<?> clazz = loader.loadClass(type.getName());
          return clazz.equals(type) && clazz.getClassLoader().equals(loader);
       }
-      catch (ClassNotFoundException e)
+      catch (ClassNotFoundException | LinkageError e)
       {
          return false;
+      }
+   }
+
+   public static Throwable getClassLoadingExceptionFor(ClassLoader loader, String typeName)
+   {
+      try
+      {
+         loader.loadClass(typeName);
+         return null;
+      }
+      catch (ClassNotFoundException | LinkageError e)
+      {
+         return e;
       }
    }
 }
