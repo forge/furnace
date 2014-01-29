@@ -40,11 +40,40 @@ Then create a new AddonManager:
     
 Once you have an `AddonManager` instance, you can begin to install addons (You can do this while Furnace is running):
     
-    InstallRequest request = manager.install(AddonId.from("test:no_dep", "1.0.0.Final"));
+    InstallRequest request = manager.install(AddonId.from("org.example:my-addon", "1.0.0.Final"));
     request.perform();
     
 Don't forget to start Furnace:
 
     furnace.startAsync();
     
+Once this is done, you'll now be able to request services from Furnace's `AddonRegistry`, and utilize the functionality of the addons you've installed:
+
+    Addons.waitUntilStarted(AddonId.from("org.example", "my-addon", "1.0.0.Final"));
+    MyServiceType instance = furnace.getAddonRegistry().getServices(MyServiceType.class).get();
+
+Of course, addons can be pre-bundled into a project using the Furnace Maven Plugin, making it much simpler (and faster) to run your application:
+
+    <plugin>
+       <groupId>org.jboss.forge.furnace</groupId>
+       <artifactId>furnace-maven-plugin</artifactId>
+       <version>${version.furnace}</version>
+       <executions>
+          <execution>
+             <id>deploy-addons</id>
+             <phase>prepare-package</phase>
+             <goals>
+                <goal>addon-install</goal>
+             </goals>
+             <inherited>false</inherited>
+             <configuration>
+                <addonRepository>${basedir}/addon-repository</addonRepository>
+                <addonIds>
+                   <addonId>org.example:my-addon,1.0.0.Final</addonId>
+                </addonIds>
+             </configuration>
+          </execution>
+       </executions>
+    </plugin>
     
+To learn more about writing addons, see the full documentation here: https://github.com/forge/core#developing-an-addon
