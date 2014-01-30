@@ -8,22 +8,36 @@ import org.jboss.forge.furnace.versions.EmptyVersion;
 import org.jboss.forge.furnace.versions.SingleVersion;
 import org.jboss.forge.furnace.versions.Version;
 
+/**
+ * Represents the ID of an {@link Addon}.
+ * 
+ * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
+ */
 public class AddonId implements Comparable<AddonId>
 {
    private String name;
    private Version apiVersion;
    private Version version;
 
+   /**
+    * Get the name of this {@link AddonId}.
+    */
    public String getName()
    {
       return name;
    }
 
+   /**
+    * Get the API {@link Version} of this {@link AddonId}.
+    */
    public Version getApiVersion()
    {
       return apiVersion;
    }
 
+   /**
+    * Get the {@link Version} of this {@link AddonId}.
+    */
    public Version getVersion()
    {
       return version;
@@ -35,7 +49,12 @@ public class AddonId implements Comparable<AddonId>
       return toCoordinates();
    }
 
-   public static AddonId fromCoordinates(final String coordinates)
+   /**
+    * Attempt to parse the given string as {@link Addon} coordinates in the form: "group:name,version"
+    * 
+    * @throws IllegalStateException when coordinates are malformed.
+    */
+   public static AddonId fromCoordinates(final String coordinates) throws IllegalArgumentException
    {
       String[] split = coordinates.split(",");
       List<String> tokens = Arrays.asList(split);
@@ -53,19 +72,27 @@ public class AddonId implements Comparable<AddonId>
          return from(tokens.get(0), tokens.get(1), tokens.get(2));
       }
       return from(tokens.get(0), tokens.get(1));
-
    }
 
+   /**
+    * Create an {@link AddonId} from the given name and version.
+    */
    public static AddonId from(String name, String version)
    {
       return from(name, version, null);
    }
 
+   /**
+    * Create an {@link AddonId} from the given name and {@link Version}.
+    */
    public static AddonId from(String name, Version version)
    {
       return from(name, version, null);
    }
 
+   /**
+    * Create an {@link AddonId} from the given name, {@link Version}, and API {@link Version}.
+    */
    public static AddonId from(String name, Version version, Version apiVersion)
    {
       Assert.notNull(name, "Name cannot be null.");
@@ -85,6 +112,9 @@ public class AddonId implements Comparable<AddonId>
       return id;
    }
 
+   /**
+    * Create an {@link AddonId} from the given name, version, and API version.
+    */
    public static AddonId from(String name, String version, String apiVersion)
    {
       Assert.notNull(name, "Name cannot be null.");
