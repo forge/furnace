@@ -26,6 +26,7 @@ import org.jboss.forge.arquillian.archive.RepositoryForgeArchive;
 import org.jboss.forge.arquillian.maven.ProjectHelper;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.util.Annotations;
+import org.jboss.forge.furnace.util.Strings;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
@@ -173,6 +174,19 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
          throw new IllegalArgumentException("Method annotated with " + Deployment.class.getName()
                   + " can not accept parameters. " + deploymentMethod);
       }
+
+      String name = deploymentMethod.getAnnotation(Deployment.class).name();
+      try
+      {
+         if (!Strings.isNullOrEmpty(name) && !"_DEFAULT_".equals(name))
+            AddonId.fromCoordinates(name);
+      }
+      catch (IllegalArgumentException e)
+      {
+         throw new IllegalArgumentException("@" + Deployment.class.getName()
+                  + " requires name in the format \"name,version\", but was \"" + name + "\". ");
+      }
+
    }
 
    /**

@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
  */
 public class SystemClassLoaderNullClassLoaderAdapterTest
 {
-   @Deployment(name = "SCLNCAT", order = 3)
+   @Deployment
    public static ForgeArchive getDeployment()
    {
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
