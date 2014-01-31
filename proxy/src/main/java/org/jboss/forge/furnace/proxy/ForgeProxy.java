@@ -6,7 +6,7 @@
  */
 package org.jboss.forge.furnace.proxy;
 
-import javassist.util.proxy.MethodHandler;
+import org.jboss.forge.furnace.proxy.javassist.util.proxy.MethodHandler;
 
 /**
  * Marks an instance that was created via {@link Proxies}.

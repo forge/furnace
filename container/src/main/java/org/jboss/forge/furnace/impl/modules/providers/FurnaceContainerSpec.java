@@ -14,27 +14,27 @@ public class FurnaceContainerSpec extends AbstractModuleSpecProvider
 {
    public static final ModuleIdentifier ID = ModuleIdentifier.create("org.jboss.forge.furnace.api");
 
-   public static Set<String> paths = new HashSet<String>();
+   public static Set<String> paths = new HashSet<>();
 
    static
    {
-      paths.add("javassist");
-      paths.add("javassist/bytecode");
-      paths.add("javassist/bytecode/analysis");
-      paths.add("javassist/bytecode/annotation");
-      paths.add("javassist/bytecode/stackmap");
-      paths.add("javassist/compiler");
-      paths.add("javassist/compiler/ast");
-      paths.add("javassist/convert");
-      paths.add("javassist/expr");
-      paths.add("javassist/runtime");
-      paths.add("javassist/scopedpool");
-      paths.add("javassist/tools");
-      paths.add("javassist/tools/reflect");
-      paths.add("javassist/tools/rmi");
-      paths.add("javassist/tools/web");
-      paths.add("javassist/util");
-      paths.add("javassist/util/proxy");
+      paths.add("org/jboss/forge/furnace/proxy/javassist");
+      paths.add("org/jboss/forge/furnace/proxy/javassist/bytecode");
+      paths.add("org/jboss/forge/furnace/proxy/javassist/bytecode/analysis");
+      paths.add("org/jboss/forge/furnace/proxy/javassist/bytecode/annotation");
+      paths.add("org/jboss/forge/furnace/proxy/javassist/bytecode/stackmap");
+      paths.add("org/jboss/forge/furnace/proxy/javassist/compiler");
+      paths.add("org/jboss/forge/furnace/proxy/javassist/compiler/ast");
+      paths.add("org/jboss/forge/furnace/proxy/javassist/convert");
+      paths.add("org/jboss/forge/furnace/proxy/javassist/expr");
+      paths.add("org/jboss/forge/furnace/proxy/javassist/runtime");
+      paths.add("org/jboss/forge/furnace/proxy/javassist/scopedpool");
+      paths.add("org/jboss/forge/furnace/proxy/javassist/tools");
+      paths.add("org/jboss/forge/furnace/proxy/javassist/tools/reflect");
+      paths.add("org/jboss/forge/furnace/proxy/javassist/tools/rmi");
+      paths.add("org/jboss/forge/furnace/proxy/javassist/tools/web");
+      paths.add("org/jboss/forge/furnace/proxy/javassist/util");
+      paths.add("org/jboss/forge/furnace/proxy/javassist/util/proxy");
 
       paths.add("org/jboss/forge/furnace");
       paths.add("org/jboss/forge/furnace/addons");
@@ -62,7 +62,8 @@ public class FurnaceContainerSpec extends AbstractModuleSpecProvider
                                  PathFilters.isChildOf("org/jboss/forge/furnace/impl"))),
 
                         PathFilters.any(Arrays.asList(
-                                 PathFilters.is("javassist"), PathFilters.isChildOf("javassist"),
+                                 PathFilters.is("org/jboss/forge/furnace/proxy/javassist"),
+                                 PathFilters.isChildOf("org/jboss/forge/furnace/proxy/javassist"),
                                  PathFilters.is("META-INF/services"),
                                  PathFilters.is("org/jboss/forge/furnace"),
                                  PathFilters.is("org/jboss/forge/furnace/addons"),
