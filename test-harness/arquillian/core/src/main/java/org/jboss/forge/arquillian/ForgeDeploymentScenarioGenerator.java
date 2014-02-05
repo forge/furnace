@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.maven.model.Model;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.graph.Dependency;
 import org.jboss.arquillian.container.spi.client.deployment.DeploymentDescription;
@@ -107,6 +108,12 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
          File pomFile = getPomFileFor(classUnderTest);
          try
          {
+            // Needed for single-project addons
+            Model model = projectHelper.loadPomFromFile(pomFile);
+            String thisAddonName = (model.getGroupId() == null) ? model.getParent().getGroupId() : model.getGroupId()
+                     + ":" + model.getArtifactId();
+            String thisVersion = model.getVersion();
+            dependencyMap.put(thisAddonName, thisVersion);
             List<Dependency> dependencies = projectHelper.resolveDependenciesFromPOM(pomFile);
             for (Dependency dependency : dependencies)
             {
