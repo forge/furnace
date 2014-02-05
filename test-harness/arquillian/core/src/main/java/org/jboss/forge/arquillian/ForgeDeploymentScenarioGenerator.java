@@ -101,9 +101,9 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
     */
    private String resolveVersionFromPOM(Class<?> classUnderTest, String name)
    {
-      ProjectHelper projectHelper = new ProjectHelper();
       if (dependencyMap == null)
       {
+         ProjectHelper projectHelper = new ProjectHelper();
          dependencyMap = new HashMap<String, String>();
          File pomFile = getPomFileFor(classUnderTest);
          try
