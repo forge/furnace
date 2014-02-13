@@ -108,7 +108,7 @@ public final class OperatingSystemUtils
     */
    public static String getLineSeparator()
    {
-      return System.getProperty("line.separator");
+      return System.lineSeparator();
    }
 
    /**
