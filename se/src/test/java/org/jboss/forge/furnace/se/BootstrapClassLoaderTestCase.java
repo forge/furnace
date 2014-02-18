@@ -11,7 +11,7 @@ import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.impl.FurnaceImpl;
-import org.jboss.forge.furnace.proxy.ClassLoaderAdapterCallback;
+import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 import org.jboss.forge.furnace.util.AddonFilters;
 import org.junit.Assert;
@@ -70,9 +70,8 @@ public class BootstrapClassLoaderTestCase
    public void shouldBeAbleToEnhanceAddonId() throws Exception
    {
       ClassLoader loader = AddonId.class.getClassLoader();
-      AddonId enhanced = ClassLoaderAdapterCallback.enhance(loader, new URLClassLoader(
-               new URL[] { new URL("file:///") }),
-               AddonId.from("a", "1"), AddonId.class);
+      AddonId enhanced = ClassLoaderAdapterBuilder.callingLoader(loader).delegateLoader(new URLClassLoader(
+               new URL[] { new URL("file:///") })).enhance(AddonId.from("a", "1"), AddonId.class);
       Assert.assertNotNull(enhanced);
 
    }
@@ -82,7 +81,7 @@ public class BootstrapClassLoaderTestCase
    {
       ClassLoader fromLoader = AddonId.class.getClassLoader();
       ClassLoader toLoader = new URLClassLoader(new URL[] { new URL("file:///") });
-      ClassLoaderAdapterCallback.enhance(fromLoader, toLoader,
-               AddonId.from("a", "1"), AddonId.class);
+      ClassLoaderAdapterBuilder.callingLoader(fromLoader).delegateLoader(toLoader)
+               .enhance(AddonId.from("a", "1"), AddonId.class);
    }
 }

@@ -40,6 +40,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
    private final ClassLoader initialCallingLoader;
    private final ClassLoader delegateLoader;
    private final ClassLoader unwrappedDelegateLoader;
+   private final Iterable<ClassLoader> whitelist;
 
    private ClassLoader getCallingLoader()
    {
@@ -49,13 +50,15 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       return callingLoader;
    }
 
-   public ClassLoaderAdapterCallback(ClassLoader callingLoader, ClassLoader delegateLoader, Object delegate)
+   public ClassLoaderAdapterCallback(Iterable<ClassLoader> whitelist, ClassLoader callingLoader,
+            ClassLoader delegateLoader, Object delegate)
    {
+      Assert.notNull(whitelist, "ClassLoader whitelist must not be null");
       Assert.notNull(callingLoader, "Calling loader must not be null.");
       Assert.notNull(delegateLoader, "Delegate loader must not be null.");
       Assert.notNull(delegate, "Delegate must not be null.");
-      // Assert.isTrue(initialCallingLoader != delegateLoader, "Calling loader must not be same as Delegate loader.");
 
+      this.whitelist = whitelist;
       this.initialCallingLoader = callingLoader;
       this.delegateLoader = delegateLoader;
       this.delegate = delegate;
@@ -195,7 +198,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
             {
                if (Object.class.equals(returnType) && !Object.class.equals(result))
                {
-                  result = enhance(callingLoader, resultInstanceLoader, method, result, resultHierarchy);
+                  result = enhance(whitelist, callingLoader, resultInstanceLoader, method, result, resultHierarchy);
                }
                else
                {
@@ -219,7 +222,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                      }
                   }
 
-                  result = enhance(callingLoader, resultInstanceLoader, method, delegateObject,
+                  result = enhance(whitelist, callingLoader, resultInstanceLoader, method, delegateObject,
                            mergeHierarchies(returnTypeHierarchy, resultHierarchy));
                }
             }
@@ -228,7 +231,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                if (result.getClass().isEnum())
                   result = enhanceEnum(callingLoader, result);
                else
-                  result = enhance(callingLoader, resultInstanceLoader, method, returnTypeHierarchy);
+                  result = enhance(whitelist, callingLoader, resultInstanceLoader, method, returnTypeHierarchy);
             }
          }
       }
@@ -277,7 +280,8 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
 
                if (!Modifier.isFinal(unwrappedExceptionType.getModifiers()))
                {
-                  result = enhance(getCallingLoader(), exceptionLoader, method, exception, exceptionHierarchy);
+                  result = enhance(whitelist, getCallingLoader(), exceptionLoader, method, exception,
+                           exceptionHierarchy);
                   result.initCause(exception);
                   result.setStackTrace(exception.getStackTrace());
                }
@@ -379,6 +383,24 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
          {
             return false;
          }
+      }
+      return true;
+   }
+
+   private static boolean whitelistContainsAll(Iterable<ClassLoader> whitelist, ClassLoader... classLoaders)
+   {
+      for (ClassLoader classLoader : classLoaders)
+      {
+         boolean found = false;
+
+         for (ClassLoader whiteClassLoader : whitelist)
+         {
+            if (whiteClassLoader.equals(classLoader))
+               found = true;
+         }
+
+         if (!found)
+            return false;
       }
       return true;
    }
@@ -515,7 +537,8 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                         }
                      }
 
-                     Object delegateParameterValue = enhance(valueDelegateLoader, valueCallingLoader, delegateObject,
+                     Object delegateParameterValue = enhance(whitelist, valueDelegateLoader, valueCallingLoader,
+                              delegateObject,
                               compatibleClassHierarchy);
 
                      return delegateParameterValue;
@@ -579,18 +602,25 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       return parameterTypes;
    }
 
-   public static <T> T enhance(final ClassLoader callingLoader, final ClassLoader delegateLoader,
+   static <T> T enhance(Iterable<ClassLoader> whitelist, final ClassLoader callingLoader,
+            final ClassLoader delegateLoader,
             final Object delegate,
             final Class<?>... types)
    {
-      return enhance(callingLoader, delegateLoader, null, delegate, types);
+      return enhance(whitelist, callingLoader, delegateLoader, null, delegate, types);
    }
 
    @SuppressWarnings("unchecked")
-   private static <T> T enhance(final ClassLoader callingLoader, final ClassLoader delegateLoader,
+   private static <T> T enhance(
+            final Iterable<ClassLoader> whitelist,
+            final ClassLoader callingLoader,
+            final ClassLoader delegateLoader,
             final Method sourceMethod,
             final Object delegate, final Class<?>... types)
    {
+      if (whitelistContainsAll(whitelist, callingLoader, delegateLoader))
+         return (T) delegate;
+
       // TODO consider removing option to set type hierarchy here. Instead it might just be
       // best to use type inspection of the given initialCallingLoader ClassLoader to figure out the proper type.
       final Class<?> delegateType = delegate.getClass();
@@ -679,7 +709,8 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                   try
                   {
                      ((ProxyObject) enhancedResult)
-                              .setHandler(new ClassLoaderAdapterCallback(callingLoader, delegateLoader, delegate));
+                              .setHandler(new ClassLoaderAdapterCallback(whitelist, callingLoader, delegateLoader,
+                                       delegate));
                   }
                   catch (ClassCastException e)
                   {
@@ -697,7 +728,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                            Class<?> typeArgument = javassistLoader.loadClass(MethodHandler.class.getName());
                            Method setHandlerMethod = javassistType.getMethod("setHandler", typeArgument);
                            setHandlerMethod.invoke(enhancedResult,
-                                    callbackConstructor.newInstance(callingLoader, delegateLoader, delegate));
+                                    callbackConstructor.newInstance(whitelist, callingLoader, delegateLoader, delegate));
                         }
                      }
                   }

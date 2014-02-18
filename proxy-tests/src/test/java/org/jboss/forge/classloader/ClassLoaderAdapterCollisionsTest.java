@@ -335,7 +335,7 @@ public class ClassLoaderAdapterCollisionsTest
 
       modifier.setValueClassLoader(dep2Loader);
 
-      List<InterfaceValue> values = new ArrayList<InterfaceValue>();
+      List<InterfaceValue> values = new ArrayList<>();
       modifier.modifyParameter(new ClassImplementsInterfaceModifiableContext(values));
       InterfaceValue result = values.get(0);
       ClassImplementsInterfaceExtendsInterfaceValue value = (ClassImplementsInterfaceExtendsInterfaceValue) result;

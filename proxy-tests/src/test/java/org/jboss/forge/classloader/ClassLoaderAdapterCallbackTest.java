@@ -10,7 +10,7 @@ import java.lang.reflect.Method;
 
 import org.jboss.forge.classloader.mock.MockResult;
 import org.jboss.forge.classloader.mock.MockService;
-import org.jboss.forge.furnace.proxy.ClassLoaderAdapterCallback;
+import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
 import org.jboss.forge.furnace.proxy.ForgeProxy;
 import org.jboss.forge.furnace.proxy.Proxies;
 import org.junit.Assert;
@@ -47,8 +47,10 @@ public class ClassLoaderAdapterCallbackTest
    {
       ClassLoader loader = ClassLoaderAdapterCallbackTest.class.getClassLoader();
       MockService original = new MockService();
-      MockService object = ClassLoaderAdapterCallback.enhance(loader, loader, original, MockService.class);
-      MockService object2 = ClassLoaderAdapterCallback.enhance(loader, loader, object, object.getClass());
+      MockService object = ClassLoaderAdapterBuilder.callingLoader(loader).delegateLoader(loader)
+               .enhance(original, MockService.class);
+      MockService object2 = ClassLoaderAdapterBuilder.callingLoader(loader).delegateLoader(loader)
+               .enhance(object, object.getClass());
       Assert.assertNotSame(object, object2);
    }
 
@@ -57,7 +59,8 @@ public class ClassLoaderAdapterCallbackTest
    {
       ClassLoader loader = ClassLoaderAdapterCallbackTest.class.getClassLoader();
       MockService original = new MockService();
-      MockService object = ClassLoaderAdapterCallback.enhance(loader, loader, original, MockService.class);
+      MockService object = ClassLoaderAdapterBuilder.callingLoader(loader).delegateLoader(loader)
+               .enhance(original, MockService.class);
       MockResult result = object.getResult();
       Assert.assertNotSame(result, original.getResult());
    }
@@ -67,7 +70,8 @@ public class ClassLoaderAdapterCallbackTest
    {
       MockService object = Proxies.enhance(MockService.class, handler);
       ClassLoader loader = ClassLoaderAdapterCallbackTest.class.getClassLoader();
-      MockService object2 = ClassLoaderAdapterCallback.enhance(loader, loader, object, MockService.class);
+      MockService object2 = ClassLoaderAdapterBuilder.callingLoader(loader).delegateLoader(loader)
+               .enhance(object, MockService.class);
       Assert.assertNotSame(object, object2);
    }
 }

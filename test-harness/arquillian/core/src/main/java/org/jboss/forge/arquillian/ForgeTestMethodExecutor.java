@@ -19,7 +19,7 @@ import org.jboss.forge.arquillian.protocol.FurnaceHolder;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonRegistry;
-import org.jboss.forge.furnace.proxy.ClassLoaderAdapterCallback;
+import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
 import org.jboss.forge.furnace.spi.ExportedInstance;
 import org.jboss.forge.furnace.spi.ServiceRegistry;
 import org.jboss.forge.furnace.util.Annotations;
@@ -109,9 +109,9 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
                {
                   try
                   {
-                     testInstance = ClassLoaderAdapterCallback.enhance(getClass().getClassLoader(),
-                              testInstance.getClass().getClassLoader(), testInstance, testClass);
-                     testInstance.getClass();
+                     testInstance = ClassLoaderAdapterBuilder.callingLoader(getClass().getClassLoader())
+                              .delegateLoader(testInstance.getClass().getClassLoader())
+                              .enhance(testInstance, testClass);
                   }
                   catch (Exception e)
                   {

@@ -6,15 +6,18 @@
  */
 package org.jboss.forge.furnace.proxy;
 
+import java.util.Collections;
+
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * 
  */
 public class ClassLoaderAdapterBuilder implements ClassLoaderAdapterBuilderCallingLoader,
-         ClassLoaderAdapterBuilderDelegateLoader
+         ClassLoaderAdapterBuilderDelegateLoader, ClassLoaderAdapterBuilderWhitelist
 {
    private ClassLoader callingLoader;
    private ClassLoader delegateLoader;
+   private Iterable<ClassLoader> whitelist = Collections.emptySet();
 
    public static ClassLoaderAdapterBuilderCallingLoader callingLoader(ClassLoader callingLoader)
    {
@@ -31,9 +34,22 @@ public class ClassLoaderAdapterBuilder implements ClassLoaderAdapterBuilderCalli
    }
 
    @Override
+   public ClassLoaderAdapterBuilderWhitelist whitelist(Iterable<ClassLoader> whitelist)
+   {
+      this.whitelist = whitelist;
+      return this;
+   }
+
+   @Override
    public <T> T enhance(T delegate)
    {
-      return ClassLoaderAdapterCallback.enhance(callingLoader, delegateLoader, delegate);
+      return ClassLoaderAdapterCallback.enhance(whitelist, callingLoader, delegateLoader, delegate);
+   }
+
+   @Override
+   public <T> T enhance(T delegate, Class<?>... types)
+   {
+      return ClassLoaderAdapterCallback.enhance(whitelist, callingLoader, delegateLoader, delegate, types);
    }
 
 }

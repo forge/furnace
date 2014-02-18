@@ -11,7 +11,7 @@ import net.sf.cglib.proxy.LazyLoader;
 
 import org.jboss.forge.classloader.mock.MockService;
 import org.jboss.forge.classloader.mock.Result;
-import org.jboss.forge.furnace.proxy.ClassLoaderAdapterCallback;
+import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
 import org.jboss.forge.furnace.proxy.Proxies;
 import org.junit.Assert;
 import org.junit.Test;
@@ -37,7 +37,8 @@ public class ClassLoaderAdapterProxiedTest
          }
       });
 
-      MockService adapter = ClassLoaderAdapterCallback.enhance(loader, loader, delegate, MockService.class);
+      MockService adapter = ClassLoaderAdapterBuilder.callingLoader(loader).delegateLoader(loader)
+               .enhance(delegate, MockService.class);
 
       Assert.assertNotEquals(internal.getResult(), adapter.getResult());
       Assert.assertEquals(internal.getResult().getValue(), adapter.getResult().getValue());
@@ -58,7 +59,8 @@ public class ClassLoaderAdapterProxiedTest
          }
       });
 
-      MockService adapter = ClassLoaderAdapterCallback.enhance(loader, loader, delegate, MockService.class);
+      MockService adapter = ClassLoaderAdapterBuilder.callingLoader(loader).delegateLoader(loader)
+               .enhance(delegate, MockService.class);
 
       Assert.assertNotEquals(internal.getResult(), adapter.getResultEnhanced());
    }
@@ -78,7 +80,8 @@ public class ClassLoaderAdapterProxiedTest
          }
       });
 
-      MockService adapter = ClassLoaderAdapterCallback.enhance(loader, loader, delegate, MockService.class);
+      MockService adapter = ClassLoaderAdapterBuilder.callingLoader(loader).delegateLoader(loader)
+               .enhance(delegate, MockService.class);
 
       Assert.assertNotEquals(internal.getResult(), adapter.getResultEnhancedReturnTypeObject());
    }
@@ -98,7 +101,8 @@ public class ClassLoaderAdapterProxiedTest
          }
       });
 
-      MockService adapter = ClassLoaderAdapterCallback.enhance(loader, loader, delegate, MockService.class);
+      MockService adapter = ClassLoaderAdapterBuilder.callingLoader(loader).delegateLoader(loader)
+               .enhance(delegate, MockService.class);
       adapter.getResultFinalReturnType();
    }
 
@@ -117,7 +121,8 @@ public class ClassLoaderAdapterProxiedTest
          }
       });
 
-      MockService adapter = ClassLoaderAdapterCallback.enhance(loader, loader, delegate, MockService.class);
+      MockService adapter = ClassLoaderAdapterBuilder.callingLoader(loader).delegateLoader(loader)
+               .enhance(delegate, MockService.class);
 
       Assert.assertNotEquals(internal.getResultFinalReturnTypeObject(), adapter.getResultFinalReturnTypeObject());
       Assert.assertEquals(((Result) internal.getResultFinalReturnTypeObject()).getValue(),
@@ -139,7 +144,8 @@ public class ClassLoaderAdapterProxiedTest
          }
       });
 
-      MockService adapter = ClassLoaderAdapterCallback.enhance(loader, loader, delegate, MockService.class);
+      MockService adapter = ClassLoaderAdapterBuilder.callingLoader(loader).delegateLoader(loader)
+               .enhance(delegate, MockService.class);
 
       Assert.assertNotEquals(internal.getResultInterfaceFinalImpl(), adapter.getResultInterfaceFinalImpl());
       Object unwrapped = Proxies.unwrap(adapter);
@@ -160,7 +166,8 @@ public class ClassLoaderAdapterProxiedTest
             return internal;
          }
       });
-      MockService adapter = ClassLoaderAdapterCallback.enhance(loader, loader, delegate, MockService.class);
+      MockService adapter = ClassLoaderAdapterBuilder.callingLoader(loader).delegateLoader(loader)
+               .enhance(delegate, MockService.class);
       Assert.assertNull(internal.echo(null));
       Assert.assertNull(adapter.echo(null));
    }
