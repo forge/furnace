@@ -6,13 +6,13 @@
  */
 package org.jboss.forge.furnace.se;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
+import org.jboss.forge.furnace.util.Sets;
 
 public class FurnaceFactory
 {
@@ -41,34 +41,34 @@ public class FurnaceFactory
                   .callingLoader(FurnaceFactory.class.getClassLoader())
                   .delegateLoader(loader).enhance(instance, Furnace.class);
 
-         return (Furnace) ClassLoaderAdapterBuilder.callingLoader(FurnaceFactory.class.getClassLoader())
-                  .delegateLoader(loader).whitelist(new Callable<Set<ClassLoader>>()
+         Callable<Set<ClassLoader>> whitelistCallback = new Callable<Set<ClassLoader>>()
+         {
+            volatile long lastRegistryVersion = -1;
+            final Set<ClassLoader> result = Sets.getConcurrentSet();
+
+            @Override
+            public Set<ClassLoader> call() throws Exception
+            {
+               if (furnace.getStatus().isStarted())
+               {
+                  long registryVersion = furnace.getAddonRegistry().getVersion();
+                  if (registryVersion != lastRegistryVersion)
                   {
-                     volatile long lastRegistryVersion = -1;
-                     final Set<ClassLoader> result = new HashSet<>();
-
-                     @Override
-                     public Set<ClassLoader> call() throws Exception
+                     result.clear();
+                     lastRegistryVersion = registryVersion;
+                     for (Addon addon : furnace.getAddonRegistry().getAddons())
                      {
-                        if (result == null)
-                        {
-                           if (furnace.getStatus().isStarted())
-                           {
-                              long registryVersion = furnace.getAddonRegistry().getVersion();
-                              if (registryVersion > lastRegistryVersion)
-                              {
-                                 lastRegistryVersion = registryVersion;
-                                 for (Addon addon : furnace.getAddonRegistry().getAddons())
-                                 {
-                                    result.add(addon.getClassLoader());
-                                 }
-                              }
-                           }
-                        }
-
-                        return result;
+                        result.add(addon.getClassLoader());
                      }
-                  })
+                  }
+               }
+
+               return result;
+            }
+         };
+
+         return (Furnace) ClassLoaderAdapterBuilder.callingLoader(FurnaceFactory.class.getClassLoader())
+                  .delegateLoader(loader).whitelist(whitelistCallback)
                   .enhance(instance, Furnace.class);
       }
       catch (Exception e)
