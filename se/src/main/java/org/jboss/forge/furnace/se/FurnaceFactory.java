@@ -6,12 +6,12 @@
  */
 package org.jboss.forge.furnace.se;
 
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.Callable;
 
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
-import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
 
 public class FurnaceFactory
@@ -22,11 +22,7 @@ public class FurnaceFactory
       try
       {
          final BootstrapClassLoader loader = new BootstrapClassLoader("bootpath");
-         Class<?> furnaceType = loader.loadClass("org.jboss.forge.furnace.impl.FurnaceImpl");
-         Object instance = furnaceType.newInstance();
-         return (Furnace) ClassLoaderAdapterBuilder.callingLoader(FurnaceFactory.class.getClassLoader())
-                  .delegateLoader(loader).whitelist(new FurnaceClassLoaderIterable(loader, instance))
-                  .enhance(instance, Furnace.class);
+         return getInstance(loader);
       }
       catch (Exception e)
       {
@@ -34,65 +30,41 @@ public class FurnaceFactory
       }
    }
 
-   public static Furnace getInstance(ClassLoader loader)
+   public static Furnace getInstance(final ClassLoader loader)
    {
       try
       {
          Class<?> furnaceType = loader.loadClass("org.jboss.forge.furnace.impl.FurnaceImpl");
-         Object instance = furnaceType.newInstance();
+         final Object instance = furnaceType.newInstance();
+
+         final Furnace furnace = (Furnace) ClassLoaderAdapterBuilder
+                  .callingLoader(FurnaceFactory.class.getClassLoader())
+                  .delegateLoader(loader).enhance(instance, Furnace.class);
+
          return (Furnace) ClassLoaderAdapterBuilder.callingLoader(FurnaceFactory.class.getClassLoader())
-                  .delegateLoader(loader).whitelist(new FurnaceClassLoaderIterable(loader, instance))
+                  .delegateLoader(loader).whitelist(new Callable<Set<ClassLoader>>()
+                  {
+                     @Override
+                     public Set<ClassLoader> call() throws Exception
+                     {
+                        Set<ClassLoader> result = new HashSet<>();
+
+                        if (furnace.getStatus().isStarted())
+                        {
+                           for (Addon addon : furnace.getAddonRegistry().getAddons())
+                           {
+                              result.add(addon.getClassLoader());
+                           }
+                        }
+
+                        return result;
+                     }
+                  })
                   .enhance(instance, Furnace.class);
       }
       catch (Exception e)
       {
          throw new RuntimeException(e);
-      }
-   }
-
-   private static class FurnaceClassLoaderIterable implements Iterable<ClassLoader>
-   {
-      private final Furnace furnace;
-
-      public FurnaceClassLoaderIterable(ClassLoader loader, Object instance)
-      {
-         this.furnace = (Furnace) ClassLoaderAdapterBuilder.callingLoader(FurnaceFactory.class.getClassLoader())
-                  .delegateLoader(loader).enhance(instance, Furnace.class);
-      }
-
-      @Override
-      public Iterator<ClassLoader> iterator()
-      {
-         if (furnace.getStatus().isStarted())
-         {
-            final AddonRegistry registry = furnace.getAddonRegistry();
-            return new Iterator<ClassLoader>()
-            {
-               private final Iterator<Addon> iterator = registry.getAddons().iterator();
-
-               @Override
-               public boolean hasNext()
-               {
-                  return iterator.hasNext();
-               }
-
-               @Override
-               public ClassLoader next()
-               {
-                  return iterator.next().getClassLoader();
-               }
-
-               @Override
-               public void remove()
-               {
-                  iterator.remove();
-               }
-            };
-         }
-         else
-         {
-            return Collections.emptyIterator();
-         }
       }
    }
 }

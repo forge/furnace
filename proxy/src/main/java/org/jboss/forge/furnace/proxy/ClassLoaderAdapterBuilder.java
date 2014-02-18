@@ -6,7 +6,11 @@
  */
 package org.jboss.forge.furnace.proxy;
 
-import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.Callable;
+
+import org.jboss.forge.furnace.util.Callables;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
@@ -17,7 +21,7 @@ public class ClassLoaderAdapterBuilder implements ClassLoaderAdapterBuilderCalli
 {
    private ClassLoader callingLoader;
    private ClassLoader delegateLoader;
-   private Iterable<ClassLoader> whitelist = Collections.emptySet();
+   private Callable<Set<ClassLoader>> whitelist = Callables.returning((Set<ClassLoader>) new HashSet<ClassLoader>());
 
    public static ClassLoaderAdapterBuilderCallingLoader callingLoader(ClassLoader callingLoader)
    {
@@ -34,7 +38,14 @@ public class ClassLoaderAdapterBuilder implements ClassLoaderAdapterBuilderCalli
    }
 
    @Override
-   public ClassLoaderAdapterBuilderWhitelist whitelist(Iterable<ClassLoader> whitelist)
+   public ClassLoaderAdapterBuilderWhitelist whitelist(Set<ClassLoader> whitelist)
+   {
+      this.whitelist = Callables.returning(whitelist);
+      return this;
+   }
+
+   @Override
+   public ClassLoaderAdapterBuilderWhitelist whitelist(Callable<Set<ClassLoader>> whitelist)
    {
       this.whitelist = whitelist;
       return this;

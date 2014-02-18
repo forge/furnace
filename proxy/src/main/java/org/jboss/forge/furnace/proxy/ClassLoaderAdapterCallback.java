@@ -14,6 +14,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,7 +41,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
    private final ClassLoader initialCallingLoader;
    private final ClassLoader delegateLoader;
    private final ClassLoader unwrappedDelegateLoader;
-   private final Iterable<ClassLoader> whitelist;
+   private final Callable<Set<ClassLoader>> whitelist;
 
    private ClassLoader getCallingLoader()
    {
@@ -50,7 +51,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       return callingLoader;
    }
 
-   public ClassLoaderAdapterCallback(Iterable<ClassLoader> whitelist, ClassLoader callingLoader,
+   public ClassLoaderAdapterCallback(Callable<Set<ClassLoader>> whitelist, ClassLoader callingLoader,
             ClassLoader delegateLoader, Object delegate)
    {
       Assert.notNull(whitelist, "ClassLoader whitelist must not be null");
@@ -387,22 +388,22 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       return true;
    }
 
-   private static boolean whitelistContainsAll(Iterable<ClassLoader> whitelist, ClassLoader... classLoaders)
+   private static boolean whitelistContainsAll(Callable<Set<ClassLoader>> whitelist, ClassLoader... classLoaders)
    {
-      for (ClassLoader classLoader : classLoaders)
+      try
       {
-         boolean found = false;
-
-         for (ClassLoader whiteClassLoader : whitelist)
+         Set<ClassLoader> set = whitelist.call();
+         for (ClassLoader classLoader : classLoaders)
          {
-            if (whiteClassLoader.equals(classLoader))
-               found = true;
+            if (!set.contains(classLoader))
+               return false;
          }
-
-         if (!found)
-            return false;
+         return true;
       }
-      return true;
+      catch (Exception e)
+      {
+         throw new RuntimeException("Could not retrieve ClassLoader whitelist from callback [" + whitelist + "].", e);
+      }
    }
 
    private List<Object> enhanceParameterValues(final Object[] args, Method delegateMethod) throws Exception
@@ -602,7 +603,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       return parameterTypes;
    }
 
-   static <T> T enhance(Iterable<ClassLoader> whitelist, final ClassLoader callingLoader,
+   static <T> T enhance(Callable<Set<ClassLoader>> whitelist, final ClassLoader callingLoader,
             final ClassLoader delegateLoader,
             final Object delegate,
             final Class<?>... types)
@@ -612,7 +613,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
 
    @SuppressWarnings("unchecked")
    private static <T> T enhance(
-            final Iterable<ClassLoader> whitelist,
+            final Callable<Set<ClassLoader>> whitelist,
             final ClassLoader callingLoader,
             final ClassLoader delegateLoader,
             final Method sourceMethod,

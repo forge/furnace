@@ -8,6 +8,7 @@
 package org.jboss.forge.classloader.whitelist;
 
 import java.util.Arrays;
+import java.util.HashSet;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -93,7 +94,8 @@ public class ClassLoaderAdapterWhitelistLoaderPassthroughTest
 
       Object delegate = loader1.loadClass(MockContextConsumer.class.getName()).newInstance();
       MockContextConsumer enhancedConsumer = (MockContextConsumer) ClassLoaderAdapterBuilder
-               .callingLoader(thisLoader).delegateLoader(loader1).whitelist(Arrays.asList(loader1, loader2, loader3))
+               .callingLoader(thisLoader).delegateLoader(loader1)
+               .whitelist(new HashSet<>(Arrays.asList(loader1, loader2, loader3)))
                .enhance(delegate);
 
       Object payload = loader2.loadClass(MockContextPayloadImpl.class.getName()).newInstance();

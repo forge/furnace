@@ -6,12 +6,17 @@
  */
 package org.jboss.forge.furnace.proxy;
 
+import java.util.Set;
+import java.util.concurrent.Callable;
+
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * 
  */
 public interface ClassLoaderAdapterBuilderDelegateLoader extends ClassLoaderAdapterBuilderWhitelist
 {
-   ClassLoaderAdapterBuilderWhitelist whitelist(Iterable<ClassLoader> whitelist);
+   ClassLoaderAdapterBuilderWhitelist whitelist(Set<ClassLoader> whitelist);
+
+   ClassLoaderAdapterBuilderWhitelist whitelist(Callable<Set<ClassLoader>> whitelist);
 
 }
