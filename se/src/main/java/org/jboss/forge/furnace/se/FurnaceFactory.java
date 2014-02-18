@@ -44,16 +44,25 @@ public class FurnaceFactory
          return (Furnace) ClassLoaderAdapterBuilder.callingLoader(FurnaceFactory.class.getClassLoader())
                   .delegateLoader(loader).whitelist(new Callable<Set<ClassLoader>>()
                   {
+                     volatile long lastRegistryVersion = 0;
+                     final Set<ClassLoader> result = new HashSet<>();
+
                      @Override
                      public Set<ClassLoader> call() throws Exception
                      {
-                        Set<ClassLoader> result = new HashSet<>();
-
-                        if (furnace.getStatus().isStarted())
+                        if (result == null)
                         {
-                           for (Addon addon : furnace.getAddonRegistry().getAddons())
+                           if (furnace.getStatus().isStarted())
                            {
-                              result.add(addon.getClassLoader());
+                              long registryVersion = furnace.getAddonRegistry().getVersion();
+                              if (registryVersion > lastRegistryVersion)
+                              {
+                                 lastRegistryVersion = registryVersion;
+                                 for (Addon addon : furnace.getAddonRegistry().getAddons())
+                                 {
+                                    result.add(addon.getClassLoader());
+                                 }
+                              }
                            }
                         }
 
