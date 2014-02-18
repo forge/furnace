@@ -44,7 +44,7 @@ public class FurnaceFactory
          return (Furnace) ClassLoaderAdapterBuilder.callingLoader(FurnaceFactory.class.getClassLoader())
                   .delegateLoader(loader).whitelist(new Callable<Set<ClassLoader>>()
                   {
-                     volatile long lastRegistryVersion = 0;
+                     volatile long lastRegistryVersion = -1;
                      final Set<ClassLoader> result = new HashSet<>();
 
                      @Override
