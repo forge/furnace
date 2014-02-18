@@ -8,7 +8,7 @@ package org.jboss.forge.classloader;
 
 import org.jboss.forge.classloader.mock.MockParentInterface1;
 import org.jboss.forge.classloader.mock.MockService2;
-import org.jboss.forge.furnace.proxy.ClassLoaderAdapterCallback;
+import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -22,7 +22,8 @@ public class ClassLoaderAdapterDuplicateMethodCallbackTest
    {
       ClassLoader loader = ClassLoaderAdapterDuplicateMethodCallbackTest.class.getClassLoader();
       MockParentInterface1 original = new MockService2(true);
-      MockParentInterface1 object = ClassLoaderAdapterCallback.enhance(loader, loader, original);
+      MockParentInterface1 object = ClassLoaderAdapterBuilder.callingLoader(loader).delegateLoader(loader)
+               .enhance(original);
       Assert.assertNotSame(object, original);
    }
 }

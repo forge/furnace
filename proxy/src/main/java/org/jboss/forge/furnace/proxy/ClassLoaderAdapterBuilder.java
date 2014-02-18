@@ -6,15 +6,22 @@
  */
 package org.jboss.forge.furnace.proxy;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.Callable;
+
+import org.jboss.forge.furnace.util.Callables;
+
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * 
  */
 public class ClassLoaderAdapterBuilder implements ClassLoaderAdapterBuilderCallingLoader,
-         ClassLoaderAdapterBuilderDelegateLoader
+         ClassLoaderAdapterBuilderDelegateLoader, ClassLoaderAdapterBuilderWhitelist
 {
    private ClassLoader callingLoader;
    private ClassLoader delegateLoader;
+   private Callable<Set<ClassLoader>> whitelist = Callables.returning((Set<ClassLoader>) new HashSet<ClassLoader>());
 
    public static ClassLoaderAdapterBuilderCallingLoader callingLoader(ClassLoader callingLoader)
    {
@@ -31,9 +38,29 @@ public class ClassLoaderAdapterBuilder implements ClassLoaderAdapterBuilderCalli
    }
 
    @Override
+   public ClassLoaderAdapterBuilderWhitelist whitelist(Set<ClassLoader> whitelist)
+   {
+      this.whitelist = Callables.returning(whitelist);
+      return this;
+   }
+
+   @Override
+   public ClassLoaderAdapterBuilderWhitelist whitelist(Callable<Set<ClassLoader>> whitelist)
+   {
+      this.whitelist = whitelist;
+      return this;
+   }
+
+   @Override
    public <T> T enhance(T delegate)
    {
-      return ClassLoaderAdapterCallback.enhance(callingLoader, delegateLoader, delegate);
+      return ClassLoaderAdapterCallback.enhance(whitelist, callingLoader, delegateLoader, delegate);
+   }
+
+   @Override
+   public <T> T enhance(T delegate, Class<?>... types)
+   {
+      return ClassLoaderAdapterCallback.enhance(whitelist, callingLoader, delegateLoader, delegate, types);
    }
 
 }
