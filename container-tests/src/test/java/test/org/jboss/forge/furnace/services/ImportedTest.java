@@ -35,7 +35,7 @@ public class ImportedTest
       archive.addClass(MockImpl1.class);
       archive.addClass(MockImpl2.class);
 
-      archive.addAsLocalServices(MockImpl1.class, MockImpl2.class);
+      archive.addAsLocalServices(MockImpl1.class, MockImpl2.class, ImportedTest.class);
 
       return archive;
    }

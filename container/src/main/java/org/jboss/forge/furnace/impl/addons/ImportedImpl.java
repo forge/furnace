@@ -31,7 +31,8 @@ import org.jboss.forge.furnace.util.Sets;
  */
 public class ImportedImpl<T> implements Imported<T>
 {
-   private final Map<T, ExportedInstance<T>> instanceMap = new WeakHashMap<>(new IdentityHashMap<T, ExportedInstance<T>>());
+   private final Map<T, ExportedInstance<T>> instanceMap = new WeakHashMap<>(
+            new IdentityHashMap<T, ExportedInstance<T>>());
 
    private final AddonRegistry addonRegistry;
    private final LockManager lock;
@@ -159,9 +160,13 @@ public class ImportedImpl<T> implements Imported<T>
                   {
                      ServiceRegistry serviceRegistry = addon.getServiceRegistry();
                      if (type != null)
+                     {
                         instanceCache.addAll(serviceRegistry.getExportedInstances(type));
+                     }
                      else
+                     {
                         instanceCache.addAll((Collection) serviceRegistry.getExportedInstances(typeName));
+                     }
                   }
                }
             }

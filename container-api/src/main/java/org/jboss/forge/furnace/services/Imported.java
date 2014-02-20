@@ -6,6 +6,8 @@
  */
 package org.jboss.forge.furnace.services;
 
+import org.jboss.forge.furnace.exception.ContainerException;
+
 /**
  * Represents a handle to one or more {@link Exported} services.
  * 
@@ -15,8 +17,11 @@ public interface Imported<T> extends Iterable<T>
 {
    /**
     * Get a fully constructed instance of the underlying type.
+    * 
+    * @throws ContainerException when an instance of the requested type could not be produced.
+    * @throws IllegalStateException when the requested type resulted in ambiguous results.
     */
-   T get();
+   T get() throws ContainerException, IllegalStateException;
 
    /**
     * Signal that the given instance may be released.

@@ -40,7 +40,6 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
 
    private final ClassLoader initialCallingLoader;
    private final ClassLoader delegateLoader;
-   private final ClassLoader unwrappedDelegateLoader;
    private final Callable<Set<ClassLoader>> whitelist;
 
    private ClassLoader getCallingLoader()
@@ -63,12 +62,6 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       this.initialCallingLoader = callingLoader;
       this.delegateLoader = delegateLoader;
       this.delegate = delegate;
-
-      Object unwrappedDelegate = Proxies.unwrap(delegate);
-      Class<?> unwrappedDelegateType = Proxies.unwrapProxyTypes(unwrappedDelegate.getClass(), callingLoader,
-               delegateLoader,
-               unwrappedDelegate.getClass().getClassLoader());
-      unwrappedDelegateLoader = unwrappedDelegateType.getClassLoader();
    }
 
    @Override
@@ -185,7 +178,37 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
          }
 
          Class<?> returnType = method.getReturnType();
-         if (returnTypeNeedsEnhancement(returnType, result, unwrappedResultType))
+         if (Class.class.equals(returnType))
+         {
+            Class<?> resultClassValue = (Class<?>) result;
+            try
+            {
+               result = callingLoader.loadClass(Proxies.unwrapProxyClassName(resultClassValue));
+            }
+            catch (ClassNotFoundException e)
+            {
+               try
+               {
+                  // If all else fails, try the whitelist loaders.
+                  result = loadClassFromWhitelist(Proxies.unwrapProxyClassName(resultClassValue));
+               }
+               catch (ClassNotFoundException e3)
+               {
+                  // Oh well.
+               }
+
+               if (result == null)
+               {
+                  /*
+                   * No way, here is the original class and god bless you :) Also unwrap any proxy types since we don't
+                   * know about this object, there is no reason to pass a proxied class type.
+                   */
+                  result = Proxies.unwrapProxyTypes(resultClassValue);
+               }
+            }
+            return result;
+         }
+         else if (returnTypeNeedsEnhancement(returnType, result, unwrappedResultType))
          {
             result = stripClassLoaderAdapters(result);
             Class<?>[] resultHierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(callingLoader,
@@ -406,6 +429,36 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       }
    }
 
+   private Class<?> loadClassFromWhitelist(String typeName) throws ClassNotFoundException
+   {
+      Class<?> result;
+
+      Set<ClassLoader> loaders;
+      try
+      {
+         loaders = whitelist.call();
+      }
+      catch (Exception e)
+      {
+         throw new RuntimeException("Could not retrieve ClassLoader whitelist from callback [" + whitelist + "].", e);
+      }
+
+      for (ClassLoader loader : loaders)
+      {
+         try
+         {
+            result = loader.loadClass(typeName);
+            return result;
+         }
+         catch (Exception e)
+         {
+            // next!
+         }
+      }
+
+      throw new ClassNotFoundException(typeName);
+   }
+
    private List<Object> enhanceParameterValues(final Object[] args, Method delegateMethod) throws Exception
    {
       List<Object> parameterValues = new ArrayList<>();
@@ -428,28 +481,31 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
          if (parameterValue instanceof Class<?>)
          {
             Class<?> paramClassValue = (Class<?>) parameterValue;
-            Class<?> loadedClass;
+            Class<?> loadedClass = null;
             try
             {
                loadedClass = delegateLoader.loadClass(Proxies.unwrapProxyClassName(paramClassValue));
             }
             catch (ClassNotFoundException e)
             {
-               // Oh oh, there is no class with this type in the target.
-               // Trying with delegate ClassLoader;
                try
                {
-                  if (unwrappedDelegateLoader != null)
-                     loadedClass = unwrappedDelegateLoader.loadClass(Proxies.unwrapProxyClassName(paramClassValue));
+                  // If all else fails, try the whitelist loaders.
+                  loadedClass = loadClassFromWhitelist(Proxies.unwrapProxyClassName(paramClassValue));
                }
-               catch (ClassNotFoundException cnfe)
+               catch (ClassNotFoundException e3)
+               {
+                  // Oh well.
+               }
+
+               if (loadedClass == null)
                {
                   /*
                    * No way, here is the original class and god bless you :) Also unwrap any proxy types since we don't
                    * know about this object, there is no reason to pass a proxied class type.
                    */
+                  loadedClass = Proxies.unwrapProxyTypes(paramClassValue);
                }
-               loadedClass = Proxies.unwrapProxyTypes(paramClassValue);
             }
             return loadedClass;
          }

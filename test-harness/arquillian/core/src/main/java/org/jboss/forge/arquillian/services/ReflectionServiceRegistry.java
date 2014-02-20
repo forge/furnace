@@ -24,10 +24,10 @@ import org.jboss.forge.furnace.util.ClassLoaders;
  */
 public class ReflectionServiceRegistry implements ServiceRegistry
 {
-   private Logger log = Logger.getLogger(getClass().getName());
+   private final Logger log = Logger.getLogger(getClass().getName());
 
-   private Addon addon;
-   private Set<Class<?>> serviceTypes;
+   private final Addon addon;
+   private final Set<Class<?>> serviceTypes;
 
    public ReflectionServiceRegistry(Furnace furnace, Addon addon, Set<Class<?>> serviceTypes)
    {
@@ -70,17 +70,16 @@ public class ReflectionServiceRegistry implements ServiceRegistry
       if (!ClassLoaders.ownsClass(addon.getClassLoader(), requestedType))
       {
          log.fine("Class " + requestedType.getName() + " is not present in this addon [" + addon + "]");
-         for (Class<?> type : serviceTypes)
-         {
-            if (requestedType.isAssignableFrom(type))
-            {
-               return new ReflectionExportedInstance<T>(addon, (Class<T>) type);
-            }
-         }
-         return null;
       }
 
-      return new ReflectionExportedInstance<T>(addon, requestedType);
+      for (Class<?> type : serviceTypes)
+      {
+         if (requestedType.isAssignableFrom(type))
+         {
+            return new ReflectionExportedInstance<T>(addon, (Class<T>) type);
+         }
+      }
+      return null;
    }
 
    @Override

@@ -24,4 +24,9 @@ public class MockContextConsumer
          throw new IllegalStateException("Should not have been a proxy");
    }
 
+   public Class<?> getNativeClass()
+   {
+      return getClass();
+   }
+
 }
