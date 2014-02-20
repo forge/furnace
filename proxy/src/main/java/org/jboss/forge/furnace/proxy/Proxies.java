@@ -22,7 +22,7 @@ import org.jboss.forge.furnace.proxy.javassist.util.proxy.ProxyObject;
  */
 public class Proxies
 {
-   private static Map<Integer, WeakReference<Class<?>>> cache = new ConcurrentHashMap<>();
+   private static Map<String, WeakReference<Class<?>>> cache = new ConcurrentHashMap<>();
 
    private static MethodFilter filter = new MethodFilter()
    {
@@ -53,7 +53,7 @@ public class Proxies
       Object result = null;
       Class<?> proxyType = null;
 
-      WeakReference<Class<?>> ref = cache.get(type.hashCode());
+      WeakReference<Class<?>> ref = cache.get(type.getName());
       if (ref != null)
       {
          proxyType = ref.get();
@@ -102,7 +102,7 @@ public class Proxies
 
          proxyType = f.createClass();
 
-         cache.put(type.hashCode(), new WeakReference<Class<?>>(proxyType));
+         cache.put(type.getName(), new WeakReference<Class<?>>(proxyType));
       }
 
       try
@@ -141,7 +141,7 @@ public class Proxies
       Object result = null;
       Class<?> proxyType = null;
 
-      WeakReference<Class<?>> ref = cache.get(type.hashCode());
+      WeakReference<Class<?>> ref = cache.get(type.getName());
       if (ref != null)
       {
          proxyType = ref.get();
@@ -175,7 +175,7 @@ public class Proxies
 
          proxyType = f.createClass();
 
-         cache.put(type.hashCode(), new WeakReference<Class<?>>(proxyType));
+         cache.put(type.getName(), new WeakReference<Class<?>>(proxyType));
       }
 
       try
