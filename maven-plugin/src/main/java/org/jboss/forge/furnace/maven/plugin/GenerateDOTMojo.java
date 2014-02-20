@@ -161,10 +161,6 @@ public class GenerateDOTMojo extends AbstractMojo
       return graph;
    }
 
-   /**
-    * @param info
-    * @param graph
-    */
    private void populateGraph(AddonInfo info, DirectedGraph<AddonVertex, AddonDependencyEdge> graph)
    {
       addGraphDependencies(info, graph);
@@ -201,32 +197,18 @@ public class GenerateDOTMojo extends AbstractMojo
 
    void toDOT(File file, DirectedGraph<AddonVertex, AddonDependencyEdge> graph)
    {
-      FileWriter fw = null;
-      try
+      DOTExporter<AddonVertex, AddonDependencyEdge> exporter = new DOTExporter<>(
+               new IntegerNameProvider<AddonVertex>(),
+               new AddonVertexNameProvider(),
+               new AddonDependencyEdgeNameProvider());
+      try (FileWriter fw = new FileWriter(file))
       {
-         DOTExporter<AddonVertex, AddonDependencyEdge> exporter = new DOTExporter<AddonVertex, AddonDependencyEdge>(
-                  new IntegerNameProvider<AddonVertex>(),
-                  new AddonVertexNameProvider(),
-                  new AddonDependencyEdgeNameProvider());
-
-         fw = new FileWriter(file);
          exporter.export(fw, graph);
          fw.flush();
       }
       catch (IOException e)
       {
          e.printStackTrace();
-      }
-      finally
-      {
-         if (fw != null)
-            try
-            {
-               fw.close();
-            }
-            catch (IOException ignored)
-            {
-            }
       }
    }
 }
