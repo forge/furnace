@@ -12,10 +12,12 @@ import java.io.File;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.settings.Settings;
+import org.eclipse.aether.RepositorySystem;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.impl.FurnaceImpl;
@@ -56,6 +58,12 @@ public class AddonInstallMojo extends AbstractMojo
    @Parameter(defaultValue = "${settings}", required = true, readonly = true)
    private Settings settings;
 
+   /**
+    * Repository System
+    */
+   @Component
+   RepositorySystem repositorySystem;
+
    @Override
    public void execute() throws MojoExecutionException, MojoFailureException
    {
@@ -67,6 +75,7 @@ public class AddonInstallMojo extends AbstractMojo
       AddonRepository repository = forge.addRepository(AddonRepositoryMode.MUTABLE, addonRepository);
       MavenAddonDependencyResolver addonResolver = new MavenAddonDependencyResolver(this.classifier);
       addonResolver.setSettings(settings);
+      addonResolver.setRepositorySystem(repositorySystem);
       AddonManager addonManager = new AddonManagerImpl(forge, addonResolver);
 
       for (String addonId : addonIds)

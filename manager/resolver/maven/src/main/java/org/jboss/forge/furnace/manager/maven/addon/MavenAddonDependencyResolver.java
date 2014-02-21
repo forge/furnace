@@ -57,7 +57,10 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
 
    public static final String FORGE_ADDON_CLASSIFIER = "forge-addon";
    private final String classifier;
+
    private Settings settings;
+   private RepositorySystem repositorySystem;
+
    private final MavenContainer container = new MavenContainer();
 
    public MavenAddonDependencyResolver()
@@ -75,7 +78,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    public AddonInfo resolveAddonDependencyHierarchy(AddonId addonId)
    {
       String coords = toMavenCoords(addonId);
-      RepositorySystem system = container.getRepositorySystem();
+      RepositorySystem system = getRepositorySystem();
       Settings settings = getSettings();
       DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
 
@@ -86,7 +89,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    @Override
    public Response<File[]> resolveResources(final AddonId addonId)
    {
-      RepositorySystem system = container.getRepositorySystem();
+      RepositorySystem system = getRepositorySystem();
       Settings settings = getSettings();
       DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
       final String mavenCoords = toMavenCoords(addonId);
@@ -140,7 +143,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
          addonNameSplit = addonName;
          version = null;
       }
-      RepositorySystem system = container.getRepositorySystem();
+      RepositorySystem system = getRepositorySystem();
       Settings settings = getSettings();
       DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
       List<RemoteRepository> repositories = MavenRepositories.getRemoteRepositories(container, settings);
@@ -171,7 +174,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    @Override
    public Response<String> resolveAPIVersion(AddonId addonId)
    {
-      RepositorySystem system = container.getRepositorySystem();
+      RepositorySystem system = getRepositorySystem();
       Settings settings = getSettings();
       DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
       List<RemoteRepository> repositories = MavenRepositories.getRemoteRepositories(container, settings);
@@ -348,7 +351,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       }
       throw new IllegalArgumentException("Not a forge-addon: " + artifact);
    }
-   
+
    /**
     * @param settings the settings to set
     */
@@ -356,12 +359,28 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    {
       this.settings = settings;
    }
-   
+
    /**
     * @return the settings
     */
    public Settings getSettings()
    {
       return settings == null ? container.getSettings() : settings;
+   }
+
+   /**
+    * @return the repositorySystem
+    */
+   public RepositorySystem getRepositorySystem()
+   {
+      return repositorySystem == null ? container.getRepositorySystem() : repositorySystem;
+   }
+
+   /**
+    * @param repositorySystem
+    */
+   public void setRepositorySystem(RepositorySystem repositorySystem)
+   {
+      this.repositorySystem = repositorySystem;
    }
 }
