@@ -60,6 +60,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
 
    private Settings settings;
    private RepositorySystem repositorySystem;
+   private RepositorySystemSession repositorySystemSession;
 
    private final MavenContainer container = new MavenContainer();
 
@@ -80,7 +81,8 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       String coords = toMavenCoords(addonId);
       RepositorySystem system = getRepositorySystem();
       Settings settings = getSettings();
-      DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
+      DefaultRepositorySystemSession session = new DefaultRepositorySystemSession(getRepositorySystemSession(system,
+               settings));
 
       DependencyNode dependencyNode = traverseAddonGraph(coords, system, settings, session);
       return fromNode(addonId, dependencyNode, system, settings, session);
@@ -91,7 +93,8 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    {
       RepositorySystem system = getRepositorySystem();
       Settings settings = getSettings();
-      DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
+      DefaultRepositorySystemSession session = new DefaultRepositorySystemSession(getRepositorySystemSession(system,
+               settings));
       final String mavenCoords = toMavenCoords(addonId);
       Artifact queryArtifact = new DefaultArtifact(mavenCoords);
       session.setDependencyTraverser(new AddonDependencyTraverser(classifier));
@@ -145,7 +148,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       }
       RepositorySystem system = getRepositorySystem();
       Settings settings = getSettings();
-      DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
+      RepositorySystemSession session = getRepositorySystemSession(system, settings);
       List<RemoteRepository> repositories = MavenRepositories.getRemoteRepositories(container, settings);
       VersionRangeResult versions = getVersions(system, settings, session, repositories, addonNameSplit, version);
       List<Exception> exceptions = versions.getExceptions();
@@ -363,7 +366,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    /**
     * @return the settings
     */
-   public Settings getSettings()
+   private Settings getSettings()
    {
       return settings == null ? container.getSettings() : settings;
    }
@@ -371,9 +374,18 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    /**
     * @return the repositorySystem
     */
-   public RepositorySystem getRepositorySystem()
+   private RepositorySystem getRepositorySystem()
    {
       return repositorySystem == null ? container.getRepositorySystem() : repositorySystem;
+   }
+
+   /**
+    * @return the repositorySystemSession
+    */
+   private RepositorySystemSession getRepositorySystemSession(RepositorySystem repositorySystem, Settings settings)
+   {
+      return repositorySystemSession == null ? container.setupRepoSession(repositorySystem, settings)
+               : repositorySystemSession;
    }
 
    /**
@@ -383,4 +395,13 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    {
       this.repositorySystem = repositorySystem;
    }
+
+   /**
+    * @param repositorySystemSession the repositorySystemSession to set
+    */
+   public void setRepositorySystemSession(RepositorySystemSession repositorySystemSession)
+   {
+      this.repositorySystemSession = repositorySystemSession;
+   }
+
 }

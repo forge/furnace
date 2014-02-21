@@ -22,6 +22,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.settings.Settings;
 import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.impl.graph.AddonDependencyEdge;
 import org.jboss.forge.furnace.impl.graph.AddonDependencyEdgeNameProvider;
@@ -108,6 +109,12 @@ public class GenerateDOTMojo extends AbstractMojo
    @Parameter(defaultValue = "${settings}", required = true, readonly = true)
    private Settings settings;
 
+   /**
+    * The current repository/network configuration of Maven.
+    */
+   @Parameter(readonly = true, defaultValue = "${repositorySystemSession}")
+   RepositorySystemSession repositorySystemSession;
+
    @Override
    public void execute() throws MojoExecutionException, MojoFailureException
    {
@@ -119,6 +126,7 @@ public class GenerateDOTMojo extends AbstractMojo
       MavenAddonDependencyResolver addonResolver = new MavenAddonDependencyResolver(classifier);
       addonResolver.setSettings(settings);
       addonResolver.setRepositorySystem(repositorySystem);
+      addonResolver.setRepositorySystemSession(repositorySystemSession);
       if (addonIds == null || addonIds.length == 0)
       {
          AddonId id = AddonId.from(mavenProject.getGroupId() + ":" + mavenProject.getArtifactId(),

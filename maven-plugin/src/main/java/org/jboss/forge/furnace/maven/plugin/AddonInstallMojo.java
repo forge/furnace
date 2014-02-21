@@ -18,6 +18,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.settings.Settings;
 import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.impl.FurnaceImpl;
@@ -64,6 +65,12 @@ public class AddonInstallMojo extends AbstractMojo
    @Component
    RepositorySystem repositorySystem;
 
+   /**
+    * The current repository/network configuration of Maven.
+    */
+   @Parameter(readonly = true, defaultValue = "${repositorySystemSession}")
+   RepositorySystemSession repositorySystemSession;
+
    @Override
    public void execute() throws MojoExecutionException, MojoFailureException
    {
@@ -76,6 +83,7 @@ public class AddonInstallMojo extends AbstractMojo
       MavenAddonDependencyResolver addonResolver = new MavenAddonDependencyResolver(this.classifier);
       addonResolver.setSettings(settings);
       addonResolver.setRepositorySystem(repositorySystem);
+      addonResolver.setRepositorySystemSession(repositorySystemSession);
       AddonManager addonManager = new AddonManagerImpl(forge, addonResolver);
 
       for (String addonId : addonIds)
