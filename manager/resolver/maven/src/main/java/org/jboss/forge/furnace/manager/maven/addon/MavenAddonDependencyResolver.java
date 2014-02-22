@@ -57,11 +57,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
 
    public static final String FORGE_ADDON_CLASSIFIER = "forge-addon";
    private final String classifier;
-
    private Settings settings;
-   private RepositorySystem repositorySystem;
-   private RepositorySystemSession repositorySystemSession;
-
    private final MavenContainer container = new MavenContainer();
 
    public MavenAddonDependencyResolver()
@@ -79,10 +75,9 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    public AddonInfo resolveAddonDependencyHierarchy(AddonId addonId)
    {
       String coords = toMavenCoords(addonId);
-      RepositorySystem system = getRepositorySystem();
+      RepositorySystem system = container.getRepositorySystem();
       Settings settings = getSettings();
-      DefaultRepositorySystemSession session = new DefaultRepositorySystemSession(getRepositorySystemSession(system,
-               settings));
+      DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
 
       DependencyNode dependencyNode = traverseAddonGraph(coords, system, settings, session);
       return fromNode(addonId, dependencyNode, system, settings, session);
@@ -91,10 +86,9 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    @Override
    public Response<File[]> resolveResources(final AddonId addonId)
    {
-      RepositorySystem system = getRepositorySystem();
+      RepositorySystem system = container.getRepositorySystem();
       Settings settings = getSettings();
-      DefaultRepositorySystemSession session = new DefaultRepositorySystemSession(getRepositorySystemSession(system,
-               settings));
+      DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
       final String mavenCoords = toMavenCoords(addonId);
       Artifact queryArtifact = new DefaultArtifact(mavenCoords);
       session.setDependencyTraverser(new AddonDependencyTraverser(classifier));
@@ -146,9 +140,9 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
          addonNameSplit = addonName;
          version = null;
       }
-      RepositorySystem system = getRepositorySystem();
+      RepositorySystem system = container.getRepositorySystem();
       Settings settings = getSettings();
-      RepositorySystemSession session = getRepositorySystemSession(system, settings);
+      DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
       List<RemoteRepository> repositories = MavenRepositories.getRemoteRepositories(container, settings);
       VersionRangeResult versions = getVersions(system, settings, session, repositories, addonNameSplit, version);
       List<Exception> exceptions = versions.getExceptions();
@@ -177,7 +171,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    @Override
    public Response<String> resolveAPIVersion(AddonId addonId)
    {
-      RepositorySystem system = getRepositorySystem();
+      RepositorySystem system = container.getRepositorySystem();
       Settings settings = getSettings();
       DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
       List<RemoteRepository> repositories = MavenRepositories.getRemoteRepositories(container, settings);
@@ -354,7 +348,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       }
       throw new IllegalArgumentException("Not a forge-addon: " + artifact);
    }
-
+   
    /**
     * @param settings the settings to set
     */
@@ -362,46 +356,12 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    {
       this.settings = settings;
    }
-
+   
    /**
     * @return the settings
     */
-   private Settings getSettings()
+   public Settings getSettings()
    {
       return settings == null ? container.getSettings() : settings;
    }
-
-   /**
-    * @return the repositorySystem
-    */
-   private RepositorySystem getRepositorySystem()
-   {
-      return repositorySystem == null ? container.getRepositorySystem() : repositorySystem;
-   }
-
-   /**
-    * @return the repositorySystemSession
-    */
-   private RepositorySystemSession getRepositorySystemSession(RepositorySystem repositorySystem, Settings settings)
-   {
-      return repositorySystemSession == null ? container.setupRepoSession(repositorySystem, settings)
-               : repositorySystemSession;
-   }
-
-   /**
-    * @param repositorySystem
-    */
-   public void setRepositorySystem(RepositorySystem repositorySystem)
-   {
-      this.repositorySystem = repositorySystem;
-   }
-
-   /**
-    * @param repositorySystemSession the repositorySystemSession to set
-    */
-   public void setRepositorySystemSession(RepositorySystemSession repositorySystemSession)
-   {
-      this.repositorySystemSession = repositorySystemSession;
-   }
-
 }
