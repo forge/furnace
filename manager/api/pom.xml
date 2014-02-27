@@ -3,7 +3,7 @@
    <parent>
       <groupId>org.jboss.forge.furnace</groupId>
       <artifactId>furnace-manager-parent</artifactId>
-      <version>2.1.1.Final</version>
+      <version>2.1.2-SNAPSHOT</version>
    </parent>
    <artifactId>furnace-manager-api</artifactId>
    <name>Furnace - Manager API</name>
