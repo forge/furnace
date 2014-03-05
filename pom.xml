@@ -4,7 +4,7 @@
    <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>12</version>
+      <version>14</version>
    </parent>
 
    <groupId>org.jboss.forge.furnace</groupId>
@@ -284,20 +284,6 @@
                   </systemProperties>
                </configuration>
             </plugin>
-            <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
-               <artifactId>maven-release-plugin</artifactId>
-               <version>2.4.2</version>
-               <dependencies>
-                  <dependency>
-                     <groupId>org.apache.maven.scm</groupId>
-                     <artifactId>maven-scm-provider-gitexe</artifactId>
-                     <!-- This version is necessary for use with git version 1.8.5 -->
-                     <version>1.8.1</version>
-                  </dependency>
-               </dependencies>
-            </plugin>
-
             <plugin>
                <!--TODO TEXT. This plugin's configuration is used in m2e only. -->
                <groupId>org.eclipse.m2e</groupId>
