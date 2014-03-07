@@ -155,4 +155,12 @@ public final class OperatingSystemUtils
    {
       return new File(System.getProperty("java.io.tmpdir"));
    }
+
+   /**
+    * Get the addon storage dir
+    */
+   public static File getAddonStorageDir()
+   {
+      return new File(getUserForgeDir(), "store").getAbsoluteFile();
+   }
 }

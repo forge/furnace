@@ -6,6 +6,7 @@
  */
 package org.jboss.forge.furnace.impl.addons;
 
+import java.io.File;
 import java.util.Set;
 import java.util.concurrent.Future;
 
@@ -18,6 +19,7 @@ import org.jboss.forge.furnace.impl.util.NullFuture;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.spi.ServiceRegistry;
 import org.jboss.forge.furnace.util.Assert;
+import org.jboss.forge.furnace.util.OperatingSystemUtils;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
@@ -99,6 +101,12 @@ public class AddonImpl implements Addon
       }
 
       return result;
+   }
+
+   @Override
+   public File getStorageDirectory()
+   {
+      return new File(OperatingSystemUtils.getAddonStorageDir(), id.getName()).getAbsoluteFile();
    }
 
    @Override
