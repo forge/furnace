@@ -18,7 +18,7 @@ import java.util.List;
 public class Lists
 {
    /**
-    * Converts a {@link Iterable} to a {@link List}
+    * Converts an {@link Iterable} to a {@link List}
     */
    public static <T> List<T> toList(Iterable<T> iterable)
    {
@@ -40,5 +40,4 @@ public class Lists
          return list;
       }
    }
-
 }
