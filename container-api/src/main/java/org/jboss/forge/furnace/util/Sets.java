@@ -29,7 +29,7 @@ public class Sets
    }
 
    /**
-    * Converts a {@link Iterable} to a {@link Set}
+    * Converts an {@link Iterable} to a {@link Set}
     */
    public static <T> Set<T> toSet(Iterable<T> iterable)
    {
