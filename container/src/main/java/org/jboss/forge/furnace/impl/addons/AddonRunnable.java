@@ -9,7 +9,6 @@ package org.jboss.forge.furnace.impl.addons;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -226,36 +225,28 @@ public final class AddonRunnable implements Runnable
                         AddonLifecycleProvider.class, classLoader);
 
                Iterator<AddonLifecycleProvider> iterator = serviceLoader.iterator();
-               while (iterator.hasNext())
+               while (serviceLoader != null && iterator.hasNext())
                {
-                  try
-                  {
-                     AddonLifecycleProvider provider = iterator.next();
+                  AddonLifecycleProvider provider = iterator.next();
 
-                     if (ClassLoaders.ownsClass(classLoader, provider.getClass()))
+                  if (ClassLoaders.ownsClass(classLoader, provider.getClass()))
+                  {
+                     ControlType controlType = provider.getControlType();
+                     if (ControlType.ALL.equals(controlType))
                      {
-                        ControlType controlType = provider.getControlType();
-                        if (ControlType.ALL.equals(controlType))
-                        {
-                           result = new AddonLifecycleProviderEntry(addon, provider);
-                        }
-                        if (ControlType.SELF.equals(controlType))
-                        {
-                           result = new AddonLifecycleProviderEntry(addon, provider);
-                        }
-
-                        if (result != null && iterator.hasNext())
-                        {
-                           throw new ContainerException("Expected only one [" + AddonLifecycleProvider.class.getName()
-                                    + "] but found multiple. Remove all but one redundant container implementations: " +
-                                    Iterators.asList(serviceLoader));
-                        }
+                        result = new AddonLifecycleProviderEntry(addon, provider);
                      }
-                  }
-                  catch (ServiceConfigurationError e)
-                  {
-                     logger.log(Level.WARNING, "Could not instantiate " + AddonLifecycleProvider.class.getName()
-                              + " implementation.", e);
+                     if (ControlType.SELF.equals(controlType))
+                     {
+                        result = new AddonLifecycleProviderEntry(addon, provider);
+                     }
+
+                     if (result != null && iterator.hasNext())
+                     {
+                        throw new ContainerException("Expected only one [" + AddonLifecycleProvider.class.getName()
+                                 + "] but found multiple. Remove all but one redundant container implementations: " +
+                                 Iterators.asList(serviceLoader));
+                     }
                   }
                }
                return result;
@@ -277,7 +268,7 @@ public final class AddonRunnable implements Runnable
 
    private AddonLifecycleProviderEntry detectLifecycleProviderDependencies()
    {
-      List<AddonLifecycleProviderEntry> results = new ArrayList<>();
+      List<AddonLifecycleProviderEntry> results = new ArrayList<AddonRunnable.AddonLifecycleProviderEntry>();
 
       for (AddonDependency addonDependency : addon.getDependencies())
       {
@@ -291,7 +282,7 @@ public final class AddonRunnable implements Runnable
                      AddonLifecycleProvider.class, classLoader);
 
             Iterator<AddonLifecycleProvider> iterator = serviceLoader.iterator();
-            if (iterator.hasNext())
+            if (serviceLoader != null && iterator.hasNext())
             {
                AddonLifecycleProvider provider = iterator.next();
                if (ClassLoaders.ownsClass(classLoader, provider.getClass()))
