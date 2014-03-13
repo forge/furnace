@@ -24,6 +24,7 @@ import org.jboss.forge.furnace.impl.addons.AddonLifecycleManager;
 import org.jboss.forge.furnace.impl.addons.AddonRepositoryImpl;
 import org.jboss.forge.furnace.impl.addons.AddonStateManager;
 import org.jboss.forge.furnace.impl.modules.providers.FurnaceContainerSpec;
+import org.jboss.forge.furnace.impl.modules.providers.SunJDKClasspathSpec;
 import org.jboss.forge.furnace.impl.modules.providers.SunMiscClasspathSpec;
 import org.jboss.forge.furnace.impl.modules.providers.SystemClasspathSpec;
 import org.jboss.forge.furnace.impl.modules.providers.XATransactionJDKClasspathSpec;
@@ -162,6 +163,7 @@ public class AddonModuleLoader extends ModuleLoader
                   builder.addDependency(DependencySpec.createModuleDependencySpec(SystemClasspathSpec.ID));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(XPathJDKClasspathSpec.ID));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(SunMiscClasspathSpec.ID));
+                  builder.addDependency(DependencySpec.createModuleDependencySpec(SunJDKClasspathSpec.ID));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(XATransactionJDKClasspathSpec.ID));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(),
                            PathFilters.rejectAll(), null, FurnaceContainerSpec.ID, false));
