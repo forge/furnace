@@ -9,7 +9,7 @@ package org.jboss.forge.furnace.impl.modules;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -32,7 +32,6 @@ import org.jboss.forge.furnace.impl.modules.providers.XATransactionJDKClasspathS
 import org.jboss.forge.furnace.impl.modules.providers.XPathJDKClasspathSpec;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.furnace.repositories.AddonRepository;
-import org.jboss.forge.furnace.util.Sets;
 import org.jboss.forge.furnace.versions.Version;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
@@ -170,8 +169,9 @@ public class AddonModuleLoader extends ModuleLoader
                   ClassLoader parent = ClassLoader.getSystemClassLoader().getParent();
                   if (parent != null)
                   {
+                     // META-INF/services from JDK should be visible
                      builder.addDependency(DependencySpec.createClassLoaderDependencySpec(PathFilters.acceptAll(),
-                              PathFilters.acceptAll(), parent, Sets.toSet(Arrays.asList("META-INF/services"))));
+                              PathFilters.acceptAll(), parent, Collections.singleton("META-INF/services")));
                   }
 
                   builder.addDependency(DependencySpec.createModuleDependencySpec(XATransactionJDKClasspathSpec.ID));
