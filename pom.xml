@@ -41,6 +41,7 @@
 
    <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
 
       <!-- Build Info -->
       <forge.scm.connection>scm:git:git://github.com/forge/furnace.git</forge.scm.connection>
