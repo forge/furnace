@@ -10,7 +10,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,14 +42,12 @@ public class JavaxSoundLookupTest
    }
 
    @Test
-   @Ignore("This test fails")
    public void testMidiDeviceProviderLookup()
    {
       Assert.assertTrue(ServiceLoader.load(MidiDeviceProvider.class).iterator().hasNext());
    }
 
    @Test
-   @Ignore("This test fails")
    public void testMixerProviderLookup()
    {
       Assert.assertTrue(ServiceLoader.load(MixerProvider.class).iterator().hasNext());

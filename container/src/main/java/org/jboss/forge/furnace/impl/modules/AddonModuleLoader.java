@@ -163,7 +163,8 @@ public class AddonModuleLoader extends ModuleLoader
                   builder.addDependency(DependencySpec.createModuleDependencySpec(SystemClasspathSpec.ID));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(XPathJDKClasspathSpec.ID));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(SunMiscClasspathSpec.ID));
-                  builder.addDependency(DependencySpec.createModuleDependencySpec(SunJDKClasspathSpec.ID));
+                  builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(),
+                           PathFilters.rejectAll(), null, SunJDKClasspathSpec.ID, false));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(XATransactionJDKClasspathSpec.ID));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(),
                            PathFilters.rejectAll(), null, FurnaceContainerSpec.ID, false));
