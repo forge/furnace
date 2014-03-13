@@ -62,7 +62,7 @@ public class AddonModuleLoader extends ModuleLoader
    private AddonLifecycleManager lifecycleManager;
    private AddonStateManager stateManager;
 
-   private final ThreadLocal<Addon> currentAddon = new ThreadLocal<Addon>();
+   private final ThreadLocal<Addon> currentAddon = new ThreadLocal<>();
 
    private Furnace furnace;
 
@@ -167,9 +167,12 @@ public class AddonModuleLoader extends ModuleLoader
                   builder.addDependency(DependencySpec.createModuleDependencySpec(SunMiscClasspathSpec.ID));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(SunJDKClasspathSpec.ID));
 
-                  builder.addDependency(DependencySpec.createClassLoaderDependencySpec(PathFilters.acceptAll(),
-                           PathFilters.acceptAll(), ClassLoader.getSystemClassLoader().getParent(),
-                           Sets.toSet(Arrays.asList("META-INF/services"))));
+                  ClassLoader parent = ClassLoader.getSystemClassLoader().getParent();
+                  if (parent != null)
+                  {
+                     builder.addDependency(DependencySpec.createClassLoaderDependencySpec(PathFilters.acceptAll(),
+                              PathFilters.acceptAll(), parent, Sets.toSet(Arrays.asList("META-INF/services"))));
+                  }
 
                   builder.addDependency(DependencySpec.createModuleDependencySpec(XATransactionJDKClasspathSpec.ID));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(),
