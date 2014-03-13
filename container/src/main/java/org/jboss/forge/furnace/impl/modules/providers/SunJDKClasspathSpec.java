@@ -23,6 +23,7 @@ public class SunJDKClasspathSpec extends AbstractModuleSpecProvider
       paths.add("com/sun/security/auth/login");
       paths.add("com/sun/security/auth/module");
       paths.add("com/sun/tools/attach");
+      paths.add("com/sun/media/sound");
       paths.add("sun/misc");
       paths.add("sun/io");
       paths.add("sun/nio");
@@ -30,9 +31,11 @@ public class SunJDKClasspathSpec extends AbstractModuleSpecProvider
       paths.add("sun/nio/cs");
       paths.add("sun/security");
       paths.add("sun/security/krb5");
+      paths.add("sun/text/resources");
       paths.add("sun/util");
       paths.add("sun/util/calendar");
       paths.add("sun/util/locale");
+      paths.add("sun/util/resources");
       paths.add("sun/security/provider");
       paths.add("META-INF/services");
    }
