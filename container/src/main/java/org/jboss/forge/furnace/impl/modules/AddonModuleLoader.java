@@ -9,6 +9,7 @@ package org.jboss.forge.furnace.impl.modules;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -31,6 +32,7 @@ import org.jboss.forge.furnace.impl.modules.providers.XATransactionJDKClasspathS
 import org.jboss.forge.furnace.impl.modules.providers.XPathJDKClasspathSpec;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.furnace.repositories.AddonRepository;
+import org.jboss.forge.furnace.util.Sets;
 import org.jboss.forge.furnace.versions.Version;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
@@ -163,8 +165,12 @@ public class AddonModuleLoader extends ModuleLoader
                   builder.addDependency(DependencySpec.createModuleDependencySpec(SystemClasspathSpec.ID));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(XPathJDKClasspathSpec.ID));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(SunMiscClasspathSpec.ID));
-                  builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(),
-                           PathFilters.rejectAll(), null, SunJDKClasspathSpec.ID, false));
+                  builder.addDependency(DependencySpec.createModuleDependencySpec(SunJDKClasspathSpec.ID));
+
+                  builder.addDependency(DependencySpec.createClassLoaderDependencySpec(PathFilters.acceptAll(),
+                           PathFilters.acceptAll(), ClassLoader.getSystemClassLoader().getParent(),
+                           Sets.toSet(Arrays.asList("META-INF/services"))));
+
                   builder.addDependency(DependencySpec.createModuleDependencySpec(XATransactionJDKClasspathSpec.ID));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(),
                            PathFilters.rejectAll(), null, FurnaceContainerSpec.ID, false));
