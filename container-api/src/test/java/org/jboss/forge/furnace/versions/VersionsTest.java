@@ -11,7 +11,7 @@ import org.junit.Test;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
- * 
+ *
  */
 public class VersionsTest
 {
@@ -60,4 +60,13 @@ public class VersionsTest
       Assert.assertTrue(Versions.isSnapshot(snapshot));
    }
 
+   @Test
+   public void testSnapshotLowerThanRelease() throws Exception
+   {
+      Version nonSnapshot = new SingleVersion("2.2.0-Final");
+      Version snapshot = new SingleVersion("2.1.2-SNAPSHOT");
+      Assert.assertTrue(nonSnapshot.compareTo(snapshot) >= 0);
+      Assert.assertTrue(snapshot.compareTo(nonSnapshot) < 0);
+
+   }
 }
