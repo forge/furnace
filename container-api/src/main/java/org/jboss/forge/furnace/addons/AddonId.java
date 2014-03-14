@@ -10,7 +10,7 @@ import org.jboss.forge.furnace.versions.Version;
 
 /**
  * Represents the ID of an {@link Addon}.
- * 
+ *
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
 public class AddonId implements Comparable<AddonId>
@@ -50,8 +50,16 @@ public class AddonId implements Comparable<AddonId>
    }
 
    /**
+    * Used by the converter addon
+    */
+   public static AddonId valueOf(String coordinates)
+   {
+      return fromCoordinates(coordinates);
+   }
+
+   /**
     * Attempt to parse the given string as {@link Addon} coordinates in the form: "group:name,version"
-    * 
+    *
     * @throws IllegalStateException when coordinates are malformed.
     */
    public static AddonId fromCoordinates(final String coordinates) throws IllegalArgumentException
