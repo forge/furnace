@@ -141,17 +141,28 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
                         {
                            invokeBefore(testInstance.getClass(), testInstance);
                            method.invoke(testInstance);
+                           result = new TestResult(Status.PASSED);
                         }
                         catch (Exception e)
                         {
-                           throw e;
+                           Throwable rootCause = getRootCause(e);
+                           // FORGE-1677
+                           if (rootCause != null
+                                    && "org.junit.internal.AssumptionViolatedException".equals(rootCause.getClass()
+                                             .getName()))
+                           {
+                              result = new TestResult(Status.SKIPPED);
+                           }
+                           else
+                           {
+                              throw e;
+                           }
                         }
                         finally
                         {
                            invokeAfter(testInstance.getClass(), testInstance);
                         }
 
-                        result = new TestResult(Status.PASSED);
                      }
                      catch (InvocationTargetException e)
                      {
@@ -234,6 +245,18 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
 
       if (clazz.getSuperclass() != null && !Object.class.equals(clazz.getSuperclass()))
          invokeAfter(clazz.getSuperclass(), instance);
+   }
+
+   private Throwable getRootCause(Throwable t)
+   {
+      Throwable cause = t;
+      Throwable result = t;
+      while (cause != null)
+      {
+         result = cause;
+         cause = cause.getCause();
+      }
+      return result;
    }
 
    private void waitUntilStable(Furnace furnace) throws InterruptedException
