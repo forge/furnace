@@ -13,6 +13,7 @@ import org.jboss.forge.furnace.util.Assert;
  */
 class Arrays
 {
+   @SafeVarargs
    public static <ELEMENTTYPE> ELEMENTTYPE[] append(ELEMENTTYPE[] array, ELEMENTTYPE... elements)
    {
       final int length = array.length;
@@ -21,6 +22,7 @@ class Arrays
       return array;
    }
 
+   @SafeVarargs
    public static <ELEMENTTYPE> ELEMENTTYPE[] prepend(ELEMENTTYPE[] array, ELEMENTTYPE... elements)
    {
       final int length = array.length;
