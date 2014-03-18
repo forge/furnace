@@ -6,6 +6,10 @@
  */
 package org.jboss.forge.arquillian;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -151,7 +155,16 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
                                     && "org.junit.internal.AssumptionViolatedException".equals(rootCause.getClass()
                                              .getName()))
                            {
-                              result = new TestResult(Status.SKIPPED);
+                              try
+                              {
+                                 // Due to classloader restrictions, we need to serialize and deserialize back
+                                 result = new TestResult(Status.SKIPPED, reserialize(rootCause));
+                              }
+                              catch (Exception ex)
+                              {
+                                 // ignore
+                                 result = new TestResult(Status.SKIPPED);
+                              }
                            }
                            else
                            {
@@ -257,6 +270,16 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
          cause = cause.getCause();
       }
       return result;
+   }
+
+   private Throwable reserialize(Throwable obj) throws Exception
+   {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      ObjectOutputStream oos = new ObjectOutputStream(baos);
+      oos.writeObject(obj);
+      oos.close();
+      ByteArrayInputStream in = new ByteArrayInputStream(baos.toByteArray());
+      return (Throwable) new ObjectInputStream(in).readObject();
    }
 
    private void waitUntilStable(Furnace furnace) throws InterruptedException
