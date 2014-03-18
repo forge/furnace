@@ -6,10 +6,6 @@
  */
 package org.jboss.forge.arquillian;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -157,8 +153,13 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
                            {
                               try
                               {
-                                 // Due to classloader restrictions, we need to serialize and deserialize back
-                                 result = new TestResult(Status.SKIPPED, reserialize(rootCause));
+                                 // Due to classloader and serialization restrictions, we need to create a new instance
+                                 // of this class
+                                 Throwable thisClassloaderException = (Throwable) Class
+                                          .forName("org.junit.internal.AssumptionViolatedException")
+                                          .getConstructor(String.class).newInstance(rootCause.getMessage());
+                                 thisClassloaderException.setStackTrace(rootCause.getStackTrace());
+                                 result = new TestResult(Status.SKIPPED, thisClassloaderException);
                               }
                               catch (Exception ex)
                               {
@@ -270,16 +271,6 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
          cause = cause.getCause();
       }
       return result;
-   }
-
-   private Throwable reserialize(Throwable obj) throws Exception
-   {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      ObjectOutputStream oos = new ObjectOutputStream(baos);
-      oos.writeObject(obj);
-      oos.close();
-      ByteArrayInputStream in = new ByteArrayInputStream(baos.toByteArray());
-      return (Throwable) new ObjectInputStream(in).readObject();
    }
 
    private void waitUntilStable(Furnace furnace) throws InterruptedException

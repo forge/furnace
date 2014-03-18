@@ -40,6 +40,13 @@ public class AssumptionViolatedTest
    }
 
    @Test
+   public void testAssumptionShouldBeSkippedNoMessage()
+   {
+      Assume.assumeTrue(false);
+      Assert.fail("This should not be executed");
+   }
+
+   @Test
    public void testAssumptionShouldPass()
    {
       Assume.assumeTrue(true);
