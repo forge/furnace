@@ -718,7 +718,8 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                                  || ("toString".equals(method.getName()) && method.getParameterTypes().length == 0)
                                  || isEquals(method)
                                  || isHashCode(method)
-                                 || isAutoCloseableClose(method))
+                                 || isAutoCloseableClose(method)
+                                 || Arrays.contains(types,  method.getDeclaringClass()))
                            return true;
                         return false;
                      }
