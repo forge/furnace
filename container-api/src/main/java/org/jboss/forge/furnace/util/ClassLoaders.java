@@ -119,15 +119,7 @@ public class ClassLoaders
       if (type == null)
          throw new IllegalArgumentException("Class to find must not be null.");
 
-      try
-      {
-         Class<?> clazz = loader.loadClass(type.getName());
-         return clazz.equals(type) && clazz.getClassLoader().equals(loader);
-      }
-      catch (ClassNotFoundException | LinkageError e)
-      {
-         return false;
-      }
+      return type.getClassLoader().equals(loader);
    }
 
    public static Throwable getClassLoadingExceptionFor(ClassLoader loader, String typeName)

@@ -338,7 +338,6 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       }
    }
 
-   @SuppressWarnings("unchecked")
    private Class<?>[] mergeHierarchies(Class<?>[] left, Class<?>[] right)
    {
       for (Class<?> type : right)
@@ -535,9 +534,10 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                }
 
                ClassLoader valueCallingLoader = getCallingLoader();
-               if (!ClassLoaders.containsClass(getCallingLoader(), unwrappedValueType))
+               ClassLoader unwrappedValueLoader = unwrappedValueType.getClassLoader();
+               if (unwrappedValueLoader != null && !ClassLoaders.containsClass(getCallingLoader(), unwrappedValueType))
                {
-                  valueCallingLoader = unwrappedValueType.getClassLoader();
+                  valueCallingLoader = unwrappedValueLoader;
                }
 
                // If it is a class, use the delegateLoader loaded version
@@ -719,7 +719,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                                  || isEquals(method)
                                  || isHashCode(method)
                                  || isAutoCloseableClose(method)
-                                 || Arrays.contains(types,  method.getDeclaringClass()))
+                                 || Arrays.contains(types, method.getDeclaringClass()))
                            return true;
                         return false;
                      }
