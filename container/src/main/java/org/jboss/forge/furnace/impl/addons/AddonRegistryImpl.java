@@ -6,14 +6,15 @@
  */
 package org.jboss.forge.furnace.impl.addons;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,9 +39,12 @@ public class AddonRegistryImpl implements AddonRegistry
    private static final Logger logger = Logger.getLogger(AddonRegistryImpl.class.getName());
 
    private final LockManager lock;
-   private final List<AddonRepository> repositories;
+   private final Set<AddonRepository> repositories;
    private final AddonLifecycleManager manager;
    private final String name;
+
+   private static Map<String, Imported<?>> importedCache = new ConcurrentHashMap<>();
+   private long cacheVersion = -1;
 
    public AddonRegistryImpl(LockManager lock, AddonLifecycleManager manager, List<AddonRepository> repositories,
             String name)
@@ -52,7 +56,7 @@ public class AddonRegistryImpl implements AddonRegistry
 
       this.lock = lock;
       this.manager = manager;
-      this.repositories = new ArrayList<>(repositories);
+      this.repositories = Collections.unmodifiableSet(new LinkedHashSet<>(repositories));
       this.name = name;
 
       logger.log(Level.FINE, "Instantiated AddonRegistryImpl: " + this);
@@ -61,6 +65,7 @@ public class AddonRegistryImpl implements AddonRegistry
    @Override
    public void dispose()
    {
+      importedCache.clear();
       manager.removeView(this);
       repositories.clear();
    }
@@ -109,13 +114,28 @@ public class AddonRegistryImpl implements AddonRegistry
    @Override
    public Set<AddonRepository> getRepositories()
    {
-      return Collections.unmodifiableSet(new LinkedHashSet<>(repositories));
+      return repositories;
    }
 
    @Override
+   @SuppressWarnings("unchecked")
    public <T> Imported<T> getServices(final Class<T> type)
    {
-      return new ImportedImpl<>(this, lock, type);
+      if (getVersion() != cacheVersion)
+      {
+         cacheVersion = getVersion();
+         importedCache.clear();
+      }
+
+      String cacheKey = type.getName()
+               + (type.getClassLoader() == null ? "SystemCL" : type.getClassLoader().toString());
+      Imported<?> imported = importedCache.get(cacheKey);
+      if (imported == null)
+      {
+         imported = new ImportedImpl<>(this, lock, type);
+         importedCache.put(cacheKey, imported);
+      }
+      return (Imported<T>) imported;
    }
 
    @Override
