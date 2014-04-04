@@ -115,27 +115,10 @@ public class ImportedImpl<T> implements Imported<T>
          @Override
          public ExportedInstance<T> call() throws Exception
          {
-            ExportedInstance<T> result = null;
-
-            for (Addon addon : addonRegistry.getAddons())
-            {
-               if (AddonStatus.STARTED.equals(addon.getStatus()))
-               {
-                  ServiceRegistry serviceRegistry = addon.getServiceRegistry();
-                  if (type != null)
-                  {
-                     result = serviceRegistry.getExportedInstance(type);
-                  }
-                  else
-                  {
-                     result = serviceRegistry.getExportedInstance(typeName);
-                  }
-               }
-               if (result != null)
-                  break;
-            }
-
-            return result;
+            Iterator<ExportedInstance<T>> iterator = getExportedInstances().iterator();
+            if (iterator.hasNext())
+               return iterator.next();
+            return null;
          }
       });
 
