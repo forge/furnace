@@ -6,8 +6,11 @@
  */
 package org.jboss.forge.furnace.proxy;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.forge.furnace.proxy.javassist.util.proxy.MethodFilter;
 import org.jboss.forge.furnace.proxy.javassist.util.proxy.Proxy;
@@ -19,23 +22,8 @@ import org.jboss.forge.furnace.proxy.javassist.util.proxy.ProxyObject;
  */
 public class Proxies
 {
-   private static MethodFilter filter = new MethodFilter()
-   {
-      @Override
-      public boolean isHandled(Method method)
-      {
-         String name = method.getName();
-         Class<?>[] parameterTypes = method.getParameterTypes();
-         if (!method.getDeclaringClass().getName().contains("java.lang")
-                  || ("clone".equals(name) && parameterTypes.length == 0)
-                  || ("close".equals(name) && parameterTypes.length == 0)
-                  || ("equals".equals(name) && parameterTypes.length == 1)
-                  || ("hashCode".equals(name) && parameterTypes.length == 0)
-                  || ("toString".equals(name) && parameterTypes.length == 0))
-            return true;
-         return false;
-      }
-   };
+   private static MethodFilter filter = new ForgeProxyMethodFilter();
+   private static Map<String, Map<String, WeakReference<Class<?>>>> classCache = new ConcurrentHashMap<>();
 
    /**
     * Create a proxy for the given {@link Class} type.
@@ -46,48 +34,53 @@ public class Proxies
       Class<?> type = Proxies.unwrapProxyTypes(instance.getClass(), loader);
 
       Object result = null;
-      Class<?> proxyType = null;
 
-      Class<?>[] hierarchy = null;
-      Class<?> superclass = null;
-
-      hierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(loader, type);
-      if (hierarchy == null || hierarchy.length == 0)
-         throw new IllegalArgumentException("Must specify at least one non-final type to enhance for Object: "
-                  + instance + " of type " + instance.getClass());
-
-      Class<?> first = hierarchy[0];
-      if (!first.isInterface() && !isProxyType(first))
+      Class<?> proxyType = getCachedProxyType(loader, type);
+      if (proxyType == null)
       {
-         superclass = Proxies.unwrapProxyTypes(first, loader);
-         hierarchy = Arrays.shiftLeft(hierarchy, new Class<?>[hierarchy.length - 1]);
-      }
-      else if (isProxyType(first))
-         hierarchy = Arrays.shiftLeft(hierarchy, new Class<?>[hierarchy.length - 1]);
+         Class<?>[] hierarchy = null;
+         Class<?> superclass = null;
 
-      int index = Arrays.indexOf(hierarchy, ProxyObject.class);
-      if (index >= 0)
-      {
-         hierarchy = Arrays.removeElementAtIndex(hierarchy, index);
-      }
+         hierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(loader, type);
+         if (hierarchy == null || hierarchy.length == 0)
+            throw new IllegalArgumentException("Must specify at least one non-final type to enhance for Object: "
+                     + instance + " of type " + instance.getClass());
 
-      if (!Proxies.isProxyType(first) && !Arrays.contains(hierarchy, ForgeProxy.class))
-         hierarchy = Arrays.append(hierarchy, ForgeProxy.class);
-
-      ProxyFactory f = new ProxyFactory()
-      {
-         @Override
-         protected ClassLoader getClassLoader()
+         Class<?> first = hierarchy[0];
+         if (!first.isInterface() && !isProxyType(first))
          {
-            return loader;
+            superclass = Proxies.unwrapProxyTypes(first, loader);
+            hierarchy = Arrays.shiftLeft(hierarchy, new Class<?>[hierarchy.length - 1]);
          }
-      };
+         else if (isProxyType(first))
+            hierarchy = Arrays.shiftLeft(hierarchy, new Class<?>[hierarchy.length - 1]);
 
-      f.setInterfaces(hierarchy);
-      f.setSuperclass(superclass);
-      f.setFilter(filter);
+         int index = Arrays.indexOf(hierarchy, ProxyObject.class);
+         if (index >= 0)
+         {
+            hierarchy = Arrays.removeElementAtIndex(hierarchy, index);
+         }
 
-      proxyType = f.createClass();
+         if (!Proxies.isProxyType(first) && !Arrays.contains(hierarchy, ForgeProxy.class))
+            hierarchy = Arrays.append(hierarchy, ForgeProxy.class);
+
+         ProxyFactory f = new ProxyFactory()
+         {
+            @Override
+            protected ClassLoader getClassLoader()
+            {
+               return loader;
+            }
+         };
+
+         f.setInterfaces(hierarchy);
+         f.setSuperclass(superclass);
+         f.setFilter(filter);
+
+         proxyType = f.createClass();
+
+         setCachedProxyType(loader, type, proxyType);
+      }
 
       try
       {
@@ -116,6 +109,32 @@ public class Proxies
       return (T) result;
    }
 
+   private static Class<?> getCachedProxyType(ClassLoader loader, Class<?> type)
+   {
+      Class<?> proxyType = null;
+      Map<String, WeakReference<Class<?>>> cache = classCache.get(loader.toString());
+      if (cache != null)
+      {
+         WeakReference<Class<?>> ref = cache.get(type.getName());
+         if (ref != null)
+         {
+            proxyType = ref.get();
+         }
+      }
+      return proxyType;
+   }
+
+   private static void setCachedProxyType(ClassLoader classLoader, Class<?> type, Class<?> proxyType)
+   {
+      Map<String, WeakReference<Class<?>>> cache = classCache.get(classLoader.toString());
+      if (cache == null)
+      {
+         cache = new ConcurrentHashMap<>();
+         classCache.put(classLoader.toString(), cache);
+      }
+      cache.put(type.getName(), new WeakReference<Class<?>>(proxyType));
+   }
+
    /**
     * Create a proxy for the given {@link Class} type.
     */
@@ -123,33 +142,37 @@ public class Proxies
    public static <T> T enhance(Class<T> type, ForgeProxy handler)
    {
       Object result = null;
-      Class<?> proxyType = null;
 
-      Class<?>[] hierarchy = null;
-      Class<?> superclass = null;
-
-      if (type.isInterface() && !ForgeProxy.class.isAssignableFrom(type))
-         hierarchy = new Class<?>[] { type, ForgeProxy.class };
-      else if (type.isInterface())
-         hierarchy = new Class<?>[] { type };
-      else
+      Class<?> proxyType = getCachedProxyType(type.getClassLoader(), type);
+      if (proxyType == null)
       {
-         if (Proxies.isProxyType(type))
-            superclass = unwrapProxyTypes(type);
+         Class<?>[] hierarchy = null;
+         Class<?> superclass = null;
+
+         if (type.isInterface() && !ForgeProxy.class.isAssignableFrom(type))
+            hierarchy = new Class<?>[] { type, ForgeProxy.class };
+         else if (type.isInterface())
+            hierarchy = new Class<?>[] { type };
          else
          {
-            superclass = type;
-            hierarchy = new Class<?>[] { ForgeProxy.class };
+            if (Proxies.isProxyType(type))
+               superclass = unwrapProxyTypes(type);
+            else
+            {
+               superclass = type;
+               hierarchy = new Class<?>[] { ForgeProxy.class };
+            }
          }
+
+         ProxyFactory f = new ProxyFactory();
+
+         f.setFilter(filter);
+         f.setInterfaces(hierarchy);
+         f.setSuperclass(superclass);
+
+         proxyType = f.createClass();
+         setCachedProxyType(type.getClassLoader(), type, proxyType);
       }
-
-      ProxyFactory f = new ProxyFactory();
-
-      f.setFilter(filter);
-      f.setInterfaces(hierarchy);
-      f.setSuperclass(superclass);
-
-      proxyType = f.createClass();
 
       try
       {
