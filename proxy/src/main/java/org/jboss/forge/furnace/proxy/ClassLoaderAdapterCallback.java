@@ -211,9 +211,13 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
          else if (returnTypeNeedsEnhancement(returnType, result, unwrappedResultType))
          {
             result = stripClassLoaderAdapters(result);
-            final Class<?>[] resultHierarchy = removeProxyTypes(ProxyTypeInspector.getCompatibleClassHierarchy(
-                     callingLoader,
-                     result.getClass()));
+            Class<?>[] resultHierarchy = removeProxyTypes(ProxyTypeInspector.getCompatibleClassHierarchy(
+                     callingLoader, result.getClass()));
+
+            final Class<?>[] unwrappedResultHierarchy = removeProxyTypes(ProxyTypeInspector
+                     .getCompatibleClassHierarchy(callingLoader, unwrappedResultType));
+
+            resultHierarchy = mergeHierarchies(resultHierarchy, unwrappedResultHierarchy);
 
             Class<?>[] returnTypeHierarchy = removeProxyTypes(ProxyTypeInspector.getCompatibleClassHierarchy(
                      callingLoader, returnType));
