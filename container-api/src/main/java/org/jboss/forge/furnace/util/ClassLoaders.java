@@ -8,7 +8,7 @@ import org.jboss.forge.furnace.exception.ContainerException;
 
 /**
  * Utility class for executing fragments of code within a specific {@link Thread#getContextClassLoader()}
- * 
+ *
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
 public class ClassLoaders
@@ -119,7 +119,7 @@ public class ClassLoaders
       if (type == null)
          throw new IllegalArgumentException("Class to find must not be null.");
 
-      return type.getClassLoader().equals(loader);
+      return loader.equals(type.getClassLoader());
    }
 
    public static Throwable getClassLoadingExceptionFor(ClassLoader loader, String typeName)
