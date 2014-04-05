@@ -56,7 +56,7 @@ public class AddonRegistryImpl implements AddonRegistry
 
       this.lock = lock;
       this.manager = manager;
-      this.repositories = Collections.unmodifiableSet(new LinkedHashSet<>(repositories));
+      this.repositories = new LinkedHashSet<>(repositories);
       this.name = name;
 
       logger.log(Level.FINE, "Instantiated AddonRegistryImpl: " + this);
@@ -114,7 +114,7 @@ public class AddonRegistryImpl implements AddonRegistry
    @Override
    public Set<AddonRepository> getRepositories()
    {
-      return repositories;
+      return Collections.unmodifiableSet(repositories);
    }
 
    @Override
