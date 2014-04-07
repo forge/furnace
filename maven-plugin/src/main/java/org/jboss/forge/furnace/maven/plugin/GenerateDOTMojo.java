@@ -72,6 +72,12 @@ public class GenerateDOTMojo extends AbstractMojo
    private boolean attach;
 
    /**
+    * Should it never fail the build if any exception happens? Default value is true
+    */
+   @Parameter(defaultValue = "true")
+   private boolean failNever;
+
+   /**
     * Skip this execution ?
     */
    @Parameter(property = "furnace.dot.skip")
@@ -109,35 +115,49 @@ public class GenerateDOTMojo extends AbstractMojo
          getLog().info("Execution skipped.");
          return;
       }
-      MavenAddonDependencyResolver addonResolver = new MavenAddonDependencyResolver(classifier);
-      addonResolver.setSettings(settings);
-      if (addonIds == null || addonIds.length == 0)
+      try
       {
-         AddonId id = AddonId.from(mavenProject.getGroupId() + ":" + mavenProject.getArtifactId(),
-                  mavenProject.getVersion());
-         String fileName = outputFileName == null ? id.getName().substring(id.getName().indexOf(':') + 1) + "-"
-                  + id.getVersion() + ".dot" : outputFileName;
-         File file = generateDOTFile(addonResolver, id, fileName);
-         if (attach && file.isFile())
+         MavenAddonDependencyResolver addonResolver = new MavenAddonDependencyResolver(classifier);
+         addonResolver.setSettings(settings);
+         if (addonIds == null || addonIds.length == 0)
          {
-            projectHelper.attachArtifact(mavenProject, "dot", file);
+            AddonId id = AddonId.from(mavenProject.getGroupId() + ":" + mavenProject.getArtifactId(),
+                     mavenProject.getVersion());
+            String fileName = outputFileName == null ? id.getName().substring(id.getName().indexOf(':') + 1) + "-"
+                     + id.getVersion() + ".dot" : outputFileName;
+            File file = generateDOTFile(addonResolver, id, fileName);
+            if (attach && file.isFile())
+            {
+               projectHelper.attachArtifact(mavenProject, "dot", file);
+            }
+         }
+         else
+         {
+            for (String addonId : addonIds)
+            {
+               AddonId id = AddonId.fromCoordinates(addonId);
+               String fileName = id.getName().substring(id.getName().indexOf(':') + 1) + "-"
+                        + id.getVersion() + ".dot";
+               generateDOTFile(addonResolver, id, fileName);
+            }
          }
       }
-      else
+      catch (Exception e)
       {
-         for (String addonId : addonIds)
+         if (failNever)
          {
-            AddonId id = AddonId.fromCoordinates(addonId);
-            String fileName = id.getName().substring(id.getName().indexOf(':') + 1) + "-"
-                     + id.getVersion() + ".dot";
-            generateDOTFile(addonResolver, id, fileName);
+            getLog().warn("Error while running generate-dot goal", e);
+         }
+         else
+         {
+            throw e;
          }
       }
    }
 
    /**
     * Generates the DOT file for a given addonId
-    * 
+    *
     * @param addonResolver
     * @param id
     * @return generated file
