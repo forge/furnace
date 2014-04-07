@@ -482,4 +482,10 @@ public class FurnaceImpl implements Furnace
          manager = new AddonLifecycleManager(this);
       return manager;
    }
+
+   @Override
+   public boolean isTestMode()
+   {
+      return Boolean.getBoolean("org.jboss.forge.furnace.test");
+   }
 }

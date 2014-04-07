@@ -129,4 +129,9 @@ public interface Furnace
     */
    public String[] getArgs();
 
+   /**
+    * Returns <code>true</code> or <code>false</code> if this this is running in a test environment.
+    */
+   public boolean isTestMode();
+
 }

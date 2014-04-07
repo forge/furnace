@@ -385,6 +385,8 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
                @Override
                public Object call() throws Exception
                {
+                  System.setProperty("org.jboss.forge.furnace.test", "true");
+                  
                   furnace.setServerMode(true);
                   furnace.start(loader);
 
