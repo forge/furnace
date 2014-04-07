@@ -32,7 +32,7 @@ public class TestModeTest
    }
 
    @Test
-   public void testAssumptionShouldBeSkipped()
+   public void testIsTestModeEnabled()
    {
       Assert.assertTrue(LocalServices.getFurnace(TestModeTest.class.getClassLoader()).isTestMode());
    }
