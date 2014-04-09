@@ -58,7 +58,9 @@ public class FurnaceFactory
                      lastRegistryVersion = registryVersion;
                      for (Addon addon : furnace.getAddonRegistry().getAddons())
                      {
-                        result.add(addon.getClassLoader());
+                        ClassLoader classLoader = addon.getClassLoader();
+                        if (classLoader != null)
+                           result.add(classLoader);
                      }
                   }
                }
