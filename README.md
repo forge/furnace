@@ -49,7 +49,7 @@ Don't forget to start Furnace:
     
 Once this is done, you'll now be able to request services from Furnace's `AddonRegistry`, and utilize the functionality of the addons you've installed:
 
-    Addons.waitUntilStarted(furnace.getAddonRegistry().getAddon(AddonId.from("org.example", "my-addon", "1.0.0.Final")));
+    Addons.waitUntilStarted(furnace.getAddonRegistry().getAddon(AddonId.from("org.example:my-addon", "1.0.0.Final")));
     MyServiceType instance = furnace.getAddonRegistry().getServices(MyServiceType.class).get();
 
 Of course, addons can be pre-bundled into a project using the Furnace Maven Plugin, making it much simpler (and faster) to run your application:
