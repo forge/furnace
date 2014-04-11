@@ -72,10 +72,10 @@ public class GenerateDOTMojo extends AbstractMojo
    private boolean attach;
 
    /**
-    * Should it never fail the build if any exception happens? Default value is true
+    * Should it fail on build error ? Default value is false
     */
-   @Parameter(defaultValue = "true")
-   private boolean failNever;
+   @Parameter
+   private boolean failOnError;
 
    /**
     * Skip this execution ?
@@ -144,13 +144,13 @@ public class GenerateDOTMojo extends AbstractMojo
       }
       catch (Exception e)
       {
-         if (failNever)
+         if (failOnError)
          {
-            getLog().warn("Error while running generate-dot goal", e);
+            throw e;
          }
          else
          {
-            throw e;
+            getLog().warn("Error while running generate-dot goal", e);
          }
       }
    }
