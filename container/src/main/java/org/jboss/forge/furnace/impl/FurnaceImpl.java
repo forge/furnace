@@ -20,6 +20,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,6 +54,8 @@ public class FurnaceImpl implements Furnace
 
    private volatile boolean alive = false;
    private volatile ContainerStatus status = ContainerStatus.STOPPED;
+
+   private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
    private boolean serverMode = true;
    private AddonLifecycleManager manager;
@@ -106,35 +112,46 @@ public class FurnaceImpl implements Furnace
    }
 
    @Override
-   public Furnace startAsync()
+   public Future<Void> startAsync()
    {
       return startAsync(Thread.currentThread().getContextClassLoader());
    }
 
    @Override
-   public Furnace startAsync(final ClassLoader loader)
+   public Future<Void> startAsync(final ClassLoader loader)
    {
-      new Thread()
+      return executor.submit(new Callable<Void>()
       {
          @Override
-         public void run()
+         public Void call() throws Exception
          {
-            Thread.currentThread().setName("Furnace Container " + FurnaceImpl.this);
-            FurnaceImpl.this.start(loader);
-         };
-      }.start();
+            Thread thread = new Thread()
+            {
+               @Override
+               public void run()
+               {
+                  Thread.currentThread().setName("Furnace Container " + FurnaceImpl.this);
+                  FurnaceImpl.this.start(loader);
+               }
+            };
+            thread.start();
 
-      return this;
+            while (!ContainerStatus.STARTED.equals(getStatus()))
+               Thread.sleep(25);
+
+            return null;
+         }
+      });
    }
 
    @Override
-   public Furnace start()
+   public void start()
    {
-      return start(Thread.currentThread().getContextClassLoader());
+      start(Thread.currentThread().getContextClassLoader());
    }
 
    @Override
-   public Furnace start(ClassLoader loader)
+   public void start(ClassLoader loader)
    {
       logger.log(Level.INFO, "Furnace [" + AddonRepositoryImpl.getRuntimeAPIVersion() + "] starting.");
       assertNotAlive();
@@ -222,7 +239,6 @@ public class FurnaceImpl implements Furnace
 
       fireAfterContainerStoppedEvent();
       cleanup();
-      return this;
    }
 
    private void cleanup()
@@ -237,6 +253,7 @@ public class FurnaceImpl implements Furnace
       manager.dispose();
       manager = null;
       repositories.clear();
+      executor.shutdownNow();
    }
 
    private void fireBeforeConfigurationScanEvent()

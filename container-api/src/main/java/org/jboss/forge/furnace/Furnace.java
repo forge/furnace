@@ -8,6 +8,7 @@ package org.jboss.forge.furnace;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonRegistry;
@@ -26,26 +27,28 @@ import org.jboss.forge.furnace.versions.Version;
 public interface Furnace
 {
    /**
-    * Start this {@link Furnace} instance in a new background {@link Thread}.
+    * Start this {@link Furnace} instance in a new background {@link Thread}. Return a {@link Future} that can be used
+    * to block until the container has started.
     */
-   public Furnace startAsync();
+   public Future<Void> startAsync();
 
    /**
     * Start this {@link Furnace} instance in a new background {@link Thread}, using the given {@link ClassLoader} to
-    * load core implementation resources.
+    * load core implementation resources.Return a {@link Future} that can be used to block until the container has
+    * started.
     */
-   public Furnace startAsync(ClassLoader loader);
+   public Future<Void> startAsync(ClassLoader loader);
 
    /**
     * Start this {@link Furnace} instance and wait for completion.
     */
-   public Furnace start();
+   public void start();
 
    /**
     * Start this {@link Furnace} instance and wait for completion, using the given {@link ClassLoader} to load core
     * implementation resources.
     */
-   public Furnace start(ClassLoader loader);
+   public void start(ClassLoader loader);
 
    /**
     * Stop this {@link Furnace} instance.

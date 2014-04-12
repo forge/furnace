@@ -5,12 +5,12 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonRegistry;
-import org.jboss.forge.furnace.impl.FurnaceImpl;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 import org.jboss.forge.furnace.util.AddonFilters;
@@ -26,7 +26,7 @@ public class BootstrapClassLoaderTestCase
       Class<?> bootstrapType = cl.loadClass("org.jboss.forge.furnace.impl.FurnaceImpl");
       Method method = bootstrapType.getMethod("startAsync", new Class<?>[] { ClassLoader.class });
       Object result = method.invoke(bootstrapType.newInstance(), cl);
-      Assert.assertEquals(FurnaceImpl.class.getName(), result.getClass().getName());
+      Assert.assertTrue(result instanceof Future);
    }
 
    @Test(expected = IllegalStateException.class)
