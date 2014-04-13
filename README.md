@@ -45,11 +45,11 @@ Once you have an `AddonManager` instance, you can begin to install addons (You c
     
 Don't forget to start Furnace:
 
-    furnace.startAsync();
+    Future<Void> future = furnace.startAsync();
+    future.get(); // wait for Furnace to start, before continuing.
     
 Once this is done, you'll now be able to request services from Furnace's `AddonRegistry`, and utilize the functionality of the addons you've installed:
-
-    Addons.waitUntilStarted(furnace.getAddonRegistry().getAddon(AddonId.from("org.example:my-addon", "1.0.0.Final")));
+    
     MyServiceType instance = furnace.getAddonRegistry().getServices(MyServiceType.class).get();
 
 Of course, addons can be pre-bundled into a project using the Furnace Maven Plugin, making it much simpler (and faster) to run your application:
