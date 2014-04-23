@@ -45,7 +45,7 @@ Once you have an `AddonManager` instance, you can begin to install addons (You c
     
 Don't forget to start Furnace:
 
-    Future<Void> future = furnace.startAsync();
+    Future<Furnace> future = furnace.startAsync();
     future.get(); // wait for Furnace to start, before continuing.
     
 Once this is done, you'll now be able to request services from Furnace's `AddonRegistry`, and utilize the functionality of the addons you've installed:

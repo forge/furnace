@@ -21,7 +21,7 @@ import org.jboss.forge.furnace.versions.Version;
 
 /**
  * Operations for initializing, starting, interacting with, and stopping a {@link Furnace} container.
- * 
+ *
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
 public interface Furnace
@@ -30,14 +30,14 @@ public interface Furnace
     * Start this {@link Furnace} instance in a new background {@link Thread}. Return a {@link Future} that can be used
     * to block until the container has started.
     */
-   public Future<Void> startAsync();
+   public Future<Furnace> startAsync();
 
    /**
     * Start this {@link Furnace} instance in a new background {@link Thread}, using the given {@link ClassLoader} to
     * load core implementation resources.Return a {@link Future} that can be used to block until the container has
     * started.
     */
-   public Future<Void> startAsync(ClassLoader loader);
+   public Future<Furnace> startAsync(ClassLoader loader);
 
    /**
     * Start this {@link Furnace} instance and wait for completion.
@@ -127,7 +127,7 @@ public interface Furnace
    /**
     * Get the arguments with which {@link Furnace} should start. Typically this will simply be passed through from
     * <code>public static void main(String[] args)</code>.
-    * 
+    *
     * @return the arguments, or <code>null</code> if no arguments were set.
     */
    public String[] getArgs();

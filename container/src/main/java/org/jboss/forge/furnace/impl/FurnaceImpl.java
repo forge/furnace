@@ -112,18 +112,18 @@ public class FurnaceImpl implements Furnace
    }
 
    @Override
-   public Future<Void> startAsync()
+   public Future<Furnace> startAsync()
    {
       return startAsync(Thread.currentThread().getContextClassLoader());
    }
 
    @Override
-   public Future<Void> startAsync(final ClassLoader loader)
+   public Future<Furnace> startAsync(final ClassLoader loader)
    {
-      return executor.submit(new Callable<Void>()
+      return executor.submit(new Callable<Furnace>()
       {
          @Override
-         public Void call() throws Exception
+         public Furnace call() throws Exception
          {
             Thread thread = new Thread()
             {
@@ -139,7 +139,7 @@ public class FurnaceImpl implements Furnace
             while (!ContainerStatus.STARTED.equals(getStatus()))
                Thread.sleep(25);
 
-            return null;
+            return FurnaceImpl.this;
          }
       });
    }
