@@ -11,6 +11,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.maven.settings.Settings;
@@ -42,13 +43,15 @@ import org.jboss.forge.furnace.manager.spi.AddonDependencyResolver;
 import org.jboss.forge.furnace.manager.spi.AddonInfo;
 import org.jboss.forge.furnace.manager.spi.Response;
 import org.jboss.forge.furnace.util.Assert;
+import org.jboss.forge.furnace.util.Strings;
+import org.jboss.forge.furnace.versions.SingleVersion;
 import org.jboss.forge.furnace.versions.Versions;
 
 /**
  * Maven implementation of the {@link AddonDependencyResolver} used by the AddonManager
- * 
+ *
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
- * 
+ *
  */
 public class MavenAddonDependencyResolver implements AddonDependencyResolver
 {
@@ -174,6 +177,12 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       RepositorySystem system = container.getRepositorySystem();
       Settings settings = getSettings();
       DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
+      return resolveAPIVersion(addonId, system, settings, session);
+   }
+
+   private Response<String> resolveAPIVersion(AddonId addonId, RepositorySystem system, Settings settings,
+            DefaultRepositorySystemSession session)
+   {
       List<RemoteRepository> repositories = MavenRepositories.getRemoteRepositories(container, settings);
       String mavenCoords = toMavenCoords(addonId);
       Artifact queryArtifact = new DefaultArtifact(mavenCoords);
@@ -273,7 +282,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    private AddonInfo fromNode(AddonId id, DependencyNode dependencyNode, RepositorySystem system, Settings settings,
             DefaultRepositorySystemSession session)
    {
-      AddonInfoBuilder builder = AddonInfoBuilder.from(id);
+      AddonInfoBuilder builder = AddonInfoBuilder.from(enrichAddonId(id, system, settings, session));
       List<DependencyNode> children = dependencyNode.getChildren();
       for (DependencyNode child : children)
       {
@@ -348,7 +357,35 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       }
       throw new IllegalArgumentException("Not a forge-addon: " + artifact);
    }
-   
+
+   /**
+    * Adds the API version to the supplied {@link AddonId}
+    */
+   private AddonId enrichAddonId(AddonId originalAddonId, RepositorySystem system, Settings settings,
+            DefaultRepositorySystemSession session)
+   {
+      AddonId id;
+      // FORGE-1769: Add API version to requested AddonID
+      if (Strings.isNullOrEmpty(Objects.toString(originalAddonId.getApiVersion(), null)))
+      {
+         String apiVersion = resolveAPIVersion(originalAddonId, system, settings, session).get();
+
+         if (Strings.isNullOrEmpty(apiVersion))
+         {
+            id = originalAddonId;
+         }
+         else
+         {
+            id = AddonId.from(originalAddonId.getName(), originalAddonId.getVersion(), new SingleVersion(apiVersion));
+         }
+      }
+      else
+      {
+         id = originalAddonId;
+      }
+      return id;
+   }
+
    /**
     * @param settings the settings to set
     */
@@ -356,7 +393,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    {
       this.settings = settings;
    }
-   
+
    /**
     * @return the settings
     */

@@ -32,6 +32,7 @@ import org.jboss.forge.furnace.manager.request.UpdateRequest;
 import org.jboss.forge.furnace.manager.spi.AddonDependencyResolver;
 import org.jboss.forge.furnace.manager.spi.AddonInfo;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
+import org.jboss.forge.furnace.versions.SingleVersion;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -155,6 +156,18 @@ public class AddonManagerInstallTest
       AddonInfo addonInfo = deployRequest.getRequestedAddonInfo();
       Set<File> resources = addonInfo.getResources();
       Assert.assertEquals("It should have three resources", 3, resources.size());
+   }
+
+   @Test
+   public void testAddonInstallAPIVersionNoDependencyWithEmptyRepository() throws IOException
+   {
+      AddonId addon = AddonId.from("test:no_dep", "1.0.0.Final");
+      InstallRequest install = addonManager.install(addon);
+      List<? extends AddonActionRequest> actions = install.getActions();
+      Assert.assertEquals(1, actions.size());
+      Assert.assertThat(actions.get(0), instanceOf(DeployRequest.class));
+      Assert.assertEquals(new SingleVersion("2.4.1.Final"), actions.get(0).getRequestedAddonInfo().getAddon()
+               .getApiVersion());
    }
 
 }
