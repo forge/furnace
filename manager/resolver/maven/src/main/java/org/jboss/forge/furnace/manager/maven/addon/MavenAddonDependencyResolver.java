@@ -49,9 +49,9 @@ import org.jboss.forge.furnace.versions.Versions;
 
 /**
  * Maven implementation of the {@link AddonDependencyResolver} used by the AddonManager
- *
+ * 
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
- *
+ * 
  */
 public class MavenAddonDependencyResolver implements AddonDependencyResolver
 {
@@ -117,7 +117,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       {
          Artifact artifact = artifactResult.getArtifact();
          if (this.classifier.equals(artifact.getClassifier())
-                  && !mavenCoords.equals(artifact.toString()))
+                  && !addonId.getName().equals(artifact.getGroupId() + ":" + artifact.getArtifactId()))
          {
             continue;
          }
