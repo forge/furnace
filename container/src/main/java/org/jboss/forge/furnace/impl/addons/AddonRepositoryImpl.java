@@ -136,10 +136,13 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
                         String child = addon.getName()
                                  + resource.getParentFile().getParentFile().getName();
                         child = OperatingSystemUtils.getSafeFilename(child);
-                        Files.copyDirectory(resource, new File(addonSlotDir, child));
+                        File target = new File(addonSlotDir, child);
+                        logger.finest("Copying "+resource+" to "+target);
+                        Files.copyDirectory(resource, target);
                      }
                      else
                      {
+                        logger.finest("Copying "+resource+" to "+addonSlotDir);
                         Files.copyFileToDirectory(resource, addonSlotDir);
                      }
                   }
