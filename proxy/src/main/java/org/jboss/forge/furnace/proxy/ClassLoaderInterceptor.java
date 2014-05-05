@@ -10,6 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
 
+import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.util.ClassLoaders;
 
 /**
@@ -32,6 +33,11 @@ public class ClassLoaderInterceptor implements ForgeProxy
    public Object invoke(final Object self, final Method thisMethod, final Method proceed, final Object[] args)
             throws Throwable
    {
+      if (Thread.currentThread().isInterrupted())
+      {
+         throw new ContainerException("Thread.interrupt() requested.");
+      }
+
       Callable<Object> task = new Callable<Object>()
       {
          @Override

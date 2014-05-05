@@ -5,14 +5,18 @@
  * http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.jboss.forge.classloader;
+package org.jboss.forge.furnace.proxy.classloader;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
-import org.jboss.forge.classloader.mock.exceptions.ExceptionFactory;
-import org.jboss.forge.classloader.mock.exceptions.MockException;
+import org.jboss.forge.classloader.mock.result.AbstractClass;
+import org.jboss.forge.classloader.mock.result.BasicInterface;
+import org.jboss.forge.classloader.mock.result.Implementation;
+import org.jboss.forge.classloader.mock.result.InstanceFactory;
+import org.jboss.forge.classloader.mock.result.InstanceFactoryImpl;
+import org.jboss.forge.classloader.mock.result.SuperInterface;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
@@ -23,15 +27,20 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
-public class ClassLoaderAdapterExceptionProxyTest
+public class ClassLoaderNestedInterfaceProxyTest
 {
+   private static final String FACTORY_IMPL_TYPE = InstanceFactory.class.getName() + "Impl";
+
    @Deployment(order = 3)
    public static ForgeArchive getDeployment()
    {
       ForgeArchive archive = ShrinkWrap
                .create(ForgeArchive.class)
-               .addClasses(MockException.class, ExceptionFactory.class)
-               .addAsLocalServices(ClassLoaderAdapterExceptionProxyTest.class);
+               .addClasses(
+                        SuperInterface.class,
+                        AbstractClass.class,
+                        InstanceFactory.class)
+               .addAsLocalServices(ClassLoaderNestedInterfaceProxyTest.class);
 
       return archive;
    }
@@ -40,7 +49,13 @@ public class ClassLoaderAdapterExceptionProxyTest
    public static ForgeArchive getDeploymentDep1()
    {
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
-               .addClasses(MockException.class, ExceptionFactory.class)
+               .addClasses(
+                        BasicInterface.class,
+                        SuperInterface.class,
+                        AbstractClass.class,
+                        Implementation.class,
+                        InstanceFactory.class,
+                        InstanceFactoryImpl.class)
                .addBeansXML();
 
       return archive;
@@ -51,16 +66,17 @@ public class ClassLoaderAdapterExceptionProxyTest
    {
       AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
                .getAddonRegistry();
-      ClassLoader thisLoader = ClassLoaderAdapterExceptionProxyTest.class.getClassLoader();
+      ClassLoader thisLoader = ClassLoaderNestedInterfaceProxyTest.class.getClassLoader();
       ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep", "1")).getClassLoader();
 
-      Class<?> foreignType = dep1Loader.loadClass(ExceptionFactory.class.getName());
+      Class<?> foreignType = dep1Loader.loadClass(FACTORY_IMPL_TYPE);
       try
       {
-         ExceptionFactory factory = (ExceptionFactory) foreignType.newInstance();
+         SuperInterface local = (SuperInterface) foreignType.getMethod("getInstance")
+                  .invoke(foreignType.newInstance());
 
          Assert.fail("Should have received a " + ClassCastException.class.getName() + " but got a real object ["
-                  + factory + "]");
+                  + local + "]");
       }
       catch (ClassCastException e)
       {
@@ -71,22 +87,11 @@ public class ClassLoaderAdapterExceptionProxyTest
       }
 
       Object delegate = foreignType.newInstance();
-      ExceptionFactory enhancedFactory = (ExceptionFactory) ClassLoaderAdapterBuilder.callingLoader(thisLoader)
+      InstanceFactory enhancedFactory = (InstanceFactory) ClassLoaderAdapterBuilder.callingLoader(thisLoader)
                .delegateLoader(dep1Loader).enhance(delegate);
 
       Assert.assertTrue(Proxies.isForgeProxy(enhancedFactory));
-
-      try
-      {
-         enhancedFactory.throwException();
-      }
-      catch (MockException e)
-      {
-         Assert.assertTrue(Proxies.isForgeProxy(e));
-      }
-      catch (Exception e)
-      {
-         Assert.fail("Exception was not of proper type.");
-      }
+      SuperInterface enhancedInstance = (SuperInterface) enhancedFactory.getRawInstance();
+      Assert.assertTrue(Proxies.isForgeProxy(enhancedInstance));
    }
 }

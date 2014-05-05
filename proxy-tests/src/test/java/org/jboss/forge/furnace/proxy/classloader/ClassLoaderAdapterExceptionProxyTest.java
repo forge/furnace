@@ -5,14 +5,14 @@
  * http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.jboss.forge.classloader;
+package org.jboss.forge.furnace.proxy.classloader;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
-import org.jboss.forge.classloader.mock.SimpleEnum;
-import org.jboss.forge.classloader.mock.SimpleEnumFactory;
+import org.jboss.forge.classloader.mock.exceptions.ExceptionFactory;
+import org.jboss.forge.classloader.mock.exceptions.MockException;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
@@ -23,16 +23,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
-public class ClassLoaderAdapterEnumTranslationTest
+public class ClassLoaderAdapterExceptionProxyTest
 {
    @Deployment(order = 3)
    public static ForgeArchive getDeployment()
    {
       ForgeArchive archive = ShrinkWrap
                .create(ForgeArchive.class)
-               .addBeansXML()
-               .addClasses(SimpleEnum.class, SimpleEnumFactory.class)
-               .addAsLocalServices(ClassLoaderAdapterEnumTranslationTest.class);
+               .addClasses(MockException.class, ExceptionFactory.class)
+               .addAsLocalServices(ClassLoaderAdapterExceptionProxyTest.class);
 
       return archive;
    }
@@ -41,28 +40,27 @@ public class ClassLoaderAdapterEnumTranslationTest
    public static ForgeArchive getDeploymentDep1()
    {
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
-               .addClasses(SimpleEnum.class, SimpleEnumFactory.class)
+               .addClasses(MockException.class, ExceptionFactory.class)
                .addBeansXML();
 
       return archive;
    }
 
    @Test
-   public void testSimpleEnumCollision() throws Exception
+   public void testSharedImplementationTypeIncludedInProxy() throws Exception
    {
       AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
                .getAddonRegistry();
-      ClassLoader thisLoader = ClassLoaderAdapterEnumTranslationTest.class.getClassLoader();
+      ClassLoader thisLoader = ClassLoaderAdapterExceptionProxyTest.class.getClassLoader();
       ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep", "1")).getClassLoader();
 
-      Class<?> foreignType = dep1Loader.loadClass(SimpleEnumFactory.class.getName());
+      Class<?> foreignType = dep1Loader.loadClass(ExceptionFactory.class.getName());
       try
       {
-         SimpleEnum local = (SimpleEnum) foreignType.getMethod("getEnum")
-                  .invoke(foreignType.newInstance());
+         ExceptionFactory factory = (ExceptionFactory) foreignType.newInstance();
 
          Assert.fail("Should have received a " + ClassCastException.class.getName() + " but got a real object ["
-                  + local + "]");
+                  + factory + "]");
       }
       catch (ClassCastException e)
       {
@@ -73,13 +71,22 @@ public class ClassLoaderAdapterEnumTranslationTest
       }
 
       Object delegate = foreignType.newInstance();
-      SimpleEnumFactory enhancedFactory = (SimpleEnumFactory) ClassLoaderAdapterBuilder.callingLoader(thisLoader)
+      ExceptionFactory enhancedFactory = (ExceptionFactory) ClassLoaderAdapterBuilder.callingLoader(thisLoader)
                .delegateLoader(dep1Loader).enhance(delegate);
 
       Assert.assertTrue(Proxies.isForgeProxy(enhancedFactory));
-      SimpleEnum enhancedInstance = enhancedFactory.getEnum();
-      Assert.assertFalse(Proxies.isForgeProxy(enhancedInstance));
 
-      enhancedFactory.useEnum(SimpleEnum.STOPPED);
+      try
+      {
+         enhancedFactory.throwException();
+      }
+      catch (MockException e)
+      {
+         Assert.assertTrue(Proxies.isForgeProxy(e));
+      }
+      catch (Exception e)
+      {
+         Assert.fail("Exception was not of proper type.");
+      }
    }
 }

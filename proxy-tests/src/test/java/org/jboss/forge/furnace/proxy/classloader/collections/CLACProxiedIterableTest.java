@@ -5,7 +5,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.jboss.forge.classloader.collections;
+package org.jboss.forge.furnace.proxy.classloader.collections;
 
 import java.util.Iterator;
 

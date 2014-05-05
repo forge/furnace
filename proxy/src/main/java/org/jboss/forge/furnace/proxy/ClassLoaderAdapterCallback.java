@@ -68,6 +68,11 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
    public Object invoke(final Object obj, final Method thisMethod, final Method proceed, final Object[] args)
             throws Throwable
    {
+      if(Thread.currentThread().isInterrupted())
+      {
+         throw new ContainerException("Thread.interrupt() requested.");
+      }
+      
       return ClassLoaders.executeIn(delegateLoader, new Callable<Object>()
       {
          @Override

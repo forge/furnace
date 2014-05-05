@@ -8,6 +8,8 @@ package org.jboss.forge.arquillian.services;
 
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.exception.ContainerException;
+import org.jboss.forge.furnace.proxy.ClassLoaderInterceptor;
+import org.jboss.forge.furnace.proxy.Proxies;
 import org.jboss.forge.furnace.spi.ExportedInstance;
 
 /**
@@ -16,8 +18,8 @@ import org.jboss.forge.furnace.spi.ExportedInstance;
  */
 public class ReflectionExportedInstance<T> implements ExportedInstance<T>
 {
-   private Class<T> type;
-   private Addon addon;
+   private final Class<T> type;
+   private final Addon addon;
 
    public ReflectionExportedInstance(Addon addon, Class<T> clazz)
    {
@@ -30,7 +32,10 @@ public class ReflectionExportedInstance<T> implements ExportedInstance<T>
    {
       try
       {
-         return type.newInstance();
+         T delegate = type.newInstance();
+         delegate = Proxies.enhance(addon.getClassLoader(), delegate, new ClassLoaderInterceptor(
+                  addon.getClassLoader(), delegate));
+         return delegate;
       }
       catch (Exception e)
       {
