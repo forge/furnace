@@ -22,7 +22,7 @@ public class LockManagerImpl implements LockManager
 {
    private ReentrantReadWriteLock readWriteLock;
 
-   private Lock obtainLock(LockMode mode)
+   private synchronized Lock obtainLock(LockMode mode)
    {
       if (readWriteLock == null)
          readWriteLock = new ReentrantReadWriteLock(true);
