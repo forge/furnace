@@ -15,7 +15,7 @@ public class ExceptionFactory
 
    public void throwException() throws MockException
    {
-      throw new MockException("A message.");
+      throw new MockException("AbstractA message.");
    }
 
 }
