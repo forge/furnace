@@ -45,10 +45,12 @@ class AddonDependencySelector implements DependencySelector
 
          String scope = dependency.getScope();
 
-         if ("test".equals(scope))
-            return false;
-
-         result = (module && depth == 1) || (!module && !"provided".equals(scope));
+         if (dependency.isOptional() && depth > 1)
+            result = false;
+         else if ("test".equals(scope))
+            result = false;
+         else
+            result = (module && depth == 1) || (!module && !"provided".equals(scope));
       }
       return result;
    }

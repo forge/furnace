@@ -2,7 +2,7 @@
    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    <modelVersion>4.0.0</modelVersion>
    <groupId>test</groupId>
-   <artifactId>one_dep_lib</artifactId>
+   <artifactId>one_optional_dep</artifactId>
    <version>1.0.0.Final</version>
    <name>Forge - Example Addon</name>
 
