@@ -26,7 +26,7 @@ class AddonDependencySelector implements DependencySelector
       this.parentSelector = null;
    }
 
-   public AddonDependencySelector(String classifier, Dependency parent, AddonDependencySelector parentSelector,
+   private AddonDependencySelector(AddonDependencySelector parentSelector, Dependency parent, String classifier,
             int depth)
    {
       this.classifier = classifier;
@@ -41,19 +41,14 @@ class AddonDependencySelector implements DependencySelector
       boolean result = false;
       if (!isExcluded(dependency))
       {
-         boolean optional = dependency.isOptional();
-
-         if (depth < 1)
-            return !optional;
+         boolean module = this.classifier.equals(dependency.getArtifact().getClassifier());
 
          String scope = dependency.getScope();
-         String classifier = dependency.getArtifact().getClassifier();
 
          if ("test".equals(scope))
             return false;
 
-         result = (this.classifier.equals(classifier) && depth == 1)
-                  || (!this.classifier.equals(classifier) && !"provided".equals(scope) && !optional);
+         result = (module && depth == 1) || (!module && !"provided".equals(scope));
       }
       return result;
    }
@@ -96,11 +91,12 @@ class AddonDependencySelector implements DependencySelector
    @Override
    public DependencySelector deriveChildSelector(DependencyCollectionContext context)
    {
-      if ((depth > 0) && this.classifier.equals(context.getDependency().getArtifact().getClassifier()))
+      boolean module = this.classifier.equals(context.getDependency().getArtifact().getClassifier());
+      if ((depth > 0) && module)
       {
          return new StaticDependencySelector(false);
       }
-      return new AddonDependencySelector(this.classifier, context.getDependency(), this, depth + 1);
+      return new AddonDependencySelector(this, context.getDependency(), this.classifier, depth + 1);
    }
 
    @Override

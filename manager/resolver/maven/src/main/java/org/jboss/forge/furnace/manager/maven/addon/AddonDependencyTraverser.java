@@ -7,7 +7,6 @@
 
 package org.jboss.forge.furnace.manager.maven.addon;
 
-import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.collection.DependencyCollectionContext;
 import org.eclipse.aether.collection.DependencyTraverser;
 import org.eclipse.aether.graph.Dependency;
@@ -16,10 +15,11 @@ import org.eclipse.aether.graph.Dependency;
  * Used on maven resolution
  * 
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
- * 
+ * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
 public final class AddonDependencyTraverser implements DependencyTraverser
 {
+   @SuppressWarnings("unused")
    private final String classifier;
 
    public AddonDependencyTraverser(String classifier)
@@ -30,15 +30,7 @@ public final class AddonDependencyTraverser implements DependencyTraverser
    @Override
    public boolean traverseDependency(Dependency dependency)
    {
-      Artifact artifact = dependency.getArtifact();
-      boolean isForgeAddon = classifier.equals(artifact.getClassifier());
-      // We don't want to traverse non-addons optional dependencies
-      if (!isForgeAddon && dependency.isOptional())
-      {
-         return false;
-      }
-      boolean shouldRecurse = !"test".equals(dependency.getScope());
-      return shouldRecurse;
+      return !"test".equals(dependency.getScope());
    }
 
    @Override

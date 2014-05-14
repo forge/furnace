@@ -126,6 +126,16 @@ public class AddonManagerDependencyResolutionTest
    }
 
    @Test
+   public void testResolutionInfoOptionalLib() throws Exception
+   {
+      AddonId addon = AddonId.from("test:one_optional_dep", "1.0.0.Final");
+      AddonInfo info = resolver.resolveAddonDependencyHierarchy(addon);
+      Assert.assertNotNull(info);
+      Assert.assertTrue(info.getRequiredAddons().isEmpty());
+      Assert.assertEquals(2, info.getResources().size());
+   }
+
+   @Test
    public void testResolveVersions() throws Exception
    {
       AddonId[] versions = resolver.resolveVersions("test:furnace_api_dep").get();
