@@ -26,7 +26,7 @@ public final class Callables
     */
    public static <T> Callable<T> returning(T value)
    {
-      return new ConstantCallable<T>(value);
+      return new ConstantCallable<>(value);
    }
 
    /**

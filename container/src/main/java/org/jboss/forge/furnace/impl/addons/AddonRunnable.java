@@ -23,12 +23,12 @@ import org.jboss.forge.furnace.addons.AddonView;
 import org.jboss.forge.furnace.event.PostStartup;
 import org.jboss.forge.furnace.event.PreShutdown;
 import org.jboss.forge.furnace.exception.ContainerException;
-import org.jboss.forge.furnace.impl.util.Iterators;
 import org.jboss.forge.furnace.lifecycle.AddonLifecycleProvider;
 import org.jboss.forge.furnace.lifecycle.ControlType;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.util.Addons;
 import org.jboss.forge.furnace.util.ClassLoaders;
+import org.jboss.forge.furnace.util.Iterators;
 import org.jboss.forge.furnace.util.SecurityActions;
 
 /**

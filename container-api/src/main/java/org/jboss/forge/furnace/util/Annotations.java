@@ -130,7 +130,7 @@ public class Annotations
     */
    public static <A extends Annotation> A getAnnotation(final Annotation a, final Class<A> type)
    {
-      Set<Annotation> seen = new HashSet<Annotation>();
+      Set<Annotation> seen = new HashSet<>();
       return getAnnotation(seen, a, type);
    }
 
