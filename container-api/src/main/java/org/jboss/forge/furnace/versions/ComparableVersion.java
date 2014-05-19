@@ -363,11 +363,11 @@ public class ComparableVersion
    {
       this.value = version;
 
-      items = new ListItem();
+      setItems(new ListItem());
 
       version = version.toLowerCase(Locale.ENGLISH);
 
-      ListItem list = items;
+      ListItem list = getItems();
 
       Stack<Item> stack = new Stack<Item>();
       stack.push(list);
@@ -451,7 +451,7 @@ public class ComparableVersion
          list.normalize();
       }
 
-      canonical = items.toString();
+      canonical = getItems().toString();
    }
 
    private static Item parseItem(boolean isDigit, String buf)
@@ -462,7 +462,7 @@ public class ComparableVersion
    @Override
    public int compareTo(ComparableVersion o)
    {
-      return items.compareTo(o.items);
+      return getItems().compareTo(o.getItems());
    }
 
    @Override
@@ -481,5 +481,15 @@ public class ComparableVersion
    public int hashCode()
    {
       return canonical.hashCode();
+   }
+
+   private ListItem getItems()
+   {
+      return items;
+   }
+
+   private void setItems(ListItem items)
+   {
+      this.items = items;
    }
 }

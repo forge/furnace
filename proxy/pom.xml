@@ -3,7 +3,8 @@
 <!-- ~ Copyright 2012 Red Hat, Inc. and/or its affiliates. ~ ~ Licensed under the Eclipse Public License version 1.0, available 
    at ~ http://www.eclipse.org/legal/epl-v10.html -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    <modelVersion>4.0.0</modelVersion>
 
    <parent>
@@ -26,5 +27,39 @@
          <groupId>org.jboss.forge</groupId>
          <artifactId>forge-javassist</artifactId>
       </dependency>
+      <dependency>
+         <groupId>org.objenesis</groupId>
+         <artifactId>objenesis</artifactId>
+      </dependency>
    </dependencies>
+
+   <build>
+      <plugins>
+         <plugin>
+            <artifactId>maven-shade-plugin</artifactId>
+            <executions>
+               <execution>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>shade</goal>
+                  </goals>
+               </execution>
+            </executions>
+            <configuration>
+               <keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
+               <artifactSet>
+                  <includes>
+                     <include>org.objenesis:objenesis</include>
+                  </includes>
+               </artifactSet>
+               <relocations>
+                  <relocation>
+                     <pattern>org.objenesis</pattern>
+                     <shadedPattern>org.jboss.forge.furnace.proxy.objenesis</shadedPattern>
+                  </relocation>
+               </relocations>
+            </configuration>
+         </plugin>
+      </plugins>
+   </build>
 </project>

@@ -20,8 +20,8 @@ import org.jboss.forge.furnace.event.PreShutdown;
  */
 public class RecordingEventManager implements EventManager
 {
-   private static List<Object> events = new ArrayList<Object>();
-   private static List<Annotation[]> qualifiers = new ArrayList<Annotation[]>();
+   private static List<Object> events = new ArrayList<>();
+   private static List<Annotation[]> qualifiers = new ArrayList<>();
    private static int postStartupCount;
    private static int preShutdownCount;
 

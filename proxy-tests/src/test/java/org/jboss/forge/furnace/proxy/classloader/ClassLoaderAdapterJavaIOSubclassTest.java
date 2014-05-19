@@ -85,14 +85,7 @@ public class ClassLoaderAdapterJavaIOSubclassTest
       file.deleteOnExit();
       enhancedFactory.usePrintStream(new CustomPrintStream(file));
 
-      try
-      {
-         @SuppressWarnings("unused")
-         CustomPrintStream customResult = enhancedFactory.getCustomPrintStream();
-         Assert.fail("Should have received a classcast exception");
-      }
-      catch (ClassCastException e)
-      {
-      }
+      CustomPrintStream customResult = enhancedFactory.getCustomPrintStream();
+      Assert.assertTrue(Proxies.isForgeProxy(customResult));
    }
 }

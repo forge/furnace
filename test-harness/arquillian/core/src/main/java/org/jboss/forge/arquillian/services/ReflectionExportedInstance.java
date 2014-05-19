@@ -7,7 +7,6 @@
 package org.jboss.forge.arquillian.services;
 
 import org.jboss.forge.furnace.addons.Addon;
-import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.proxy.ClassLoaderInterceptor;
 import org.jboss.forge.furnace.proxy.Proxies;
 import org.jboss.forge.furnace.spi.ExportedInstance;
@@ -30,17 +29,10 @@ public class ReflectionExportedInstance<T> implements ExportedInstance<T>
    @Override
    public T get()
    {
-      try
-      {
-         T delegate = type.newInstance();
-         delegate = Proxies.enhance(addon.getClassLoader(), delegate, new ClassLoaderInterceptor(
-                  addon.getClassLoader(), delegate));
-         return delegate;
-      }
-      catch (Exception e)
-      {
-         throw new ContainerException("Could not create instance of [" + type.getName() + "] through reflection.", e);
-      }
+      T delegate = Proxies.instantiate(type);
+      delegate = Proxies.enhance(addon.getClassLoader(), delegate, new ClassLoaderInterceptor(
+               addon.getClassLoader(), delegate));
+      return delegate;
    }
 
    @Override

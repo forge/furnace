@@ -50,7 +50,7 @@ public class SingleVersion implements Version
    @Override
    public int hashCode()
    {
-      return 11 + comparable.hashCode();
+      return 11 + getComparable().hashCode();
    }
 
    @Override
@@ -77,7 +77,7 @@ public class SingleVersion implements Version
 
       if (otherVersion instanceof SingleVersion)
       {
-         return this.comparable.compareTo(((SingleVersion) otherVersion).comparable);
+         return this.getComparable().compareTo(((SingleVersion) otherVersion).getComparable());
       }
       else
       {
@@ -115,10 +115,10 @@ public class SingleVersion implements Version
       return qualifier;
    }
 
-   public final void parseVersion(String version)
+   private final void parseVersion(String version)
    {
       Assert.notNull(version, "Version must not be null.");
-      comparable = new ComparableVersion(version);
+      setComparable(new ComparableVersion(version));
 
       int index = version.indexOf("-");
 
@@ -253,5 +253,15 @@ public class SingleVersion implements Version
          buf.append(qualifier);
       }
       return buf.toString();
+   }
+
+   public ComparableVersion getComparable()
+   {
+      return comparable;
+   }
+
+   private void setComparable(ComparableVersion comparable)
+   {
+      this.comparable = comparable;
    }
 }

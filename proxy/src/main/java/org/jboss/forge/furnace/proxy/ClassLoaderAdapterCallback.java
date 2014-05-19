@@ -68,11 +68,11 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
    public Object invoke(final Object obj, final Method thisMethod, final Method proceed, final Object[] args)
             throws Throwable
    {
-      if(Thread.currentThread().isInterrupted())
+      if (Thread.currentThread().isInterrupted())
       {
          throw new ContainerException("Thread.interrupt() requested.");
       }
-      
+
       return ClassLoaders.executeIn(delegateLoader, new Callable<Object>()
       {
          @Override
@@ -331,8 +331,23 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                {
                   result = enhance(whitelist, getCallingLoader(), exceptionLoader, method, exception,
                            exceptionHierarchy);
-                  result.initCause(exception);
-                  result.setStackTrace(exception.getStackTrace());
+                  try
+                  {
+                     result.initCause(exception);
+                  }
+                  catch (Exception e)
+                  {
+                     // oh welll
+                  }
+
+                  try
+                  {
+                     result.setStackTrace(exception.getStackTrace());
+                  }
+                  catch (Exception e)
+                  {
+                     // oh well
+                  }
                }
             }
          }
@@ -342,7 +357,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
          log.log(Level.WARNING,
                   "Could not enhance exception for passing through ClassLoader boundary. Exception type ["
                            + exception.getClass().getName() + "], Caller [" + getCallingLoader() + "], Delegate ["
-                           + delegateLoader + "]");
+                           + delegateLoader + "]", e);
          return exception;
       }
       return result;
@@ -738,15 +753,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                      @Override
                      public boolean isHandled(Method method)
                      {
-                        if (!method.getDeclaringClass().getName().contains("java.lang")
-                                 || !Proxies.isPassthroughType(method.getDeclaringClass())
-                                 || ("toString".equals(method.getName()) && method.getParameterTypes().length == 0)
-                                 || isEquals(method)
-                                 || isHashCode(method)
-                                 || isAutoCloseableClose(method)
-                                 || Arrays.contains(types, method.getDeclaringClass()))
-                           return true;
-                        return false;
+                        return true;
                      }
                   };
 
@@ -786,8 +793,8 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                      f.setInterfaces(hierarchy);
 
                   f.setFilter(filter);
-                  final Class<?> c = f.createClass();
-                  enhancedResult = c.newInstance();
+                  final Class<?> proxyType = f.createClass();
+                  enhancedResult = Proxies.instantiate(proxyType);
 
                   try
                   {

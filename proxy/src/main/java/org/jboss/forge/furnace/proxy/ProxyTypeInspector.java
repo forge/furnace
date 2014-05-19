@@ -19,7 +19,7 @@ class ProxyTypeInspector
 {
    public static Class<?>[] getCompatibleClassHierarchy(ClassLoader loader, Class<?> origin)
    {
-      Set<Class<?>> hierarchy = new LinkedHashSet<Class<?>>();
+      Set<Class<?>> hierarchy = new LinkedHashSet<>();
 
       Class<?> baseClass = origin;
 

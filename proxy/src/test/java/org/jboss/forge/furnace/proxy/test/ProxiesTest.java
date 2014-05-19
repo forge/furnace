@@ -56,10 +56,35 @@ public class ProxiesTest
       Proxies.enhance(object.getClass(), handler);
    }
 
-   @Test(expected = Exception.class)
-   public void testCannotProxyMemberClass() throws Exception
+   public void testProxyMemberClass() throws Exception
    {
       Proxies.enhance(MemberClass.class, handler);
+   }
+
+   public class PrivateConstructor
+   {
+      private PrivateConstructor()
+      {
+         throw new IllegalStateException("Can't call me!");
+      }
+   }
+
+   @Test
+   public void testPrivateConstructorProxy() throws Exception
+   {
+      Object object = Proxies.enhance(PrivateConstructor.class, handler);
+      Assert.assertTrue(Proxies.isForgeProxy(object));
+   }
+
+   public final class FinalType
+   {
+   }
+
+   @Test(expected = RuntimeException.class)
+   public void testFinalTypeProxy() throws Exception
+   {
+      Object object = Proxies.enhance(FinalType.class, handler);
+      Assert.assertTrue(Proxies.isForgeProxy(object));
    }
 
    @Test
@@ -181,7 +206,7 @@ public class ProxiesTest
    @Test
    public void testIsInstantiable() throws Exception
    {
-      Assert.assertFalse(Proxies.isInstantiable(TypeWithNonDefaultConstructor.class));
+      Assert.assertTrue(Proxies.isInstantiable(TypeWithNonDefaultConstructor.class));
       Assert.assertTrue(Proxies.isInstantiable(Bean.class));
    }
 

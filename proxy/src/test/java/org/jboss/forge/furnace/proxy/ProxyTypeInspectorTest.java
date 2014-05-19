@@ -23,7 +23,7 @@ public class ProxyTypeInspectorTest
       Class<?>[] hierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(getClass().getClassLoader(),
                MockExtendsImplementsExternal.class);
 
-      Assert.assertEquals(MockBaseClassExternal.class, hierarchy[0]);
+      Assert.assertEquals(MockExtendsImplementsExternal.class, hierarchy[0]);
       Assert.assertEquals(MockInterface.class, hierarchy[1]);
       Assert.assertEquals(MockNestedInterface.class, hierarchy[2]);
    }
@@ -34,8 +34,9 @@ public class ProxyTypeInspectorTest
       Class<?>[] hierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(getClass().getClassLoader(),
                MockExtendsImplementsInternal.class);
 
-      Assert.assertEquals(MockInterface.class, hierarchy[0]);
-      Assert.assertEquals(MockNestedInterface.class, hierarchy[1]);
+      Assert.assertEquals(MockExtendsImplementsInternal.class, hierarchy[0]);
+      Assert.assertEquals(MockInterface.class, hierarchy[1]);
+      Assert.assertEquals(MockNestedInterface.class, hierarchy[2]);
    }
 
    private class MockExtendsImplementsInternal extends MockBaseClass implements MockInterface

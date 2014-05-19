@@ -70,6 +70,11 @@ public class ClassLoaderInterceptor implements ForgeProxy
                   throw (Exception) e.getCause();
                throw e;
             }
+            catch (IllegalArgumentException e) {
+               System.out.println(thisMethod.getDeclaringClass());
+               System.out.println(delegate.getClass());
+               throw e;
+            }
             finally
             {
                setCurrentLoader(previousLoader);

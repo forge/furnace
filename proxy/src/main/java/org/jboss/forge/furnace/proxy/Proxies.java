@@ -16,6 +16,8 @@ import org.jboss.forge.furnace.proxy.javassist.util.proxy.MethodFilter;
 import org.jboss.forge.furnace.proxy.javassist.util.proxy.Proxy;
 import org.jboss.forge.furnace.proxy.javassist.util.proxy.ProxyFactory;
 import org.jboss.forge.furnace.proxy.javassist.util.proxy.ProxyObject;
+import org.objenesis.ObjenesisHelper;
+import org.objenesis.ObjenesisStd;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
@@ -82,21 +84,7 @@ public class Proxies
          setCachedProxyType(loader, type, proxyType);
       }
 
-      try
-      {
-         result = proxyType.newInstance();
-      }
-      catch (InstantiationException e)
-      {
-         throw new IllegalStateException(
-                  "Could not instantiate proxy for object [" + instance + "] of type [" + type
-                           + "]. For optimal proxy compatibility, ensure " +
-                           "that this type is an interface, or a class with a default constructor.", e);
-      }
-      catch (IllegalAccessException e)
-      {
-         throw new IllegalStateException(e);
-      }
+      result = instantiate(proxyType);
 
       if (result instanceof Proxy)
          ((Proxy) result).setHandler(handler);
@@ -107,6 +95,22 @@ public class Proxies
                   + result + "] for instance object [" + instance + "] of type [" + instance.getClass() + "]");
 
       return (T) result;
+   }
+
+   /**
+    * Attempt to instantiate the given {@link Class} type without calling its constructor.
+    */
+   public static <T> T instantiate(Class<T> type)
+   {
+      try
+      {
+         if (isInstantiable(type))
+            return type.newInstance();
+      }
+      catch (Exception e)
+      {
+      }
+      return new ObjenesisStd(false).newInstance(type);
    }
 
    private static Class<?> getCachedProxyType(ClassLoader loader, Class<?> type)
@@ -174,21 +178,7 @@ public class Proxies
          setCachedProxyType(type.getClassLoader(), type, proxyType);
       }
 
-      try
-      {
-         result = proxyType.newInstance();
-      }
-      catch (InstantiationException e)
-      {
-         throw new IllegalStateException(
-                  "Could not instantiate proxy for type [" + type
-                           + "]. For optimal proxy compatibility, ensure " +
-                           "that this type is an interface, or a class with a default constructor.", e);
-      }
-      catch (IllegalAccessException e)
-      {
-         throw new IllegalStateException(e);
-      }
+      result = ObjenesisHelper.newInstance(proxyType);
 
       if (result instanceof Proxy)
          ((Proxy) result).setHandler(handler);
@@ -411,7 +401,10 @@ public class Proxies
          {
             if (type.isInterface())
                return true;
-            type.getConstructor();
+
+            if (isLanguageType(type))
+               type.getConstructor();
+
             return true;
          }
          catch (SecurityException e)

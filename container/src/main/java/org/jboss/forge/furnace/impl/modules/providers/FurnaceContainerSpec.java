@@ -18,6 +18,7 @@ public class FurnaceContainerSpec extends AbstractModuleSpecProvider
 
    static
    {
+      paths.add("org/jboss/forge/furnace/proxy");
       paths.add("org/jboss/forge/furnace/proxy/javassist");
       paths.add("org/jboss/forge/furnace/proxy/javassist/bytecode");
       paths.add("org/jboss/forge/furnace/proxy/javassist/bytecode/analysis");
@@ -36,6 +37,16 @@ public class FurnaceContainerSpec extends AbstractModuleSpecProvider
       paths.add("org/jboss/forge/furnace/proxy/javassist/util");
       paths.add("org/jboss/forge/furnace/proxy/javassist/util/proxy");
 
+      paths.add("org/jboss/forge/furnace/proxy/objenesis");
+      paths.add("org/jboss/forge/furnace/proxy/objenesis/instantiator");
+      paths.add("org/jboss/forge/furnace/proxy/objenesis/instantiator/android");
+      paths.add("org/jboss/forge/furnace/proxy/objenesis/instantiator/basic");
+      paths.add("org/jboss/forge/furnace/proxy/objenesis/instantiator/gcj");
+      paths.add("org/jboss/forge/furnace/proxy/objenesis/instantiator/jrockit");
+      paths.add("org/jboss/forge/furnace/proxy/objenesis/instantiator/perc");
+      paths.add("org/jboss/forge/furnace/proxy/objenesis/instantiator/sun");
+      paths.add("org/jboss/forge/furnace/proxy/objenesis/strategy");
+
       paths.add("org/jboss/forge/furnace");
       paths.add("org/jboss/forge/furnace/addons");
       paths.add("org/jboss/forge/furnace/event");
@@ -48,7 +59,6 @@ public class FurnaceContainerSpec extends AbstractModuleSpecProvider
       paths.add("org/jboss/forge/furnace/util");
       paths.add("org/jboss/forge/furnace/versions");
 
-      paths.add("org/jboss/forge/furnace/proxy");
    }
 
    @Override
@@ -62,8 +72,6 @@ public class FurnaceContainerSpec extends AbstractModuleSpecProvider
                                  PathFilters.isChildOf("org/jboss/forge/furnace/impl"))),
 
                         PathFilters.any(Arrays.asList(
-                                 PathFilters.is("org/jboss/forge/furnace/proxy/javassist"),
-                                 PathFilters.isChildOf("org/jboss/forge/furnace/proxy/javassist"),
                                  PathFilters.is("META-INF/services"),
                                  PathFilters.is("org/jboss/forge/furnace"),
                                  PathFilters.is("org/jboss/forge/furnace/addons"),
@@ -76,7 +84,11 @@ public class FurnaceContainerSpec extends AbstractModuleSpecProvider
                                  PathFilters.is("org/jboss/forge/furnace/spi"),
                                  PathFilters.is("org/jboss/forge/furnace/util"),
                                  PathFilters.is("org/jboss/forge/furnace/versions"),
-                                 PathFilters.is("org/jboss/forge/furnace/proxy")
+                                 PathFilters.is("org/jboss/forge/furnace/proxy"),
+                                 PathFilters.is("org/jboss/forge/furnace/proxy/javassist"),
+                                 PathFilters.isChildOf("org/jboss/forge/furnace/proxy/javassist"),
+                                 PathFilters.is("org/jboss/forge/furnace/proxy/objenesis"),
+                                 PathFilters.isChildOf("org/jboss/forge/furnace/proxy/objenesis")
                                  ))),
                getPaths()));
    }
