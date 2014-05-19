@@ -147,6 +147,7 @@ public class BootstrapClassLoader extends URLClassLoader
       @SuppressWarnings("deprecation")
       private List<URL> handleZipFile(File file) throws IOException
       {
+         File tempDir = OperatingSystemUtils.createTempDir();
          List<URL> result = new ArrayList<URL>();
          try
          {
@@ -162,7 +163,7 @@ public class BootstrapClassLoader extends URLClassLoader
                            file.getAbsolutePath() + "/" + entry.getName(), entry.getSize(),
                            new Date(entry.getTime())));
 
-                  result.add(copy(entry.getName(),
+                  result.add(copy(tempDir, entry.getName(),
                            JarLocator.class.getClassLoader().getResource(name).openStream()
                            ).toURL());
                }
@@ -176,9 +177,10 @@ public class BootstrapClassLoader extends URLClassLoader
          return result;
       }
 
-      private File copy(String name, InputStream input)
+      private File copy(File targetDir, String name, InputStream input)
       {
-         File outputFile = new File("target", name);
+         File outputFile = new File(targetDir, name);
+         
          outputFile.getParentFile().mkdirs();
 
          FileOutputStream output = null;
