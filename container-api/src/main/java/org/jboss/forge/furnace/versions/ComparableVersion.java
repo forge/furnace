@@ -171,7 +171,7 @@ public class ComparableVersion
        */
       private static final String RELEASE_VERSION_INDEX = String.valueOf(_QUALIFIERS.indexOf(""));
 
-      private String value;
+      private final String value;
 
       public StringItem(String value, boolean followedByDigit)
       {
@@ -369,7 +369,7 @@ public class ComparableVersion
 
       ListItem list = items;
 
-      Stack<Item> stack = new Stack<Item>();
+      Stack<Item> stack = new Stack<>();
       stack.push(list);
 
       boolean isDigit = false;
