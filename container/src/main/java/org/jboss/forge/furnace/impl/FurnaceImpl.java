@@ -78,10 +78,27 @@ public class FurnaceImpl implements Furnace
    public FurnaceImpl()
    {
       if (!AddonRepositoryImpl.hasRuntimeAPIVersion())
+      {
          logger.warning("Could not detect Furnace runtime version - " +
                   "loading all addons, but failures may occur if versions are not compatible.");
+      }
+
+      if (!Boolean.getBoolean("furnace.logging.leak"))
+      {
+         /*
+          * If enabled, allows the JDK java.util.logging.Level to leak ClassLoaders.
+          */
+         LoggingRepair.init();
+      }
+
       if (Boolean.getBoolean("furnace.debug"))
+      {
+         /*
+          * If enabled, prints a LOT of debug logging from JBoss Modules.
+          */
          enableLogging();
+      }
+
       try
       {
          watcher = FileSystems.getDefault().newWatchService();
