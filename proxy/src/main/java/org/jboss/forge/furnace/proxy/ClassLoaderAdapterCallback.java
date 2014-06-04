@@ -41,6 +41,9 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
    private final ClassLoader initialCallingLoader;
    private final ClassLoader delegateLoader;
    private final Callable<Set<ClassLoader>> whitelist;
+   private final ClassLoader nullClassLoader = new ClassLoader()
+   {
+   };
 
    private ClassLoader getCallingLoader()
    {
@@ -60,7 +63,17 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
 
       this.whitelist = whitelist;
       this.initialCallingLoader = callingLoader;
-      this.delegateLoader = delegateLoader;
+
+      if (delegateLoader == callingLoader)
+      {
+         // If we don't do this, class enhancement fails because types are always resolved
+         this.delegateLoader = nullClassLoader;
+      }
+      else
+      {
+         this.delegateLoader = delegateLoader;
+      }
+
       this.delegate = delegate;
    }
 
@@ -68,11 +81,11 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
    public Object invoke(final Object obj, final Method thisMethod, final Method proceed, final Object[] args)
             throws Throwable
    {
-      if(Thread.currentThread().isInterrupted())
+      if (Thread.currentThread().isInterrupted())
       {
          throw new ContainerException("Thread.interrupt() requested.");
       }
-      
+
       return ClassLoaders.executeIn(delegateLoader, new Callable<Object>()
       {
          @Override

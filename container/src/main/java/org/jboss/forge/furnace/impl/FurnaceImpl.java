@@ -131,7 +131,7 @@ public class FurnaceImpl implements Furnace
    @Override
    public Future<Furnace> startAsync()
    {
-      return startAsync(Thread.currentThread().getContextClassLoader());
+      return startAsync(FurnaceImpl.class.getClassLoader());
    }
 
    @Override
@@ -164,7 +164,7 @@ public class FurnaceImpl implements Furnace
    @Override
    public void start()
    {
-      start(Thread.currentThread().getContextClassLoader());
+      start(FurnaceImpl.class.getClassLoader());
    }
 
    @Override
