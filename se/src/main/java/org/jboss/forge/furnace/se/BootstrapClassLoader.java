@@ -24,7 +24,7 @@ import java.util.zip.ZipInputStream;
 
 import org.jboss.forge.furnace.util.OperatingSystemUtils;
 
-public class BootstrapClassLoader extends URLClassLoader
+class BootstrapClassLoader extends URLClassLoader
 {
    private static final Logger log = Logger.getLogger(BootstrapClassLoader.class.getName());
 
@@ -35,7 +35,7 @@ public class BootstrapClassLoader extends URLClassLoader
 
    private static class JarLocator
    {
-      private String path;
+      private final String path;
 
       public JarLocator(String path)
       {
@@ -44,7 +44,7 @@ public class BootstrapClassLoader extends URLClassLoader
 
       private URL[] find()
       {
-         List<URL> result = new ArrayList<URL>();
+         List<URL> result = new ArrayList<>();
          try
          {
             for (URL url : Collections.list(JarLocator.class.getClassLoader().getResources(path)))
@@ -73,7 +73,7 @@ public class BootstrapClassLoader extends URLClassLoader
 
       private List<URL> handle(String urlPath, URL original) throws IOException
       {
-         List<URL> result = new ArrayList<URL>();
+         List<URL> result = new ArrayList<>();
          File file = new File(urlPath);
          if (file.isDirectory())
             result = handle(file);
@@ -86,7 +86,7 @@ public class BootstrapClassLoader extends URLClassLoader
 
       private List<URL> handleZipStream(URL original) throws IOException, FileNotFoundException
       {
-         List<URL> result = new ArrayList<URL>();
+         List<URL> result = new ArrayList<>();
          InputStream stream = original.openStream();
          if (stream instanceof ZipInputStream)
          {
@@ -125,7 +125,7 @@ public class BootstrapClassLoader extends URLClassLoader
 
       private List<URL> handle(File file)
       {
-         List<URL> result = new ArrayList<URL>();
+         List<URL> result = new ArrayList<>();
          for (File child : file.listFiles())
          {
             if (!child.isDirectory() && child.getName().endsWith(".jar"))
@@ -148,7 +148,7 @@ public class BootstrapClassLoader extends URLClassLoader
       private List<URL> handleZipFile(File file) throws IOException
       {
          File tempDir = OperatingSystemUtils.createTempDir();
-         List<URL> result = new ArrayList<URL>();
+         List<URL> result = new ArrayList<>();
          try
          {
             ZipFile zip = new ZipFile(file);
@@ -180,7 +180,7 @@ public class BootstrapClassLoader extends URLClassLoader
       private File copy(File targetDir, String name, InputStream input)
       {
          File outputFile = new File(targetDir, name);
-         
+
          outputFile.getParentFile().mkdirs();
 
          FileOutputStream output = null;

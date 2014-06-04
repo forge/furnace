@@ -14,9 +14,17 @@ import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
 import org.jboss.forge.furnace.util.Sets;
 
+/**
+ * Use to obtain {@link Furnace} instances in various class-loading scenarios.
+ * 
+ * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
+ */
 public class FurnaceFactory
 {
-
+   /**
+    * Produce a {@link Furnace} instance using the default bootstrap {@link ClassLoader} to load core furnace
+    * implementation JARs from `<code>src/main/java/bootpath/*</code>`.
+    */
    public static Furnace getInstance()
    {
       try
@@ -30,16 +38,31 @@ public class FurnaceFactory
       }
    }
 
-   public static Furnace getInstance(final ClassLoader loader)
+   /**
+    * Produce a {@link Furnace} instance using the given {@link ClassLoader} to load core furnace implementation
+    * classes.
+    */
+   public static Furnace getInstance(final ClassLoader furnaceLoader)
+   {
+      return getInstance(furnaceLoader, FurnaceFactory.class.getClassLoader());
+   }
+
+   /**
+    * Produce a {@link Furnace} instance using the first given {@link ClassLoader} to load core furnace implementation
+    * classes, and the second given {@link ClassLoader} to act as the client for which {@link Class} instances should be
+    * translated across {@link ClassLoader} boundaries.
+    */
+   public static Furnace getInstance(final ClassLoader furnaceLoader, final ClassLoader clientLoader)
    {
       try
       {
-         Class<?> furnaceType = loader.loadClass("org.jboss.forge.furnace.impl.FurnaceImpl");
+         Class<?> furnaceType = furnaceLoader.loadClass("org.jboss.forge.furnace.impl.FurnaceImpl");
          final Object instance = furnaceType.newInstance();
 
          final Furnace furnace = (Furnace) ClassLoaderAdapterBuilder
-                  .callingLoader(FurnaceFactory.class.getClassLoader())
-                  .delegateLoader(loader).enhance(instance, Furnace.class);
+                  .callingLoader(clientLoader)
+                  .delegateLoader(furnaceLoader)
+                  .enhance(instance, Furnace.class);
 
          Callable<Set<ClassLoader>> whitelistCallback = new Callable<Set<ClassLoader>>()
          {
@@ -69,8 +92,10 @@ public class FurnaceFactory
             }
          };
 
-         return (Furnace) ClassLoaderAdapterBuilder.callingLoader(FurnaceFactory.class.getClassLoader())
-                  .delegateLoader(loader).whitelist(whitelistCallback)
+         return (Furnace) ClassLoaderAdapterBuilder
+                  .callingLoader(clientLoader)
+                  .delegateLoader(furnaceLoader)
+                  .whitelist(whitelistCallback)
                   .enhance(instance, Furnace.class);
       }
       catch (Exception e)
