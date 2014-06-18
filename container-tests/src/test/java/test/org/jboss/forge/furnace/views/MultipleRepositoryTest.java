@@ -75,7 +75,7 @@ public class MultipleRepositoryTest
    }
 
    @After
-   public void teardown()
+   public void teardown() throws IOException
    {
       Files.delete(repodir1, true);
       Files.delete(repodir2, true);

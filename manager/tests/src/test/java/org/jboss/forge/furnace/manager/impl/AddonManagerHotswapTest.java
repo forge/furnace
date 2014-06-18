@@ -84,7 +84,7 @@ public class AddonManagerHotswapTest
    }
 
    @After
-   public void tearDown()
+   public void tearDown() throws IOException
    {
       furnace.stop();
       if (repository != null && !Files.delete(repository, true))

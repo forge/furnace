@@ -15,6 +15,8 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
@@ -58,6 +60,8 @@ import org.jboss.shrinkwrap.descriptor.api.Descriptor;
  */
 public class ForgeDeployableContainer implements DeployableContainer<ForgeContainerConfiguration>
 {
+   private static Logger logger = Logger.getLogger(ForgeDeployableContainer.class.getName());
+
    @Inject
    private Instance<Deployment> deploymentInstance;
 
@@ -316,7 +320,14 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
    public void stop() throws LifecycleException
    {
       stopContainer();
-      Files.delete(addonDir, true);
+      try
+      {
+         Files.delete(addonDir, true);
+      }
+      catch (IOException e)
+      {
+         logger.fine(e.getMessage());
+      }
    }
 
    private void stopContainer()
@@ -386,7 +397,7 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
                public Object call() throws Exception
                {
                   System.setProperty("org.jboss.forge.furnace.test", "true");
-                  
+
                   furnace.setServerMode(true);
                   furnace.start(loader);
 
