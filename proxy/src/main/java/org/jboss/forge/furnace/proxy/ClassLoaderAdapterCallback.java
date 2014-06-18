@@ -38,8 +38,10 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
 {
    private static final Logger log = Logger.getLogger(ClassLoaderAdapterCallback.class.getName());
    private static final ClassLoader JAVASSIST_LOADER = ProxyObject.class.getClassLoader();
-   private static Map<String, Map<String, WeakReference<Class<?>>>> classCache = new ConcurrentHashMap<>();
-   private static Map<String, Boolean> returnTypeNeedsEnhancementCache = new ConcurrentHashMap<>();
+   private static final Map<String, Map<String, WeakReference<Class<?>>>> classCache = new ConcurrentHashMap<>();
+   private static final Map<String, Boolean> returnTypeNeedsEnhancementCache = new ConcurrentHashMap<>();
+   private static final Map<String, List<WeakReference<Class<?>>>> resultHierarchyCache = new ConcurrentHashMap<>();
+   private static final Map<String, List<WeakReference<Class<?>>>> returnTypeHierarchyCache = new ConcurrentHashMap<>();
 
    private final Object delegate;
 
@@ -235,7 +237,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
          {
             result = stripClassLoaderAdapters(result);
 
-            Class<?>[] resultHierarchy = calculateResultHierarchy(result, unwrappedResultType, callingLoader);
+            Class<?>[] resultHierarchy = calculateResultHierarchy(result.getClass(), unwrappedResultType, callingLoader);
             Class<?>[] returnTypeHierarchy = calculateReturnTypeHierarchy(callingLoader, returnType);
 
             if (!Modifier.isFinal(returnType.getModifiers()))
@@ -284,20 +286,105 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
 
    private Class<?>[] calculateReturnTypeHierarchy(ClassLoader callingLoader, final Class<?> returnType)
    {
-      Class<?>[] returnTypeHierarchy = removeProxyTypes(ProxyTypeInspector.getCompatibleClassHierarchy(
-               callingLoader, returnType));
+      String key = getReturnTypeHierarchyCacheKey(callingLoader, returnType);
+
+      Class<?>[] returnTypeHierarchy = getCachedReturnTypeHierarchy(key);
+      if (returnTypeHierarchy == null)
+      {
+         returnTypeHierarchy = removeProxyTypes(ProxyTypeInspector.getCompatibleClassHierarchy(
+                  callingLoader, returnType));
+
+         setCachedReturnTypeHierarchy(key, returnTypeHierarchy);
+      }
       return returnTypeHierarchy;
    }
 
-   private Class<?>[] calculateResultHierarchy(Object result, final Class<?> unwrappedResultType,
+   private void setCachedReturnTypeHierarchy(String key, Class<?>[] returnTypeHierarchy)
+   {
+      List<WeakReference<Class<?>>> list = new ArrayList<WeakReference<Class<?>>>();
+      for (Class<?> type : returnTypeHierarchy)
+      {
+         list.add(new WeakReference<Class<?>>(type));
+      }
+      returnTypeHierarchyCache.put(key, list);
+   }
+
+   private Class<?>[] getCachedReturnTypeHierarchy(String key)
+   {
+      List<Class<?>> result = null;
+      List<WeakReference<Class<?>>> list = returnTypeHierarchyCache.get(key);
+      if (list != null)
+      {
+         result = new ArrayList<Class<?>>();
+         for (WeakReference<Class<?>> ref : list)
+         {
+            Class<?> type = ref.get();
+            if (type == null)
+               return null;
+            result.add(type);
+         }
+         return result.toArray(new Class<?>[result.size()]);
+      }
+      return null;
+   }
+
+   private String getReturnTypeHierarchyCacheKey(ClassLoader callingLoader, Class<?> returnType)
+   {
+      return callingLoader + "" + returnType.getName();
+   }
+
+   private Class<?>[] calculateResultHierarchy(Class<?> resultType, final Class<?> unwrappedResultType,
             ClassLoader callingLoader)
    {
-      Class<?>[] resultTypeHierarchy = removeProxyTypes(ProxyTypeInspector.getCompatibleClassHierarchy(callingLoader,
-               result.getClass()));
-      Class<?>[] unwrappedResultHierarchy = calculateReturnTypeHierarchy(callingLoader, unwrappedResultType);
+      String key = getResultHierarchyCacheKey(callingLoader, unwrappedResultType, resultType);
 
-      Class<?>[] resultHierarchy = mergeHierarchies(resultTypeHierarchy, unwrappedResultHierarchy);
+      Class<?>[] resultHierarchy = getCachedResultHierarchy(key);
+      if (resultHierarchy == null)
+      {
+         Class<?>[] resultTypeHierarchy = removeProxyTypes(ProxyTypeInspector.getCompatibleClassHierarchy(
+                  callingLoader, resultType));
+         Class<?>[] unwrappedResultHierarchy = calculateReturnTypeHierarchy(callingLoader, unwrappedResultType);
+
+         resultHierarchy = mergeHierarchies(resultTypeHierarchy, unwrappedResultHierarchy);
+         setCachedResultHierarchy(key, resultHierarchy);
+      }
       return resultHierarchy;
+   }
+
+   private void setCachedResultHierarchy(String key, Class<?>[] resultHierarchy)
+   {
+      List<WeakReference<Class<?>>> list = new ArrayList<WeakReference<Class<?>>>();
+      for (Class<?> type : resultHierarchy)
+      {
+         list.add(new WeakReference<Class<?>>(type));
+      }
+      resultHierarchyCache.put(key, list);
+   }
+
+   private Class<?>[] getCachedResultHierarchy(String key)
+   {
+      List<Class<?>> result = null;
+      List<WeakReference<Class<?>>> list = resultHierarchyCache.get(key);
+      if (list != null)
+      {
+         result = new ArrayList<Class<?>>();
+         for (WeakReference<Class<?>> ref : list)
+         {
+            Class<?> type = ref.get();
+            if (type == null)
+               return null;
+            result.add(type);
+         }
+         return result.toArray(new Class<?>[result.size()]);
+      }
+      return null;
+   }
+
+   private String getResultHierarchyCacheKey(ClassLoader callingLoader, Class<?> unwrappedResultType,
+            Class<?> resultType)
+   {
+      return callingLoader + "" + unwrappedResultType.getClassLoader() + "" + unwrappedResultType.getName()
+               + resultType.getClassLoader() + resultType.getName();
    }
 
    private Class<?>[] removeProxyTypes(Class<?>[] types)
