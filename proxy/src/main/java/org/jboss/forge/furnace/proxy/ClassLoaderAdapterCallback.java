@@ -6,6 +6,7 @@
  */
 package org.jboss.forge.furnace.proxy;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -14,8 +15,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,6 +38,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
 {
    private static final Logger log = Logger.getLogger(ClassLoaderAdapterCallback.class.getName());
    private static final ClassLoader JAVASSIST_LOADER = ProxyObject.class.getClassLoader();
+   private static Map<String, Map<String, WeakReference<Class<?>>>> classCache = new ConcurrentHashMap<>();
 
    private final Object delegate;
 
@@ -300,12 +304,26 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       return result.toArray(new Class<?>[result.size()]);
    }
 
-   private Object stripClassLoaderAdapters(Object value)
+   private static Object stripClassLoaderAdapters(Object value)
    {
       while (Proxies.isForgeProxy(value))
       {
          final Object handler = Proxies.getForgeProxyHandler(value);
          if (handler.getClass().getName().equals(ClassLoaderAdapterCallback.class.getName()))
+            value = Proxies.unwrapOnce(value);
+         else
+            break;
+      }
+
+      return value;
+   }
+
+   private static Object stripClassLoaderInterceptors(Object value)
+   {
+      while (Proxies.isForgeProxy(value))
+      {
+         final Object handler = Proxies.getForgeProxyHandler(value);
+         if (handler.getClass().getName().equals(ClassLoaderInterceptor.class.getName()))
             value = Proxies.unwrapOnce(value);
          else
             break;
@@ -697,6 +715,40 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       return parameterTypes;
    }
 
+   private static Class<?> getCachedProxyType(ClassLoader callingLoader, ClassLoader delegateLoader, Class<?> type)
+   {
+      Class<?> proxyType = null;
+      Map<String, WeakReference<Class<?>>> cache = classCache.get(getClassCacheKey(callingLoader, delegateLoader));
+      if (cache != null)
+      {
+         WeakReference<Class<?>> ref = cache.get(type.getName());
+         if (ref != null)
+         {
+            proxyType = ref.get();
+         }
+      }
+      return proxyType;
+   }
+
+   private static void setCachedProxyType(ClassLoader callingLoader, ClassLoader delegateLoader, Class<?> type,
+            Class<?> proxyType)
+   {
+      String key = getClassCacheKey(callingLoader, delegateLoader);
+      Map<String, WeakReference<Class<?>>> cache = classCache.get(key);
+      if (cache == null)
+      {
+         cache = new ConcurrentHashMap<>();
+
+         classCache.put(key, cache);
+      }
+      cache.put(type.getName(), new WeakReference<Class<?>>(proxyType));
+   }
+
+   private static String getClassCacheKey(ClassLoader callingLoader, ClassLoader delegateLoader)
+   {
+      return callingLoader.toString() + delegateLoader.toString();
+   }
+
    static <T> T enhance(Callable<Set<ClassLoader>> whitelist, final ClassLoader callingLoader,
             final ClassLoader delegateLoader,
             final Object delegate,
@@ -718,7 +770,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
 
       // TODO consider removing option to set type hierarchy here. Instead it might just be
       // best to use type inspection of the given initialCallingLoader ClassLoader to figure out the proper type.
-      final Class<?> delegateType = delegate.getClass();
+      final Class<?> delegateType = stripClassLoaderInterceptors(delegate).getClass();
 
       try
       {
@@ -729,78 +781,82 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
             {
                try
                {
-                  Class<?>[] hierarchy = null;
-                  if (types == null || types.length == 0)
+                  Class<?> proxyType = getCachedProxyType(callingLoader, delegateLoader, delegateType);
+                  if (proxyType == null)
                   {
-                     hierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(callingLoader,
-                              Proxies.unwrapProxyTypes(delegateType, callingLoader, delegateLoader));
-                     if (hierarchy == null || hierarchy.length == 0)
+                     Class<?>[] hierarchy = null;
+                     if (types == null || types.length == 0)
                      {
-                        Logger.getLogger(getClass().getName()).fine(
-                                 "Must specify at least one non-final type to enhance for Object: "
-                                          + delegate + " of type " + delegate.getClass());
+                        hierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(callingLoader, delegateType);
+                        if (hierarchy == null || hierarchy.length == 0)
+                        {
+                           Logger.getLogger(getClass().getName()).fine(
+                                    "Must specify at least one non-final type to enhance for Object: "
+                                             + delegate + " of type " + delegate.getClass());
 
-                        return (T) delegate;
+                           return (T) delegate;
+                        }
                      }
-                  }
-                  else
-                     hierarchy = Arrays.copy(types, new Class<?>[types.length]);
+                     else
+                        hierarchy = Arrays.copy(types, new Class<?>[types.length]);
 
-                  final MethodFilter filter = new MethodFilter()
-                  {
-                     @Override
-                     public boolean isHandled(Method method)
+                     final MethodFilter filter = new MethodFilter()
                      {
-                        if (!method.getDeclaringClass().getName().contains("java.lang")
-                                 || !Proxies.isPassthroughType(method.getDeclaringClass())
-                                 || ("toString".equals(method.getName()) && method.getParameterTypes().length == 0)
-                                 || isEquals(method)
-                                 || isHashCode(method)
-                                 || isAutoCloseableClose(method)
-                                 || Arrays.contains(types, method.getDeclaringClass()))
-                           return true;
-                        return false;
-                     }
-                  };
-
-                  Object enhancedResult = null;
-
-                  final ProxyFactory f = new ProxyFactory()
-                  {
-                     @Override
-                     protected ClassLoader getClassLoader0()
-                     {
-                        ClassLoader result = callingLoader;
-                        if (!ClassLoaders.containsClass(result, ProxyObject.class))
-                           result = super.getClassLoader0();
-                        return result;
+                        @Override
+                        public boolean isHandled(Method method)
+                        {
+                           if (!method.getDeclaringClass().getName().contains("java.lang")
+                                    || !Proxies.isPassthroughType(method.getDeclaringClass())
+                                    || ("toString".equals(method.getName()) && method.getParameterTypes().length == 0)
+                                    || isEquals(method)
+                                    || isHashCode(method)
+                                    || isAutoCloseableClose(method)
+                                    || Arrays.contains(types, method.getDeclaringClass()))
+                              return true;
+                           return false;
+                        }
                      };
-                  };
 
-                  f.setUseCache(true);
+                     final ProxyFactory f = new ProxyFactory()
+                     {
+                        @Override
+                        protected ClassLoader getClassLoader0()
+                        {
+                           ClassLoader result = callingLoader;
+                           if (!ClassLoaders.containsClass(result, ProxyObject.class))
+                              result = super.getClassLoader0();
+                           return result;
+                        };
+                     };
 
-                  final Class<?> first = hierarchy[0];
-                  if (!first.isInterface())
-                  {
-                     f.setSuperclass(Proxies.unwrapProxyTypes(first, callingLoader, delegateLoader));
-                     hierarchy = Arrays.shiftLeft(hierarchy, new Class<?>[hierarchy.length - 1]);
+                     f.setUseCache(true);
+
+                     final Class<?> first = hierarchy[0];
+                     if (!first.isInterface())
+                     {
+                        f.setSuperclass(Proxies.unwrapProxyTypes(first, callingLoader, delegateLoader));
+                        hierarchy = Arrays.shiftLeft(hierarchy, new Class<?>[hierarchy.length - 1]);
+                     }
+
+                     final int index = Arrays.indexOf(hierarchy, ProxyObject.class);
+                     if (index >= 0)
+                     {
+                        hierarchy = Arrays.removeElementAtIndex(hierarchy, index);
+                     }
+
+                     if (!Proxies.isProxyType(first) && !Arrays.contains(hierarchy, ForgeProxy.class))
+                        hierarchy = Arrays.append(hierarchy, ForgeProxy.class);
+
+                     if (hierarchy.length > 0)
+                        f.setInterfaces(hierarchy);
+
+                     f.setFilter(filter);
+                     proxyType = f.createClass();
+
+                     setCachedProxyType(callingLoader, delegateLoader, delegateType, proxyType);
                   }
 
-                  final int index = Arrays.indexOf(hierarchy, ProxyObject.class);
-                  if (index >= 0)
-                  {
-                     hierarchy = Arrays.removeElementAtIndex(hierarchy, index);
-                  }
-
-                  if (!Proxies.isProxyType(first) && !Arrays.contains(hierarchy, ForgeProxy.class))
-                     hierarchy = Arrays.append(hierarchy, ForgeProxy.class);
-
-                  if (hierarchy.length > 0)
-                     f.setInterfaces(hierarchy);
-
-                  f.setFilter(filter);
-                  final Class<?> c = f.createClass();
-                  enhancedResult = c.newInstance();
+                  Object enhancedResult = proxyType.newInstance();
 
                   try
                   {
