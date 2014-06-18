@@ -39,6 +39,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
    private static final Logger log = Logger.getLogger(ClassLoaderAdapterCallback.class.getName());
    private static final ClassLoader JAVASSIST_LOADER = ProxyObject.class.getClassLoader();
    private static Map<String, Map<String, WeakReference<Class<?>>>> classCache = new ConcurrentHashMap<>();
+   private static Map<String, Boolean> returnTypeNeedsEnhancementCache = new ConcurrentHashMap<>();
 
    private final Object delegate;
 
@@ -230,19 +231,12 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
             }
             return result;
          }
-         else if (returnTypeNeedsEnhancement(returnType, result, unwrappedResultType))
+         else if (returnTypeNeedsEnhancement(method, returnType, unwrappedResultType))
          {
             result = stripClassLoaderAdapters(result);
-            Class<?>[] resultHierarchy = removeProxyTypes(ProxyTypeInspector.getCompatibleClassHierarchy(
-                     callingLoader, result.getClass()));
 
-            final Class<?>[] unwrappedResultHierarchy = removeProxyTypes(ProxyTypeInspector
-                     .getCompatibleClassHierarchy(callingLoader, unwrappedResultType));
-
-            resultHierarchy = mergeHierarchies(resultHierarchy, unwrappedResultHierarchy);
-
-            Class<?>[] returnTypeHierarchy = removeProxyTypes(ProxyTypeInspector.getCompatibleClassHierarchy(
-                     callingLoader, returnType));
+            Class<?>[] resultHierarchy = calculateResultHierarchy(result, unwrappedResultType, callingLoader);
+            Class<?>[] returnTypeHierarchy = calculateReturnTypeHierarchy(callingLoader, returnType);
 
             if (!Modifier.isFinal(returnType.getModifiers()))
             {
@@ -288,6 +282,24 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       return result;
    }
 
+   private Class<?>[] calculateReturnTypeHierarchy(ClassLoader callingLoader, final Class<?> returnType)
+   {
+      Class<?>[] returnTypeHierarchy = removeProxyTypes(ProxyTypeInspector.getCompatibleClassHierarchy(
+               callingLoader, returnType));
+      return returnTypeHierarchy;
+   }
+
+   private Class<?>[] calculateResultHierarchy(Object result, final Class<?> unwrappedResultType,
+            ClassLoader callingLoader)
+   {
+      Class<?>[] resultTypeHierarchy = removeProxyTypes(ProxyTypeInspector.getCompatibleClassHierarchy(callingLoader,
+               result.getClass()));
+      Class<?>[] unwrappedResultHierarchy = calculateReturnTypeHierarchy(callingLoader, unwrappedResultType);
+
+      Class<?>[] resultHierarchy = mergeHierarchies(resultTypeHierarchy, unwrappedResultHierarchy);
+      return resultHierarchy;
+   }
+
    private Class<?>[] removeProxyTypes(Class<?>[] types)
    {
       final List<Class<?>> result = new ArrayList<>();
@@ -323,7 +335,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       while (Proxies.isForgeProxy(value))
       {
          final Object handler = Proxies.getForgeProxyHandler(value);
-         if (handler.getClass().getName().equals(ClassLoaderInterceptor.class.getName()))
+         if (handler != null && handler.getClass().getName().equals(ClassLoaderInterceptor.class.getName()))
             value = Proxies.unwrapOnce(value);
          else
             break;
@@ -442,28 +454,44 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       return true;
    }
 
-   private boolean returnTypeNeedsEnhancement(Class<?> methodReturnType, Object returnValue,
+   private boolean returnTypeNeedsEnhancement(Method method, Class<?> methodReturnType,
             Class<?> unwrappedReturnValueType)
    {
-      if (Proxies.isPassthroughType(unwrappedReturnValueType))
+
+      String key = getReturnTypeNeedsEnhancementCacheKey(methodReturnType, unwrappedReturnValueType);
+      Boolean result = returnTypeNeedsEnhancementCache.get(key);
+
+      if (result == null)
       {
-         return false;
-      }
-      else if (!Object.class.equals(methodReturnType) && Proxies.isPassthroughType(methodReturnType))
-      {
-         return false;
+         result = true;
+         if (Proxies.isPassthroughType(unwrappedReturnValueType))
+         {
+            result = false;
+         }
+         else if (!Object.class.equals(methodReturnType) && Proxies.isPassthroughType(methodReturnType))
+         {
+            result = false;
+         }
+         else if (unwrappedReturnValueType.getClassLoader() != null
+                  && !unwrappedReturnValueType.getClassLoader().equals(getCallingLoader()))
+         {
+            if (ClassLoaders.containsClass(getCallingLoader(), unwrappedReturnValueType)
+                     && ClassLoaders.containsClass(getCallingLoader(), methodReturnType))
+            {
+               result = false;
+            }
+         }
+         returnTypeNeedsEnhancementCache.put(key, result);
       }
 
-      if (unwrappedReturnValueType.getClassLoader() != null
-               && !unwrappedReturnValueType.getClassLoader().equals(getCallingLoader()))
-      {
-         if (ClassLoaders.containsClass(getCallingLoader(), unwrappedReturnValueType)
-                  && ClassLoaders.containsClass(getCallingLoader(), methodReturnType))
-         {
-            return false;
-         }
-      }
-      return true;
+      return result;
+
+   }
+
+   private String getReturnTypeNeedsEnhancementCacheKey(Class<?> methodReturnType, Class<?> unwrappedReturnValueType)
+   {
+      return methodReturnType.getClassLoader() + "-" + methodReturnType.getName()
+               + unwrappedReturnValueType.getClassLoader() + "" + unwrappedReturnValueType.getName();
    }
 
    private static boolean whitelistContainsAll(Callable<Set<ClassLoader>> whitelist, ClassLoader... classLoaders)
