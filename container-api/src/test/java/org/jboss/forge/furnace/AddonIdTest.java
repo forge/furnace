@@ -26,6 +26,32 @@ public class AddonIdTest
    }
 
    @Test
+   public void testFromCoordinatesWithVersionRange()
+   {
+      AddonId entry = AddonId.fromCoordinates("org.example:example-addon,[1.0.0-SNAPSHOT,2.0.0]");
+      Assert.assertEquals("org.example:example-addon,[1.0.0-SNAPSHOT,2.0.0]", entry.toCoordinates());
+   }
+
+   @Test
+   public void testFromCoordinatesWithVersionRangeAndApiVersion()
+   {
+      AddonId entry = AddonId.fromCoordinates("org.example:example-addon,[1.0.0-SNAPSHOT,2.0.0],2.6.0.Final");
+      Assert.assertEquals("org.example:example-addon,[1.0.0-SNAPSHOT,2.0.0]", entry.toCoordinates());
+   }
+
+   @Test(expected = IllegalArgumentException.class)
+   public void testFromCoordinatesInvalid()
+   {
+      AddonId.fromCoordinates("org.example:example-addon,[1.0.0-SNAPSHOT,2.0.0],2.6.0.Final,5.0.0");
+   }
+
+   @Test(expected = IllegalArgumentException.class)
+   public void testFromCoordinatesInvalid2()
+   {
+      AddonId.fromCoordinates("org.example:example-addon,[1.0.0-SNAPSHOT,2.0.0,2.6.0.Final,5.0.0");
+   }
+
+   @Test
    public void testFromIndividual()
    {
       AddonId entry = AddonId.from("org.example:example-addon", "1.0.0-SNAPSHOT", "2.0.0");

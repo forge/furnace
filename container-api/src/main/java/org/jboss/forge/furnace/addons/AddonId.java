@@ -67,16 +67,30 @@ public class AddonId implements Comparable<AddonId>
       String[] split = coordinates.split(",");
       List<String> tokens = Arrays.asList(split);
 
-      if (tokens.size() < 2)
+      if (tokens.size() < 2 || tokens.size() > 4)
       {
          throw new IllegalArgumentException(
                   "Coordinates must be of the form 'name,version' or 'name,version,api-version");
       }
 
-      if (tokens.size() == 3)
+      if (tokens.size() >= 3)
       {
          if (tokens.get(2) == null || tokens.get(2).isEmpty())
             throw new IllegalArgumentException("API version was empty [" + coordinates + "]");
+
+         if (tokens.get(1).startsWith("[") | tokens.get(1).startsWith("(")
+                  && tokens.get(2).endsWith("]") | tokens.get(2).endsWith(")"))
+         {
+            if (tokens.size() == 3)
+               return from(tokens.get(0), tokens.get(1) + "," + tokens.get(2));
+            else if (tokens.size() == 4)
+               return from(tokens.get(0), tokens.get(1) + "," + tokens.get(2), tokens.get(3));
+         }
+
+         if (tokens.size() > 3)
+            throw new IllegalArgumentException(
+                     "Coordinates must be of the form 'name,version' or 'name,version,api-version");
+
          return from(tokens.get(0), tokens.get(1), tokens.get(2));
       }
       return from(tokens.get(0), tokens.get(1));
