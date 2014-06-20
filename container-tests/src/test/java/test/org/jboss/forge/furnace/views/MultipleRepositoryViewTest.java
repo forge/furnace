@@ -86,7 +86,7 @@ public class MultipleRepositoryViewTest
    @Test
    public void testAddonsSharedIfSubgraphEquivalent() throws IOException, InterruptedException, TimeoutException
    {
-      Furnace furnace = FurnaceFactory.getInstance(Furnace.class.getClassLoader());
+      Furnace furnace = FurnaceFactory.getInstance();
       AddonRepository left = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
       AddonRepository right = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir2);
 
@@ -149,7 +149,7 @@ public class MultipleRepositoryViewTest
    @Test
    public void testAddonsDuplicatedIfSubgraphDiffers() throws IOException, InterruptedException, TimeoutException
    {
-      Furnace furnace = FurnaceFactory.getInstance(Furnace.class.getClassLoader());
+      Furnace furnace = FurnaceFactory.getInstance();
       AddonRepository left = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
       AddonRepository right = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir2);
       AddonDependencyResolver resolver = new MavenAddonDependencyResolver();

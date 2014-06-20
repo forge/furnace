@@ -43,7 +43,7 @@ public class ForgeSetArgsTest
    {
       String[] args = new String[] { "arg1", "arg2" };
 
-      Furnace forge = FurnaceFactory.getInstance(Furnace.class.getClassLoader());
+      Furnace forge = FurnaceFactory.getInstance();
       forge.setArgs(args);
       forge.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
       forge.startAsync();

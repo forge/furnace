@@ -30,7 +30,7 @@ public class FurnaceFactory
       try
       {
          final BootstrapClassLoader loader = new BootstrapClassLoader("bootpath");
-         return getInstance(loader);
+         return getInstance(FurnaceFactory.class.getClassLoader(), loader);
       }
       catch (Exception e)
       {
@@ -42,9 +42,10 @@ public class FurnaceFactory
     * Produce a {@link Furnace} instance using the given {@link ClassLoader} to load core furnace implementation
     * classes.
     */
-   public static Furnace getInstance(final ClassLoader furnaceLoader)
+   public static Furnace getInstance(final ClassLoader clientLoader)
    {
-      return getInstance(furnaceLoader, FurnaceFactory.class.getClassLoader());
+      final BootstrapClassLoader loader = new BootstrapClassLoader("bootpath");
+      return getInstance(clientLoader, loader);
    }
 
    /**
@@ -52,7 +53,7 @@ public class FurnaceFactory
     * classes, and the second given {@link ClassLoader} to act as the client for which {@link Class} instances should be
     * translated across {@link ClassLoader} boundaries.
     */
-   public static Furnace getInstance(final ClassLoader furnaceLoader, final ClassLoader clientLoader)
+   public static Furnace getInstance(final ClassLoader clientLoader, final ClassLoader furnaceLoader)
    {
       try
       {

@@ -85,7 +85,7 @@ public class MultipleRepositoryTest
    public void testAddonsCanReferenceDependenciesInOtherRepositories() throws IOException, InterruptedException,
             TimeoutException
    {
-      Furnace furnace = FurnaceFactory.getInstance(Furnace.class.getClassLoader());
+      Furnace furnace = FurnaceFactory.getInstance();
       AddonRepository left = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
       AddonRepository right = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir2);
 
@@ -132,7 +132,7 @@ public class MultipleRepositoryTest
    @Test
    public void testAddonsDontFailIfDuplicatedInOtherRepositories() throws IOException, Exception
    {
-      Furnace furnace = FurnaceFactory.getInstance(Furnace.class.getClassLoader());
+      Furnace furnace = FurnaceFactory.getInstance();
       AddonRepository left = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
       AddonRepository right = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir2);
 
@@ -192,7 +192,7 @@ public class MultipleRepositoryTest
    @Test
    public void testAddTwoRepositoriesToSameLocationIsIdempotent() throws IOException
    {
-      Furnace forge = FurnaceFactory.getInstance(Furnace.class.getClassLoader());
+      Furnace forge = FurnaceFactory.getInstance();
       AddonRepository repo1 = forge.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
       AddonRepository repo2 = forge.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
       Assert.assertEquals(repo1, repo2);
