@@ -39,8 +39,10 @@ public class FurnaceFactory
    }
 
    /**
-    * Produce a {@link Furnace} instance using the given {@link ClassLoader} to load core furnace implementation
-    * classes.
+    * Produce a {@link Furnace} instance using the given {@link ClassLoader} to act as the client for which
+    * {@link Class} instances should be translated across {@link ClassLoader} boundaries, and using the default
+    * bootstrap {@link ClassLoader} to load core furnace implementation JARs from `<code>src/main/java/bootpath/*</code>
+    * `
     */
    public static Furnace getInstance(final ClassLoader clientLoader)
    {
@@ -49,9 +51,9 @@ public class FurnaceFactory
    }
 
    /**
-    * Produce a {@link Furnace} instance using the first given {@link ClassLoader} to load core furnace implementation
-    * classes, and the second given {@link ClassLoader} to act as the client for which {@link Class} instances should be
-    * translated across {@link ClassLoader} boundaries.
+    * Produce a {@link Furnace} instance using the first given {@link ClassLoader} to act as the client for which
+    * {@link Class} instances should be translated across {@link ClassLoader} boundaries, and the second given
+    * {@link ClassLoader} to load core furnace implementation classes.
     */
    public static Furnace getInstance(final ClassLoader clientLoader, final ClassLoader furnaceLoader)
    {
