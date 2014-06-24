@@ -8,6 +8,12 @@
 package org.jboss.forge.furnace.maven.plugin;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -57,10 +63,16 @@ public class AddonInstallMojo extends AbstractMojo
    private Settings settings;
 
    /**
-    * Resolve Addon API Versions ? Default is true
+    * Skip Addon API version resolution? Default is false
     */
-   @Parameter(property = "furnace.addon.apiversion.skip")
+   @Parameter(property = "furnace.addon.api.resolution.skip")
    private boolean skipAddonAPIVersionResolution;
+
+   /**
+    * Overwrite addon repositoy Resolve Addon API Versions ? Default is true
+    */
+   @Parameter(property = "furnace.addon.overwrite", defaultValue = "true")
+   private boolean overwrite = true;
 
    @Override
    public void execute() throws MojoExecutionException, MojoFailureException
@@ -69,6 +81,18 @@ public class AddonInstallMojo extends AbstractMojo
       if (!addonRepository.exists())
       {
          addonRepository.mkdirs();
+      }
+      else if (overwrite)
+      {
+         try
+         {
+            deleteDirectory(addonRepository);
+            addonRepository.mkdirs();
+         }
+         catch (IOException e)
+         {
+            throw new MojoExecutionException("Could not delete " + addonRepository, e);
+         }
       }
       AddonRepository repository = forge.addRepository(AddonRepositoryMode.MUTABLE, addonRepository);
       MavenAddonDependencyResolver addonResolver = new MavenAddonDependencyResolver(this.classifier);
@@ -86,5 +110,25 @@ public class AddonInstallMojo extends AbstractMojo
             install.perform();
          }
       }
+   }
+
+   private void deleteDirectory(File addonRepository) throws IOException
+   {
+      Files.walkFileTree(addonRepository.toPath(), new SimpleFileVisitor<Path>()
+      {
+         @Override
+         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
+         {
+            Files.delete(file);
+            return FileVisitResult.CONTINUE;
+         }
+
+         @Override
+         public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException
+         {
+            Files.delete(dir);
+            return FileVisitResult.CONTINUE;
+         }
+      });
    }
 }
