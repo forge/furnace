@@ -56,6 +56,12 @@ public class AddonInstallMojo extends AbstractMojo
    @Parameter(defaultValue = "${settings}", required = true, readonly = true)
    private Settings settings;
 
+   /**
+    * Resolve Addon API Versions ? Default is true
+    */
+   @Parameter(property = "furnace.addon.apiversion.skip")
+   private boolean skipAddonAPIVersionResolution;
+
    @Override
    public void execute() throws MojoExecutionException, MojoFailureException
    {
@@ -67,6 +73,7 @@ public class AddonInstallMojo extends AbstractMojo
       AddonRepository repository = forge.addRepository(AddonRepositoryMode.MUTABLE, addonRepository);
       MavenAddonDependencyResolver addonResolver = new MavenAddonDependencyResolver(this.classifier);
       addonResolver.setSettings(settings);
+      addonResolver.setResolveAddonAPIVersions(!skipAddonAPIVersionResolution);
       AddonManager addonManager = new AddonManagerImpl(forge, addonResolver);
 
       for (String addonId : addonIds)

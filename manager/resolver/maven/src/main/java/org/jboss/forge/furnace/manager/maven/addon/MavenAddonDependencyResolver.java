@@ -61,6 +61,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    public static final String FORGE_ADDON_CLASSIFIER = "forge-addon";
    private final String classifier;
    private Settings settings;
+   private boolean resolveAddonAPIVersions = true;
    private final MavenContainer container = new MavenContainer();
 
    public MavenAddonDependencyResolver()
@@ -366,7 +367,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    {
       AddonId id;
       // FORGE-1769: Add API version to requested AddonID
-      if (Strings.isNullOrEmpty(Objects.toString(originalAddonId.getApiVersion(), null)))
+      if (resolveAddonAPIVersions && Strings.isNullOrEmpty(Objects.toString(originalAddonId.getApiVersion(), null)))
       {
          String apiVersion = resolveAPIVersion(originalAddonId, system, settings, session).get();
 
@@ -400,5 +401,21 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    public Settings getSettings()
    {
       return settings == null ? container.getSettings() : settings;
+   }
+
+   /**
+    * @param resolveAddonAPIVersions the resolveAddonAPIVersions to set
+    */
+   public void setResolveAddonAPIVersions(boolean resolveAddonAPIVersions)
+   {
+      this.resolveAddonAPIVersions = resolveAddonAPIVersions;
+   }
+
+   /**
+    * @return the resolveAddonAPIVersions
+    */
+   public boolean isResolveAddonAPIVersions()
+   {
+      return resolveAddonAPIVersions;
    }
 }
