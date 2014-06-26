@@ -83,7 +83,7 @@ public class AddonManagerInstallTest
    }
 
    @After
-   public void tearDown()
+   public void tearDown() throws IOException
    {
       if (repository != null && !Files.delete(repository, true))
       {

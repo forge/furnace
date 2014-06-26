@@ -99,7 +99,7 @@ public class AddonManagerRepositoryTest
    }
 
    @After
-   public void tearDown()
+   public void tearDown() throws IOException
    {
       if (immutable != null)
       {

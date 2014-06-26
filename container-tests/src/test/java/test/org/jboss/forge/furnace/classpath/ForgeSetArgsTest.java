@@ -33,7 +33,7 @@ public class ForgeSetArgsTest
    }
 
    @After
-   public void teardown()
+   public void teardown() throws IOException
    {
       Files.delete(repodir1, true);
    }
