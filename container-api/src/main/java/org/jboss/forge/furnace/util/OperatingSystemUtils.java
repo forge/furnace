@@ -10,7 +10,7 @@ import java.io.File;
 
 /**
  * Utility for dealing with the inconsistencies between common operating systems.
- * 
+ *
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
 public final class OperatingSystemUtils
@@ -26,7 +26,7 @@ public final class OperatingSystemUtils
    {
       if (operatingSystem == null)
       {
-         operatingSystem = System.getProperty("os.name");
+         operatingSystem = System.getProperty("os.name").toLowerCase();
       }
       return operatingSystem;
    }
@@ -36,7 +36,7 @@ public final class OperatingSystemUtils
     */
    public static boolean isWindows()
    {
-      return PRETEND_WINDOWS || getOsName().startsWith("Windows") || getOsName().startsWith("windows");
+      return PRETEND_WINDOWS || getOsName().startsWith("windows");
    }
 
    /**
@@ -44,7 +44,7 @@ public final class OperatingSystemUtils
     */
    public static boolean isOSX()
    {
-      return getOsName().startsWith("Mac") || getOsName().startsWith("mac");
+      return getOsName().startsWith("mac");
    }
 
    /**
@@ -52,7 +52,7 @@ public final class OperatingSystemUtils
     */
    public static boolean isLinux()
    {
-      return getOsName().startsWith("Linux") || getOsName().startsWith("linux");
+      return getOsName().startsWith("linux");
    }
 
    /**
