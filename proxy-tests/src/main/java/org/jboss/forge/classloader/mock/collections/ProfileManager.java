@@ -7,6 +7,7 @@
 package org.jboss.forge.classloader.mock.collections;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,7 +16,9 @@ import java.util.Map;
  */
 public interface ProfileManager
 {
-   public Map<String, Profile> getProfiles();
+   Map<String, Profile> getProfiles();
 
-   public void setProfiles(Collection<Profile> profiles);
+   void setProfiles(Collection<Profile> profiles);
+
+   void setProfileListCallGet(List<Profile> profiles);
 }

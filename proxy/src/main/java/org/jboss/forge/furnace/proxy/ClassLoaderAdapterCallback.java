@@ -54,9 +54,9 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
 
    private ClassLoader getCallingLoader()
    {
-      ClassLoader callingLoader = ClassLoaderInterceptor.getCurrentloader();
+      ClassLoader callingLoader = initialCallingLoader;
       if (callingLoader == null)
-         callingLoader = initialCallingLoader;
+         callingLoader = ClassLoaderInterceptor.getCurrentloader();
       return callingLoader;
    }
 
@@ -231,7 +231,6 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                   result = Proxies.unwrapProxyTypes(resultClassValue);
                }
             }
-            return result;
          }
          else if (returnTypeNeedsEnhancement(method, returnType, unwrappedResultType))
          {
@@ -279,6 +278,10 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                else
                   result = enhance(whitelist, callingLoader, resultInstanceLoader, method, returnTypeHierarchy);
             }
+         }
+         else
+         {
+            result = stripClassLoaderAdapters(result);
          }
       }
       return result;
