@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonFilter;
 import org.jboss.forge.furnace.addons.AddonId;
@@ -38,6 +39,7 @@ public class AddonRegistryImpl implements AddonRegistry
 {
    private static final Logger logger = Logger.getLogger(AddonRegistryImpl.class.getName());
 
+   private final Furnace furnace;
    private final LockManager lock;
    private final Set<AddonRepository> repositories;
    private final AddonLifecycleManager manager;
@@ -46,20 +48,29 @@ public class AddonRegistryImpl implements AddonRegistry
    private static Map<String, Imported<?>> importedCache = new ConcurrentHashMap<>();
    private long cacheVersion = -1;
 
-   public AddonRegistryImpl(LockManager lock, AddonLifecycleManager manager, List<AddonRepository> repositories,
+   public AddonRegistryImpl(Furnace furnace, LockManager lock, AddonLifecycleManager manager,
+            List<AddonRepository> repositories,
             String name)
    {
+      Assert.notNull(furnace, "Furnace must not be null");
       Assert.notNull(lock, "LockManager must not be null.");
       Assert.notNull(manager, "Addon lifecycle manager must not be null.");
       Assert.notNull(repositories, "AddonRepository list must not be null.");
       Assert.isTrue(repositories.size() > 0, "AddonRepository list must not be empty.");
 
+      this.furnace = furnace;
       this.lock = lock;
       this.manager = manager;
       this.repositories = new LinkedHashSet<>(repositories);
       this.name = name;
 
       logger.log(Level.FINE, "Instantiated AddonRegistryImpl: " + this);
+   }
+
+   @Override
+   public Furnace getFurnace()
+   {
+      return furnace;
    }
 
    @Override
