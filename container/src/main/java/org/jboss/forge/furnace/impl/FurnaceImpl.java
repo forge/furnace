@@ -358,12 +358,12 @@ public class FurnaceImpl implements Furnace
       {
          if (repositories == null || repositories.length == 0)
          {
-            result = new AddonRegistryImpl(lock, getLifecycleManager(), getRepositories(), "ROOT");
+            result = new AddonRegistryImpl(this, lock, getLifecycleManager(), getRepositories(), "ROOT");
             getLifecycleManager().addView(result);
          }
          else
          {
-            result = new AddonRegistryImpl(lock, getLifecycleManager(), Arrays.asList(repositories),
+            result = new AddonRegistryImpl(this, lock, getLifecycleManager(), Arrays.asList(repositories),
                      String.valueOf(registryCount++));
             getLifecycleManager().addView(result);
             getLifecycleManager().forceUpdate();

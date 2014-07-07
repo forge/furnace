@@ -8,6 +8,7 @@ package org.jboss.forge.furnace.addons;
 
 import java.util.Set;
 
+import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.event.PostStartup;
 import org.jboss.forge.furnace.event.PreShutdown;
 import org.jboss.forge.furnace.services.Imported;
@@ -55,4 +56,9 @@ public interface AddonRegistry extends AddonView
     * and {@link PreShutdown} event for registered {@link Addon} instances. (Starts at 0 and counts up.)
     */
    long getVersion();
+
+   /**
+    * Returns the {@link Furnace} instance this {@link AddonRegistry} belongs to.
+    */
+   Furnace getFurnace();
 }
