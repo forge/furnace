@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.forge.furnace.proxy.ClassLoaderInterceptor;
 import org.jboss.forge.furnace.proxy.ForgeProxy;
 import org.jboss.forge.furnace.proxy.Proxies;
 import org.jboss.forge.furnace.proxy.javassist.util.proxy.MethodHandler;
@@ -149,6 +150,21 @@ public class ProxiesTest
       bean2.setAtt("String");
 
       Assert.assertTrue(Proxies.areEquivalent(enhancedObj, bean2));
+   }
+
+   @Test
+   public void testEqualsAndHashCode()
+   {
+      Bean bean1 = new Bean();
+      String attributeValue = "String";
+      bean1.setAtt(attributeValue);
+      Bean enhancedObj = Proxies.enhance(Bean.class, new ClassLoaderInterceptor(Bean.class.getClassLoader(), bean1));
+      enhancedObj.setAtt(attributeValue);
+
+      Bean bean2 = new Bean();
+      bean2.setAtt(attributeValue);
+
+      Assert.assertTrue(enhancedObj.equals(bean2));
    }
 
    @Test

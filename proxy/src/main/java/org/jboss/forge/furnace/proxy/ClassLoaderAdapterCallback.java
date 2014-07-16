@@ -93,7 +93,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
          throw new ContainerException("Thread.interrupt() requested.");
       }
 
-      return ClassLoaders.executeIn(delegateLoader, new Callable<Object>()
+      Object result = ClassLoaders.executeIn(delegateLoader, new Callable<Object>()
       {
          @Override
          public Object call() throws Exception
@@ -178,6 +178,13 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
             return delegateMethod;
          }
       });
+
+      if (Thread.currentThread().isInterrupted())
+      {
+         throw new ContainerException("Thread.interrupt() requested.");
+      }
+
+      return result;
    }
 
    private Object enhanceResult(final Method method, Object result) throws Exception
