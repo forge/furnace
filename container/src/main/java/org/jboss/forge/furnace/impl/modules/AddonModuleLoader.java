@@ -26,6 +26,7 @@ import org.jboss.forge.furnace.impl.addons.AddonRepositoryImpl;
 import org.jboss.forge.furnace.impl.addons.AddonStateManager;
 import org.jboss.forge.furnace.impl.modules.providers.CORBAClasspathSpec;
 import org.jboss.forge.furnace.impl.modules.providers.FurnaceContainerSpec;
+import org.jboss.forge.furnace.impl.modules.providers.JAXBJDKClasspathSpec;
 import org.jboss.forge.furnace.impl.modules.providers.SunJDKClasspathSpec;
 import org.jboss.forge.furnace.impl.modules.providers.SunMiscClasspathSpec;
 import org.jboss.forge.furnace.impl.modules.providers.SystemClasspathSpec;
@@ -164,6 +165,7 @@ public class AddonModuleLoader extends ModuleLoader
 
                   builder.addDependency(DependencySpec.createModuleDependencySpec(SystemClasspathSpec.ID));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(XPathJDKClasspathSpec.ID));
+                  builder.addDependency(DependencySpec.createModuleDependencySpec(JAXBJDKClasspathSpec.ID));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(CORBAClasspathSpec.ID));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(SunMiscClasspathSpec.ID));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(SunJDKClasspathSpec.ID));

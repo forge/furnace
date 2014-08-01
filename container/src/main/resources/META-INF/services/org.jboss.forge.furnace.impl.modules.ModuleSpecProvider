@@ -2,6 +2,7 @@ org.jboss.forge.furnace.impl.modules.providers.FurnaceContainerSpec
 org.jboss.forge.furnace.impl.modules.providers.SunMiscClasspathSpec
 org.jboss.forge.furnace.impl.modules.providers.SunJDKClasspathSpec
 org.jboss.forge.furnace.impl.modules.providers.SystemClasspathSpec
+org.jboss.forge.furnace.impl.modules.providers.JAXBJDKClasspathSpec
 org.jboss.forge.furnace.impl.modules.providers.XPathJDKClasspathSpec
 org.jboss.forge.furnace.impl.modules.providers.XATransactionJDKClasspathSpec
 org.jboss.forge.furnace.impl.modules.providers.CORBAClasspathSpec
