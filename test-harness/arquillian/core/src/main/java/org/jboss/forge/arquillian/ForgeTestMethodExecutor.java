@@ -13,7 +13,6 @@ import java.lang.reflect.Method;
 import org.jboss.arquillian.container.test.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.test.spi.TestMethodExecutor;
 import org.jboss.arquillian.test.spi.TestResult;
-import org.jboss.arquillian.test.spi.TestResult.Status;
 import org.jboss.forge.arquillian.protocol.ForgeProtocolConfiguration;
 import org.jboss.forge.arquillian.protocol.FurnaceHolder;
 import org.jboss.forge.furnace.Furnace;
@@ -23,6 +22,7 @@ import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
 import org.jboss.forge.furnace.spi.ExportedInstance;
 import org.jboss.forge.furnace.spi.ServiceRegistry;
 import org.jboss.forge.furnace.util.Annotations;
+import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.util.ClassLoaders;
 
 /**
@@ -35,14 +35,8 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
 
    public ForgeTestMethodExecutor(ForgeProtocolConfiguration config, final FurnaceHolder holder)
    {
-      if (config == null)
-      {
-         throw new IllegalArgumentException("ForgeProtocolConfiguration must be specified");
-      }
-      if (holder == null)
-      {
-         throw new IllegalArgumentException("Furnace runtime must be provided");
-      }
+      Assert.notNull(config, "ForgeProtocolConfiguration must be specified");
+      Assert.notNull(holder, "Furnace runtime must be provided");
       this.furnace = holder.getFurnace();
    }
 
@@ -51,11 +45,7 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
    {
       try
       {
-         if (testMethodExecutor == null)
-         {
-            throw new IllegalArgumentException("TestMethodExecutor must be specified");
-         }
-
+         Assert.notNull(testMethodExecutor, "TestMethodExecutor must be specified");
          final String testClassName = testMethodExecutor.getInstance().getClass().getName();
 
          Object testInstance = null;
@@ -125,7 +115,7 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
                   {
                      if ("org.junit.Ignore".equals(annotation.getClass().getName()))
                      {
-                        result = new TestResult(Status.SKIPPED);
+                        result = TestResult.skipped(null);
                      }
                   }
 
@@ -141,7 +131,7 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
                         {
                            invokeBefore(testInstance.getClass(), testInstance);
                            method.invoke(testInstance);
-                           result = new TestResult(Status.PASSED);
+                           result = TestResult.passed();
                         }
                         catch (Exception e)
                         {
@@ -159,12 +149,12 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
                                           .forName("org.junit.internal.AssumptionViolatedException")
                                           .getConstructor(String.class).newInstance(rootCause.getMessage());
                                  thisClassloaderException.setStackTrace(rootCause.getStackTrace());
-                                 result = new TestResult(Status.SKIPPED, thisClassloaderException);
+                                 result = TestResult.skipped(thisClassloaderException);
                               }
                               catch (Exception ex)
                               {
                                  // ignore
-                                 result = new TestResult(Status.SKIPPED);
+                                 result = TestResult.skipped(ex);
                               }
                            }
                            else
@@ -189,18 +179,18 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
                }
                catch (AssertionError e)
                {
-                  result = new TestResult(Status.FAILED, e);
+                  result = TestResult.failed(e);
                }
                catch (Exception e)
                {
-                  result = new TestResult(Status.FAILED, e);
+                  result = TestResult.failed(e);
 
                   Throwable cause = e.getCause();
                   while (cause != null)
                   {
                      if (cause instanceof AssertionError)
                      {
-                        result = new TestResult(Status.FAILED, cause);
+                        result = TestResult.failed(cause);
                         break;
                      }
                      cause = cause.getCause();

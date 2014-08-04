@@ -16,7 +16,6 @@ import org.jboss.arquillian.container.test.spi.client.protocol.Protocol;
 import org.jboss.arquillian.container.test.spi.command.CommandCallback;
 import org.jboss.arquillian.test.spi.TestMethodExecutor;
 import org.jboss.arquillian.test.spi.TestResult;
-import org.jboss.arquillian.test.spi.TestResult.Status;
 import org.jboss.forge.arquillian.ForgeDeploymentPackager;
 import org.jboss.forge.arquillian.ForgeTestMethodExecutor;
 import org.jboss.forge.furnace.Furnace;
@@ -56,7 +55,7 @@ public class ForgeProtocol implements Protocol<ForgeProtocolConfiguration>
             @Override
             public TestResult invoke(TestMethodExecutor arg0)
             {
-               return new TestResult(Status.SKIPPED);
+               return TestResult.skipped(null);
             }
          };
       }
