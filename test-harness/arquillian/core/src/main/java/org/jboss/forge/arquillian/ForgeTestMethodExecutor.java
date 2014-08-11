@@ -9,6 +9,7 @@ package org.jboss.forge.arquillian;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.concurrent.ExecutionException;
 
 import org.jboss.arquillian.container.test.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.test.spi.TestMethodExecutor;
@@ -209,6 +210,24 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
          }
          else
          {
+
+            for (Addon addon : furnace.getAddonRegistry().getAddons())
+            {
+               try
+               {
+                  addon.getFuture().get();
+               }
+               catch (InterruptedException e)
+               {
+                  // Do nothing
+               }
+               catch (ExecutionException e)
+               {
+                  throw new IllegalStateException(
+                           "Test runner could not locate test class [" + testClassName + "] in any deployed Addon.",
+                           e.getCause());
+               }
+            }
             throw new IllegalStateException(
                      "Test runner could not locate test class [" + testClassName + "] in any deployed Addon.");
          }

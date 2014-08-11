@@ -23,6 +23,7 @@ import org.jboss.forge.furnace.addons.AddonView;
 import org.jboss.forge.furnace.event.PostStartup;
 import org.jboss.forge.furnace.event.PreShutdown;
 import org.jboss.forge.furnace.exception.ContainerException;
+import org.jboss.forge.furnace.impl.util.ExceptionFuture;
 import org.jboss.forge.furnace.lifecycle.AddonLifecycleProvider;
 import org.jboss.forge.furnace.lifecycle.ControlType;
 import org.jboss.forge.furnace.repositories.AddonRepository;
@@ -117,11 +118,11 @@ public final class AddonRunnable implements Runnable
       catch (Throwable e)
       {
          addon.getFuture().cancel(false);
+         stateManager.setHandles(addon, new ExceptionFuture<Void>(e), this);
 
          Level level = Level.FINEST;
          if (!shutdownRequested)
             level = Level.SEVERE;
-
          logger.log(level, "Failed to start addon [" + addon.getId() + "] with classloader ["
                   + stateManager.getClassLoaderOf(addon)
                   + "]", e);
