@@ -60,4 +60,17 @@ class ProxyTypeInspector
       return hierarchy.toArray(new Class<?>[hierarchy.size()]);
    }
 
+   /**
+    * Search the given {@link Class} hierarchy for the specified {@link Class}.
+    */
+   public static boolean superclassHierarchyContains(Class<?> haystack, Class<?> needle)
+   {
+      Class<?> superclass = haystack;
+      while (superclass != null && superclass != needle)
+      {
+         superclass = superclass.getSuperclass();
+      }
+      return superclass == needle;
+   }
+
 }

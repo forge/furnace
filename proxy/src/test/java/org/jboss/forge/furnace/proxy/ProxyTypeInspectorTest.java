@@ -6,6 +6,8 @@
  */
 package org.jboss.forge.furnace.proxy;
 
+import java.io.Serializable;
+
 import org.jboss.forge.furnace.proxy.mock.MockBaseClassExternal;
 import org.junit.Assert;
 import org.junit.Test;
@@ -16,6 +18,16 @@ import org.junit.Test;
  */
 public class ProxyTypeInspectorTest
 {
+   @Test
+   public void testExceptionHierarchyFindsThrowable() throws Exception
+   {
+      Class<?>[] hierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(getClass().getClassLoader(),
+               MockException.class);
+
+      Assert.assertEquals(2, hierarchy.length);
+      Assert.assertEquals(Exception.class, hierarchy[0]);
+      Assert.assertEquals(Serializable.class, hierarchy[1]);
+   }
 
    @Test
    public void testClassWithInstantiableBaseClass() throws Exception
@@ -61,5 +73,10 @@ public class ProxyTypeInspectorTest
    public interface MockNestedInterface
    {
 
+   }
+
+   public class MockException extends Exception
+   {
+      private static final long serialVersionUID = -5453820012282246775L;
    }
 }

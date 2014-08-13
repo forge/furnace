@@ -20,6 +20,7 @@ import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
+import org.jboss.forge.furnace.proxy.Proxies;
 import org.jboss.forge.furnace.spi.ExportedInstance;
 import org.jboss.forge.furnace.spi.ServiceRegistry;
 import org.jboss.forge.furnace.util.Annotations;
@@ -139,7 +140,9 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
                            Throwable rootCause = getRootCause(e);
                            // FORGE-1677
                            if (rootCause != null
-                                    && "org.junit.internal.AssumptionViolatedException".equals(rootCause.getClass()
+                                    && Proxies.isForgeProxy(rootCause)
+                                    && "org.junit.internal.AssumptionViolatedException".equals(Proxies
+                                             .unwrap(rootCause).getClass()
                                              .getName()))
                            {
                               try

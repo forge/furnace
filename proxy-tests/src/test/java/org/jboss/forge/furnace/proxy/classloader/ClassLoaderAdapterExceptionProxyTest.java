@@ -76,17 +76,19 @@ public class ClassLoaderAdapterExceptionProxyTest
 
       Assert.assertTrue(Proxies.isForgeProxy(enhancedFactory));
 
+      String message = "AbstractA message.";
       try
       {
-         enhancedFactory.throwException();
+         enhancedFactory.throwException(message);
       }
       catch (MockException e)
       {
          Assert.assertTrue(Proxies.isForgeProxy(e));
+         Assert.assertEquals(message, e.getMessage());
       }
       catch (Exception e)
       {
-         Assert.fail("Exception was not of proper type.");
+         Assert.fail("Exception was not of a compatible type.");
       }
    }
 }
