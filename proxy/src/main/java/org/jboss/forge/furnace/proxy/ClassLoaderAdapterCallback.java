@@ -100,7 +100,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
          {
             try
             {
-               if (thisMethod.getDeclaringClass().equals(getCallingLoader().loadClass(ForgeProxy.class.getName())))
+               if (thisMethod.getDeclaringClass().getName().equals(ForgeProxy.class.getName()))
                {
                   if (thisMethod.getName().equals("getDelegate"))
                      return ClassLoaderAdapterCallback.this.getDelegate();
