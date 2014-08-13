@@ -13,9 +13,9 @@ package org.jboss.forge.classloader.mock.exceptions;
 public class ExceptionFactory
 {
 
-   public void throwException() throws MockException
+   public void throwException(String message) throws MockException
    {
-      throw new MockException("AbstractA message.");
+      throw new MockException(message);
    }
 
 }

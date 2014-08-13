@@ -471,8 +471,6 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                {
                   result = enhance(whitelist, getCallingLoader(), exceptionLoader, method, exception,
                            exceptionHierarchy);
-                  result.initCause(exception);
-                  result.setStackTrace(exception.getStackTrace());
                }
             }
          }
@@ -925,23 +923,6 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                      else
                         hierarchy = Arrays.copy(types, new Class<?>[types.length]);
 
-                     final MethodFilter filter = new MethodFilter()
-                     {
-                        @Override
-                        public boolean isHandled(Method method)
-                        {
-                           if (!method.getDeclaringClass().getName().contains("java.lang")
-                                    || !Proxies.isPassthroughType(method.getDeclaringClass())
-                                    || ("toString".equals(method.getName()) && method.getParameterTypes().length == 0)
-                                    || isEquals(method)
-                                    || isHashCode(method)
-                                    || isAutoCloseableClose(method)
-                                    || Arrays.contains(types, method.getDeclaringClass()))
-                              return true;
-                           return false;
-                        }
-                     };
-
                      final ProxyFactory f = new ProxyFactory()
                      {
                         @Override
@@ -974,6 +955,33 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
 
                      if (hierarchy.length > 0)
                         f.setInterfaces(hierarchy);
+
+                     final Class<?>[] finalHierarchy = hierarchy;
+                     final MethodFilter filter = new MethodFilter()
+                     {
+                        @Override
+                        public boolean isHandled(Method method)
+                        {
+                           Class<?> declaringClass = method.getDeclaringClass();
+
+                           if (!declaringClass.getName().contains("java.lang")
+                                    || !Proxies.isPassthroughType(declaringClass)
+                                    || isToString(method)
+                                    || isEquals(method)
+                                    || isHashCode(method)
+                                    || isAutoCloseableClose(method)
+                                    || Arrays.contains(finalHierarchy, declaringClass)
+                                    || ((!Object.class.equals(declaringClass)) && ProxyTypeInspector
+                                             .superclassHierarchyContains(f.getSuperclass(), declaringClass)))
+                              return true;
+                           return false;
+                        }
+
+                        private boolean isToString(Method method)
+                        {
+                           return "toString".equals(method.getName()) && method.getParameterTypes().length == 0;
+                        }
+                     };
 
                      f.setFilter(filter);
                      proxyType = f.createClass();
