@@ -42,7 +42,7 @@ public class ExceptionFuture<T> implements Future<T>
    @Override
    public boolean isDone()
    {
-      return false;
+      return true;
    }
 
    @Override

@@ -14,6 +14,7 @@ import org.jboss.forge.furnace.addons.AddonDependency;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonStatus;
 import org.jboss.forge.furnace.event.EventManager;
+import org.jboss.forge.furnace.impl.util.ExceptionFuture;
 import org.jboss.forge.furnace.impl.util.NullFuture;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.spi.ServiceRegistry;
@@ -93,7 +94,7 @@ public class AddonImpl implements Addon
             if (getFuture().isDone())
                result = AddonStatus.STARTED;
 
-            if (getFuture().isCancelled())
+            if (getFuture() instanceof ExceptionFuture || getFuture().isCancelled())
                result = AddonStatus.FAILED;
          }
       }
