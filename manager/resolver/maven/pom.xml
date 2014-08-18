@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    <modelVersion>4.0.0</modelVersion>
    <parent>
       <groupId>org.jboss.forge.furnace</groupId>
@@ -9,7 +10,7 @@
    <name>Furnace - Manager Maven Resolver</name>
    <properties>
       <aether.version>0.9.0.M2</aether.version>
-      <maven.version>3.2.2</maven.version>
+      <maven.version>3.2.3</maven.version>
    </properties>
 
    <dependencies>
@@ -46,6 +47,11 @@
                <artifactId>org.eclipse.sisu.plexus</artifactId>
             </exclusion>
          </exclusions>
+      </dependency>
+      <dependency>
+         <groupId>com.google.guava</groupId>
+         <artifactId>guava</artifactId>
+         <version>10.0.1</version>
       </dependency>
       <dependency>
          <groupId>org.eclipse.aether</groupId>

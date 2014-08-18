@@ -10,6 +10,7 @@ package org.jboss.forge.arquillian.maven;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -32,7 +33,6 @@ public class MavenModelResolver implements ModelResolver
 {
 
    private final List<RemoteRepository> repositories;
-   private final List<RemoteRepository> externalRepositories;
    private final Set<String> repositoryIds;
 
    private final RepositorySystem system;
@@ -41,7 +41,7 @@ public class MavenModelResolver implements ModelResolver
    /**
     * Creates a new Maven repository resolver. This resolver uses service available to Maven to create an artifact
     * resolution chain
-    * 
+    *
     * @param system the Maven based implementation of the {@link RepositorySystem}
     * @param session the current Maven execution session
     * @param remoteRepositories the list of available Maven repositories
@@ -58,8 +58,6 @@ public class MavenModelResolver implements ModelResolver
       {
          this.repositories.add(new RemoteRepository.Builder(remoteRepository).build());
       }
-
-      this.externalRepositories = new ArrayList<RemoteRepository>(repositories);
       this.repositoryIds = new HashSet<String>(repositories.size());
 
       for (final RemoteRepository repository : repositories)
@@ -70,7 +68,7 @@ public class MavenModelResolver implements ModelResolver
 
    /**
     * Cloning constructor
-    * 
+    *
     * @param origin
     */
    private MavenModelResolver(MavenModelResolver origin)
@@ -80,7 +78,7 @@ public class MavenModelResolver implements ModelResolver
 
    /*
     * (non-Javadoc)
-    * 
+    *
     * @see org.apache.maven.model.resolution.ModelResolver#addRepository(org.apache.maven.model.Repository)
     */
    @Override
@@ -98,7 +96,7 @@ public class MavenModelResolver implements ModelResolver
 
    /*
     * (non-Javadoc)
-    * 
+    *
     * @see org.apache.maven.model.resolution.ModelResolver#newCopy()
     */
    @Override
@@ -109,7 +107,7 @@ public class MavenModelResolver implements ModelResolver
 
    /*
     * (non-Javadoc)
-    * 
+    *
     * @see org.apache.maven.model.resolution.ModelResolver#resolveModel(java.lang.String, java.lang.String,
     * java.lang.String)
     */
@@ -143,16 +141,38 @@ public class MavenModelResolver implements ModelResolver
       return resolveModel(parent.getGroupId(), parent.getArtifactId(), parent.getVersion());
    }
 
-   /*
-    * (non-Javadoc)
-    * 
-    * @see org.apache.maven.model.resolution.ModelResolver#resetRepositories()
-    */
    @Override
-   public void resetRepositories()
+   public void addRepository(final Repository repository, boolean replace) throws InvalidRepositoryException
    {
-      this.repositoryIds.clear();
-      this.repositories.clear();
-      this.repositories.addAll(externalRepositories);
+      if (session.isIgnoreArtifactDescriptorRepositories())
+      {
+         return;
+      }
+
+      if (!repositoryIds.add(repository.getId()))
+      {
+         if (!replace)
+         {
+            return;
+         }
+
+         removeMatchingRepository(repository.getId());
+      }
+      repositories.add(new RemoteRepository.Builder(repository.getId(), repository.getName(), repository.getUrl())
+               .build());
    }
+
+   private void removeMatchingRepository(final String id)
+   {
+      Iterator<RemoteRepository> iterator = repositories.iterator();
+      while (iterator.hasNext())
+      {
+         RemoteRepository remoteRepository = iterator.next();
+         if (remoteRepository.getId().equals(id))
+         {
+            iterator.remove();
+         }
+      }
+   }
+
 }
