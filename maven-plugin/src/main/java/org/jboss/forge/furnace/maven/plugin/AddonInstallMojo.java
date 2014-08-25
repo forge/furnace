@@ -34,6 +34,8 @@ import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 
 /**
  * Goal which installs addons to a specified directory
+ *
+ * @author <a href="ggastald@redhat.com">George Gastaldi</a>
  */
 @Mojo(name = "addon-install", defaultPhase = LifecyclePhase.PREPARE_PACKAGE, threadSafe = true)
 public class AddonInstallMojo extends AbstractMojo

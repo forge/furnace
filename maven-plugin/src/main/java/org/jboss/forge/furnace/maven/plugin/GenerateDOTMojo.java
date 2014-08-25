@@ -37,6 +37,8 @@ import org.jgrapht.graph.DefaultDirectedGraph;
 
 /**
  * Generate a DOT file from the graph
+ *
+ * @author <a href="ggastald@redhat.com">George Gastaldi</a>
  */
 @Mojo(defaultPhase = LifecyclePhase.PREPARE_PACKAGE, name = "generate-dot", threadSafe = true)
 public class GenerateDOTMojo extends AbstractMojo
