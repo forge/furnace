@@ -70,7 +70,7 @@ public class AddonLifecycleManager
       this.stateManager.setModuleLoader(moduleLoader);
       this.loader = new AddonLoader(furnace, this, stateManager, moduleLoader);
 
-      logger.log(Level.FINE, "Instantiated AddonRTegistryImpl: " + this);
+      logger.log(Level.FINE, "Instantiated AddonRegistryImpl: " + this);
    }
 
    public void dispose()
@@ -196,10 +196,13 @@ public class AddonLifecycleManager
 
                master.merge(graph);
 
-               String graphOutput = master.toString();
-               logger.log(Level.INFO, "\n ------------ VIEW [" + view.getName() + "]------------ "
-                        + (graphOutput.isEmpty() ? "EMPTY" : graphOutput)
-                        + " ------------ END [" + view.getName() + "]------------ ");
+               if (logger.isLoggable(Level.FINE))
+               {
+                  String graphOutput = master.toString();
+                  logger.log(Level.FINE, "\n ------------ VIEW [" + view.getName() + "]------------ "
+                           + (graphOutput.isEmpty() ? "EMPTY" : graphOutput)
+                           + " ------------ END [" + view.getName() + "]------------ ");
+               }
             }
 
             MasterGraph last = stateManager.getCurrentGraph();
