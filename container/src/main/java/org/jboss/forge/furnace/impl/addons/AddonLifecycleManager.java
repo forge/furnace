@@ -69,8 +69,6 @@ public class AddonLifecycleManager
       this.moduleLoader = new AddonModuleLoader(furnace, this, stateManager);
       this.stateManager.setModuleLoader(moduleLoader);
       this.loader = new AddonLoader(furnace, this, stateManager, moduleLoader);
-
-      logger.log(Level.FINE, "Instantiated AddonRegistryImpl: " + this);
    }
 
    public void dispose()
