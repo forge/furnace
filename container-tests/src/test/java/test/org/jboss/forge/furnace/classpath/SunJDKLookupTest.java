@@ -15,41 +15,21 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
-public class SunMiscLookupTest
+public class SunJDKLookupTest
 {
    @Deployment
    public static ForgeArchive getDeployment()
    {
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
-               .addAsLocalServices(SunMiscLookupTest.class);
+               .addAsLocalServices(SunJDKLookupTest.class);
 
       return archive;
    }
 
    @Test
-   public void testGetJDKSunMiscSignalLookup() throws Exception
+   public void testSunJDKLookup() throws Exception
    {
-      try
-      {
-         getClass().getClassLoader().loadClass("sun.misc.Signal");
-      }
-      catch (Exception e)
-      {
-         Assert.fail("Could not load required Factory class." + e.getMessage());
-      }
+      Assert.assertNotNull(getClass().getClassLoader().loadClass("sun.misc.Signal"));
+      Assert.assertNotNull(getClass().getClassLoader().loadClass("sun.nio.fs.Globs"));
    }
-   
-   @Test
-   public void testGetJDKSunNioFsLookup() throws Exception
-   {
-      try
-      {
-         getClass().getClassLoader().loadClass("sun.nio.fs.Globs");
-      }
-      catch (Exception e)
-      {
-         Assert.fail("Could not load required Factory class." + e.getMessage());
-      }
-   }
-
 }
