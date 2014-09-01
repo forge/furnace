@@ -94,7 +94,7 @@ public class GenerateDOTMojo extends AbstractMojo
    /**
     * The current maven project
     */
-   @Component
+   @Parameter(defaultValue = "${project}", required = true, readonly = true)
    private MavenProject mavenProject;
 
    /**
