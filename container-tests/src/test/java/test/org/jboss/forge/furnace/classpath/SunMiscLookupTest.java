@@ -38,5 +38,18 @@ public class SunMiscLookupTest
          Assert.fail("Could not load required Factory class." + e.getMessage());
       }
    }
+   
+   @Test
+   public void testGetJDKSunNioFsLookup() throws Exception
+   {
+      try
+      {
+         getClass().getClassLoader().loadClass("sun.nio.fs.Globs");
+      }
+      catch (Exception e)
+      {
+         Assert.fail("Could not load required Factory class." + e.getMessage());
+      }
+   }
 
 }

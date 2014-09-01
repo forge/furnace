@@ -35,6 +35,7 @@ public class SunJDKClasspathSpec extends AbstractModuleSpecProvider
       paths.add("sun/nio");
       paths.add("sun/nio/ch");
       paths.add("sun/nio/cs");
+      paths.add("sun/nio/fs");
       paths.add("sun/security");
       paths.add("sun/security/krb5");
       paths.add("sun/text/resources");
