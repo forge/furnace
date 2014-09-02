@@ -388,7 +388,7 @@ public class FurnaceImpl implements Furnace
    @Override
    public Version getVersion()
    {
-      return AddonRepositoryImpl.getRuntimeAPIVersion() == null ? null : AddonRepositoryImpl.getRuntimeAPIVersion();
+      return AddonRepositoryImpl.getRuntimeAPIVersion();
    }
 
    @Override
