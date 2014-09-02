@@ -423,32 +423,34 @@ public class FurnaceImpl implements Furnace
 
       if (mode.isImmutable())
          repository = new ImmutableAddonRepository(repository);
-
-      try
+      else
       {
-         if (watcher != null)
+         try
          {
-            if ((directory.exists() && directory.isDirectory()) || directory.mkdirs())
+            if (watcher != null)
             {
-               directory.toPath().register(watcher,
-                        StandardWatchEventKinds.ENTRY_MODIFY,
-                        StandardWatchEventKinds.ENTRY_CREATE,
-                        StandardWatchEventKinds.ENTRY_DELETE,
-                        StandardWatchEventKinds.OVERFLOW);
-               logger.log(Level.INFO, "Monitoring repository [" + directory.toString() + "] for file changes.");
-            }
-            else
-            {
-               logger.log(Level.WARNING, "Cannot monitor repository [" + directory
-                        + "] for changes because it is not a directory.");
+               if ((directory.exists() && directory.isDirectory()) || directory.mkdirs())
+               {
+                  directory.toPath().register(watcher,
+                           StandardWatchEventKinds.ENTRY_MODIFY,
+                           StandardWatchEventKinds.ENTRY_CREATE,
+                           StandardWatchEventKinds.ENTRY_DELETE,
+                           StandardWatchEventKinds.OVERFLOW);
+                  logger.log(Level.INFO, "Monitoring repository [" + directory.toString() + "] for file changes.");
+               }
+               else
+               {
+                  logger.log(Level.WARNING, "Cannot monitor repository [" + directory
+                           + "] for changes because it is not a directory.");
+               }
             }
          }
+         catch (IOException e)
+         {
+            logger.log(Level.WARNING, "Could not monitor repository [" + directory.toString() + "] for file changes.",
+                     e);
+         }
       }
-      catch (IOException e)
-      {
-         logger.log(Level.WARNING, "Could not monitor repository [" + directory.toString() + "] for file changes.", e);
-      }
-
       return addRepository(repository);
    }
 
