@@ -66,7 +66,7 @@ public class AddonId implements Comparable<AddonId>
    /**
     * Attempt to parse the given string as {@link Addon} coordinates in the form: "group:name,version"
     *
-    * @throws IllegalStateException when coordinates are malformed.
+    * @throws IllegalArgumentException when coordinates are malformed.
     */
    public static AddonId fromCoordinates(final String coordinates) throws IllegalArgumentException
    {

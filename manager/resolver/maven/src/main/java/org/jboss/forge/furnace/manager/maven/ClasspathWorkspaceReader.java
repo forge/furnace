@@ -71,7 +71,10 @@ public class ClasspathWorkspaceReader implements WorkspaceReader
     *
     * @see #getFoundArtifact(java.io.File)
     */
-   private final Map<File, Artifact> foundArtifactCache = new HashMap<File, Artifact>();
+   private final Map<Artifact, List<String>> foundVersionsCache = new HashMap<>();
+   private final Map<Artifact, File> foundFileCache = new HashMap<>();
+   private final Map<File, Artifact> foundArtifactCache = new HashMap<>();
+   private final Map<File, List<File>> foundModulesCache = new HashMap<>();
 
    /**
     * Repository unique in this instance
@@ -96,6 +99,17 @@ public class ClasspathWorkspaceReader implements WorkspaceReader
 
    @Override
    public File findArtifact(final Artifact artifact)
+   {
+      File result = foundFileCache.get(artifact);
+      if (result == null)
+      {
+         result = _findArtifact(artifact);
+         foundFileCache.put(artifact, result);
+      }
+      return result;
+   }
+
+   public File _findArtifact(final Artifact artifact)
    {
       for (String classpathEntry : classPathEntries)
       {
@@ -172,11 +186,61 @@ public class ClasspathWorkspaceReader implements WorkspaceReader
          }
       }
 
+      // Didn't find a direct classpath result, now try searching sub <module> paths.
+      for (String classpathEntry : classPathEntries)
+      {
+         final File file = getClasspathFile(classpathEntry);
+
+         if (file.isDirectory())
+         {
+            final File pomFile = getPomFile(file);
+            if (pomFile.isFile())
+            {
+               for (File module : getFoundModules(pomFile))
+               {
+                  File modulePom = new File(module, "pom.xml");
+                  if (modulePom.isFile())
+                  {
+                     final Artifact foundArtifact = getFoundArtifact(modulePom);
+                     if (foundArtifact.getGroupId().equals(artifact.getGroupId())
+                              && foundArtifact.getArtifactId().equals(artifact.getArtifactId())
+                              && foundArtifact.getBaseVersion().equals(artifact.getBaseVersion()))
+                     {
+                        if ("pom".equals(artifact.getExtension()))
+                        {
+                           return modulePom;
+                        }
+                        else
+                        {
+                           return new File(modulePom.getParentFile(), "target/classes");
+                        }
+                     }
+                     else
+                     {
+                        // recurse for modules parent?
+                     }
+                  }
+               }
+            }
+         }
+      }
+
       return null;
    }
 
    @Override
    public List<String> findVersions(final Artifact artifact)
+   {
+      List<String> result = foundVersionsCache.get(artifact);
+      if (result == null)
+      {
+         result = _findVersions(artifact);
+         foundVersionsCache.put(artifact, result);
+      }
+      return result;
+   }
+
+   public List<String> _findVersions(final Artifact artifact)
    {
       Set<String> versions = new TreeSet<String>();
       for (String classpathEntry : classPathEntries)
@@ -310,4 +374,59 @@ public class ClasspathWorkspaceReader implements WorkspaceReader
          throw new RuntimeException("Could not parse pom.xml: " + pomFile, e);
       }
    }
+
+   private List<File> getFoundModules(final File pomFile)
+   {
+      List<File> foundArtifacts = foundModulesCache.get(pomFile);
+      if (foundArtifacts == null)
+      {
+         foundArtifacts = createFoundModules(pomFile);
+         foundModulesCache.put(pomFile, foundArtifacts);
+      }
+      return foundArtifacts;
+   }
+
+   private List<File> createFoundModules(final File pomFile)
+   {
+      try
+      {
+         List<File> result = new ArrayList<>();
+         if (log.isLoggable(Level.FINE))
+         {
+            log.fine("Processing " + pomFile.getAbsolutePath() + " for classpath module resolution");
+         }
+
+         Node pom = XMLParser.parse(pomFile);
+         final List<Node> modules = pom.get("modules/module");
+         if (!modules.isEmpty())
+         {
+            for (Node node : modules)
+            {
+               result.add(new File(pomFile.getParent(), node.getText()));
+            }
+         }
+
+         if (result.isEmpty())
+         {
+            Node parent = pom.getSingle("parent");
+            if (parent != null)
+            {
+               String relativePath = parent.getTextValueForPatternName("relativePath");
+               if (relativePath == null)
+                  relativePath = "../pom.xml";
+
+               File parentPom = pomFile.getParentFile().toPath().resolve(relativePath).toFile();
+               if (parentPom.isFile())
+                  result = createFoundModules(parentPom);
+            }
+         }
+
+         return result;
+      }
+      catch (final Exception e)
+      {
+         throw new RuntimeException("Could not parse pom.xml: " + pomFile, e);
+      }
+   }
+
 }
