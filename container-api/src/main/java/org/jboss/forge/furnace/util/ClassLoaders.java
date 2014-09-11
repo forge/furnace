@@ -6,6 +6,8 @@
  */
 package org.jboss.forge.furnace.util;
 
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,6 +48,26 @@ public class ClassLoaders
          {
             log.fine("ClassLoader [" + loader + "] task ended.");
          }
+      }
+   }
+
+   /**
+    * Execute the given {@link Callable} by creating an {@link URLClassLoader} from the given {@link URL} array.
+    * <p/>
+    * Return the result, if any.
+    */
+   public static <T> T executeIn(URL[] urls, Callable<T> callable) throws Exception
+   {
+      ClassLoader savedClassLoader = Thread.currentThread().getContextClassLoader();
+      URLClassLoader newClassLoader = null;
+      try
+      {
+         newClassLoader = new URLClassLoader(urls, savedClassLoader);
+         return executeIn(newClassLoader, callable);
+      }
+      finally
+      {
+         Streams.closeQuietly(newClassLoader);
       }
    }
 
