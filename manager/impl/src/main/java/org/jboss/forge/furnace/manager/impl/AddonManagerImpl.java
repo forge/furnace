@@ -134,7 +134,7 @@ public class AddonManagerImpl implements AddonManager
 
    /**
     * Calculate the necessary request based in the list of installed addons for a given {@link MutableAddonRepository}
-    * 
+    *
     * @param addonInfo
     * @param repository
     * @param installedAddons
@@ -182,7 +182,7 @@ public class AddonManagerImpl implements AddonManager
          if (differentVersionEntry != null)
          {
             //TODO: Review condition below
-            if (differentVersionEntry.getKey().getVersion().toString().compareTo(addon.getVersion().toString()) < 0)
+            if (differentVersionEntry.getKey().getVersion().compareTo(addon.getVersion()) < 0)
             {
                if (repository.equals(differentVersionEntry.getValue()))
                {
@@ -209,9 +209,9 @@ public class AddonManagerImpl implements AddonManager
 
    /**
     * Collect all required addons for a specific addon.
-    * 
+    *
     * It traverses the whole graph
-    * 
+    *
     * @param addonInfo
     * @param addons
     */
