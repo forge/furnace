@@ -102,7 +102,7 @@ public class AddonManagerImpl implements AddonManager
    @Override
    public RemoveRequest remove(final AddonId id, final AddonRepository repository)
    {
-      AddonInfo info = info(id);
+      AddonInfo info = new ShallowAddonInfo(id);
       return createRemoveRequest(info, assertMutableRepository(repository), furnace);
    }
 
@@ -115,7 +115,7 @@ public class AddonManagerImpl implements AddonManager
    @Override
    public DisableRequest disable(final AddonId id, final AddonRepository repository)
    {
-      AddonInfo info = info(id);
+      AddonInfo info = new ShallowAddonInfo(id);
       return createDisableRequest(info, assertMutableRepository(repository), furnace);
    }
 
@@ -128,7 +128,7 @@ public class AddonManagerImpl implements AddonManager
    @Override
    public EnableRequest enable(final AddonId id, final AddonRepository repository)
    {
-      AddonInfo info = info(id);
+      AddonInfo info = new ShallowAddonInfo(id);
       return createEnableRequest(info, assertMutableRepository(repository), furnace);
    }
 
@@ -181,7 +181,7 @@ public class AddonManagerImpl implements AddonManager
          }
          if (differentVersionEntry != null)
          {
-            //TODO: Review condition below
+            // TODO: Review condition below
             if (differentVersionEntry.getKey().getVersion().compareTo(addon.getVersion()) < 0)
             {
                if (repository.equals(differentVersionEntry.getValue()))

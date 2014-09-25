@@ -21,20 +21,20 @@ public interface AddonDependencyResolver
    /**
     * Resolve the dependency hierarchy for use during the addon installation.
     */
-   public AddonInfo resolveAddonDependencyHierarchy(final AddonId addonId);
+   AddonInfo resolveAddonDependencyHierarchy(final AddonId addonId);
 
    /**
     * Resolve an artifact given an {@link AddonId} coordinate
     */
-   public Response<File[]> resolveResources(final AddonId addonId);
+   Response<File[]> resolveResources(final AddonId addonId);
 
    /**
     * Resolve all versions of a given {@link AddonId}
     */
-   public Response<AddonId[]> resolveVersions(final String addonName);
+   Response<AddonId[]> resolveVersions(final String addonName);
 
    /**
     * Resolve the API version for a given {@link AddonId}
     */
-   public Response<String> resolveAPIVersion(final AddonId addonId);
+   Response<String> resolveAPIVersion(final AddonId addonId);
 }
