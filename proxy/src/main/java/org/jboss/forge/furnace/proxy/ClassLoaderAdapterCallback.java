@@ -585,7 +585,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
 
    private String getReturnTypeNeedsEnhancementCacheKey(Class<?> methodReturnType, Class<?> unwrappedReturnValueType)
    {
-      return methodReturnType.getClassLoader() + "-" + methodReturnType.getName()
+      return getCallingLoader() + "-" + methodReturnType.getClassLoader() + "-" + methodReturnType.getName()
                + unwrappedReturnValueType.getClassLoader() + "" + unwrappedReturnValueType.getName();
    }
 
