@@ -48,11 +48,16 @@ public class AddonManagerRepositoryTest
    private AddonRepository mutable;
    private AddonRepository immutable;
 
+   private static String previousUserSettings;
+   private static String previousLocalRepository;
+
    @BeforeClass
    public static void setRemoteRepository() throws IOException
    {
-      System.setProperty(MavenContainer.ALT_USER_SETTINGS_XML_LOCATION, getAbsolutePath("profiles/settings.xml"));
-      System.setProperty(MavenContainer.ALT_LOCAL_REPOSITORY_LOCATION, "target/the-other-repository");
+      previousUserSettings = System.setProperty(MavenContainer.ALT_USER_SETTINGS_XML_LOCATION,
+               getAbsolutePath("profiles/settings.xml"));
+      previousLocalRepository = System.setProperty(MavenContainer.ALT_LOCAL_REPOSITORY_LOCATION,
+               "target/the-other-repository");
    }
 
    private static String getAbsolutePath(String path) throws FileNotFoundException
@@ -66,8 +71,22 @@ public class AddonManagerRepositoryTest
    @AfterClass
    public static void clearRemoteRepository()
    {
-      System.clearProperty(MavenContainer.ALT_USER_SETTINGS_XML_LOCATION);
-      System.clearProperty(MavenContainer.ALT_LOCAL_REPOSITORY_LOCATION);
+      if (previousUserSettings == null)
+      {
+         System.clearProperty(MavenContainer.ALT_USER_SETTINGS_XML_LOCATION);
+      }
+      else
+      {
+         System.setProperty(MavenContainer.ALT_USER_SETTINGS_XML_LOCATION, previousUserSettings);
+      }
+      if (previousLocalRepository == null)
+      {
+         System.clearProperty(MavenContainer.ALT_LOCAL_REPOSITORY_LOCATION);
+      }
+      else
+      {
+         System.setProperty(MavenContainer.ALT_LOCAL_REPOSITORY_LOCATION, previousUserSettings);
+      }
    }
 
    @Before
