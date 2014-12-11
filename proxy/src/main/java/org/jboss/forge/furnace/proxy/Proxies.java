@@ -16,6 +16,7 @@ import org.jboss.forge.furnace.proxy.javassist.util.proxy.MethodFilter;
 import org.jboss.forge.furnace.proxy.javassist.util.proxy.Proxy;
 import org.jboss.forge.furnace.proxy.javassist.util.proxy.ProxyFactory;
 import org.jboss.forge.furnace.proxy.javassist.util.proxy.ProxyObject;
+import org.jboss.forge.furnace.util.Assert;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
@@ -26,11 +27,18 @@ public class Proxies
    private static Map<String, Map<String, WeakReference<Class<?>>>> classCache = new ConcurrentHashMap<>();
 
    /**
-    * Create a proxy for the given {@link Class} type.
+    * Create a proxy for the given {@link Class} type, {@link Object} instance, and {@link ForgeProxy} handler. If
+    * instance is <code>null</code>, this will return <code>null</code>.
     */
    @SuppressWarnings("unchecked")
    public static <T> T enhance(final ClassLoader loader, Object instance, ForgeProxy handler)
    {
+      Assert.notNull(loader, "ClassLoader must not be null");
+      Assert.notNull(handler, "ForgeProxy handler must not be null");
+
+      if (instance == null)
+         return null;
+
       Class<?> type = Proxies.unwrapProxyTypes(instance.getClass(), loader);
 
       Object result = null;
@@ -136,11 +144,14 @@ public class Proxies
    }
 
    /**
-    * Create a proxy for the given {@link Class} type.
+    * Create a proxy for the given {@link Class} type and {@link ForgeProxy} handler.
     */
    @SuppressWarnings("unchecked")
    public static <T> T enhance(Class<T> type, ForgeProxy handler)
    {
+      Assert.notNull(type, "Class type to proxy must not be null");
+      Assert.notNull(handler, "ForgeProxy handler must not be null");
+
       Object result = null;
 
       Class<?> proxyType = getCachedProxyType(type.getClassLoader(), type);
@@ -203,13 +214,16 @@ public class Proxies
 
    public static boolean isProxyType(Class<?> type)
    {
-      if (type.getName().contains("$$EnhancerByCGLIB$$")
-               || type.getName().contains("_javassist_")
-               || type.getName().contains("$Proxy$_$$_WeldClientProxy")
-               || Proxy.class.isAssignableFrom(type)
-               || ProxyObject.class.isAssignableFrom(type))
+      if (type != null)
       {
-         return true;
+         if (type.getName().contains("$$EnhancerByCGLIB$$")
+                  || type.getName().contains("_javassist_")
+                  || type.getName().contains("$Proxy$_$$_WeldClientProxy")
+                  || Proxy.class.isAssignableFrom(type)
+                  || ProxyObject.class.isAssignableFrom(type))
+         {
+            return true;
+         }
       }
       return false;
    }
@@ -309,15 +323,18 @@ public class Proxies
             result = superclass;
 
          String typeName = unwrapProxyClassName(result);
-         for (ClassLoader loader : loaders)
+         if (loaders != null)
          {
-            try
+            for (ClassLoader loader : loaders)
             {
-               result = loader.loadClass(typeName);
-               break;
-            }
-            catch (ClassNotFoundException e)
-            {
+               try
+               {
+                  result = loader.loadClass(typeName);
+                  break;
+               }
+               catch (ClassNotFoundException e)
+               {
+               }
             }
          }
       }
@@ -332,18 +349,21 @@ public class Proxies
     */
    public static String unwrapProxyClassName(Class<?> type)
    {
-      String typeName;
-      if (type.getName().contains("$$EnhancerByCGLIB$$"))
+      String typeName = null;
+      if (type != null)
       {
-         typeName = type.getName().replaceAll("^(.*)\\$\\$EnhancerByCGLIB\\$\\$.*", "$1");
-      }
-      else if (type.getName().contains("_javassist_"))
-      {
-         typeName = type.getName().replaceAll("^(.*)_\\$\\$_javassist_.*", "$1");
-      }
-      else
-      {
-         typeName = type.getName();
+         if (type.getName().contains("$$EnhancerByCGLIB$$"))
+         {
+            typeName = type.getName().replaceAll("^(.*)\\$\\$EnhancerByCGLIB\\$\\$.*", "$1");
+         }
+         else if (type.getName().contains("_javassist_"))
+         {
+            typeName = type.getName().replaceAll("^(.*)_\\$\\$_javassist_.*", "$1");
+         }
+         else
+         {
+            typeName = type.getName();
+         }
       }
       return typeName;
    }
@@ -431,6 +451,8 @@ public class Proxies
     */
    public static boolean isPassthroughType(Class<?> type)
    {
+      Assert.notNull(type, "Type to inspect must not be null.");
+
       boolean result = type.isArray()
                || type.getName().matches("^(java\\.lang).*")
                || type.getName().matches("^(java\\.io).*")
@@ -444,6 +466,8 @@ public class Proxies
 
    public static boolean isLanguageType(Class<?> type)
    {
+      Assert.notNull(type, "Type to inspect must not be null.");
+
       boolean result = type.isArray()
                || type.getName().matches("^(java\\.).*")
                || type.isPrimitive();
@@ -453,6 +477,8 @@ public class Proxies
 
    public static boolean isCollectionType(Object instance)
    {
+      Assert.notNull(instance, "Object to inspect must not be null.");
+
       boolean result = instance instanceof Collection
                || instance instanceof Iterable
                || instance.getClass().isArray();

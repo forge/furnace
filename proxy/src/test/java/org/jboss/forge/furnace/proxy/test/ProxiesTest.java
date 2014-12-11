@@ -281,4 +281,64 @@ public class ProxiesTest
       }.getClass()));
    }
 
+   @Test(expected = IllegalArgumentException.class)
+   public void testEnhanceInvalidArguments1() throws Exception
+   {
+      Proxies.enhance(null, handler);
+   }
+
+   @Test(expected = IllegalArgumentException.class)
+   public void testEnhanceInvalidArguments2() throws Exception
+   {
+      Proxies.enhance(ProxiesTest.class, null);
+   }
+
+   @Test(expected = IllegalArgumentException.class)
+   public void testEnhanceInvalidArguments3() throws Exception
+   {
+      Proxies.enhance(null, null);
+   }
+
+   @Test
+   public void testEnhanceNullPassthrough() throws Exception
+   {
+      Assert.assertNull(Proxies.enhance(getClass().getClassLoader(), null, handler));
+   }
+
+   @Test(expected = IllegalArgumentException.class)
+   public void testEnhanceInvalidArguments4() throws Exception
+   {
+      Proxies.enhance(null, null, handler);
+   }
+
+   @Test(expected = IllegalArgumentException.class)
+   public void testEnhanceInvalidArguments5() throws Exception
+   {
+      Proxies.enhance(getClass().getClassLoader(), null, null);
+   }
+
+   @Test(expected = IllegalArgumentException.class)
+   public void testEnhanceInvalidArguments6() throws Exception
+   {
+      Proxies.enhance(getClass().getClassLoader(), new ProxiesTest(), null);
+   }
+
+   @Test(expected = IllegalArgumentException.class)
+   public void testEnhanceInvalidArguments7() throws Exception
+   {
+      Proxies.enhance(null, new ProxiesTest(), handler);
+   }
+
+   @Test
+   public void testUnwrapProxyTypesNullClassLoaderList() throws Exception
+   {
+      Proxies.unwrapProxyTypes(getClass(), (ClassLoader[]) null);
+   }
+
+   @Test
+   public void testUnwrapProxyTypesNullType() throws Exception
+   {
+      Proxies.unwrapProxyTypes(null, getClass().getClassLoader());
+   }
+
 }
