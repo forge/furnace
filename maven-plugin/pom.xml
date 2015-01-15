@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    <modelVersion>4.0.0</modelVersion>
    <parent>
       <groupId>org.jboss.forge.furnace</groupId>
@@ -11,12 +12,13 @@
    <url>http://forge.jboss.org</url>
 
    <prerequisites>
-      <maven>3.1</maven>
+      <!-- Minimum version is 3.2.5 because Aether has gone 1.0 since it -->
+      <maven>3.2.5</maven>
    </prerequisites>
 
    <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <version.maven>3.2.3</version.maven>
+      <version.maven>3.2.5</version.maven>
    </properties>
 
    <dependencies>

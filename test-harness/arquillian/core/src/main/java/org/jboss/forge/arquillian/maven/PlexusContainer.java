@@ -11,6 +11,7 @@ import java.util.concurrent.Callable;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
+import org.codehaus.plexus.PlexusConstants;
 import org.codehaus.plexus.logging.console.ConsoleLoggerManager;
 import org.jboss.forge.furnace.util.ClassLoaders;
 
@@ -19,7 +20,7 @@ import org.jboss.forge.furnace.util.ClassLoaders;
  */
 class PlexusContainer
 {
-   private static org.codehaus.plexus.PlexusContainer plexusContainer;
+   private static org.codehaus.plexus.DefaultPlexusContainer plexusContainer;
 
    public <T> T lookup(final Class<T> type)
    {
@@ -49,25 +50,24 @@ class PlexusContainer
       }
    }
 
-   private org.codehaus.plexus.PlexusContainer getPlexusContainer() throws Exception
+   private org.codehaus.plexus.DefaultPlexusContainer getPlexusContainer() throws Exception
    {
       if (plexusContainer == null)
       {
          plexusContainer = ClassLoaders.executeIn(Thread.currentThread().getContextClassLoader(),
                   new Callable<DefaultPlexusContainer>()
                   {
-
                      @Override
                      public DefaultPlexusContainer call() throws Exception
                      {
                         try
                         {
-                           ContainerConfiguration config = new DefaultContainerConfiguration().setAutoWiring(true);
-                           plexusContainer = new DefaultPlexusContainer(config);
+                           ContainerConfiguration config = new DefaultContainerConfiguration().setAutoWiring(true).setClassPathScanning(PlexusConstants.SCANNING_INDEX);
+                           DefaultPlexusContainer plexusContainer = new DefaultPlexusContainer(config);
                            ConsoleLoggerManager loggerManager = new ConsoleLoggerManager();
                            loggerManager.setThreshold("ERROR");
-                           ((DefaultPlexusContainer) plexusContainer).setLoggerManager(loggerManager);
-                           return (DefaultPlexusContainer) plexusContainer;
+                           plexusContainer.setLoggerManager(loggerManager);
+                           return plexusContainer;
                         }
                         catch (Exception e)
                         {
