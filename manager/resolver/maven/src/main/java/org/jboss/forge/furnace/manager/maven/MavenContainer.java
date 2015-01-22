@@ -34,14 +34,16 @@ import org.apache.maven.settings.building.SettingsBuildingResult;
 import org.eclipse.aether.DefaultRepositoryCache;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
-import org.eclipse.aether.connector.wagon.WagonProvider;
-import org.eclipse.aether.connector.wagon.WagonRepositoryConnectorFactory;
+import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
 import org.eclipse.aether.impl.DefaultServiceLocator;
 import org.eclipse.aether.repository.Authentication;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
+import org.eclipse.aether.spi.connector.transport.TransporterFactory;
+import org.eclipse.aether.transport.wagon.WagonProvider;
+import org.eclipse.aether.transport.wagon.WagonTransporterFactory;
 import org.eclipse.aether.util.repository.AuthenticationBuilder;
 import org.eclipse.aether.util.repository.DefaultMirrorSelector;
 import org.eclipse.aether.util.repository.DefaultProxySelector;
@@ -205,7 +207,8 @@ public class MavenContainer
       locator.setServices(ModelBuilder.class, new DefaultModelBuilderFactory().newInstance());
       // Installing Wagon to fetch from HTTP repositories
       locator.setServices(WagonProvider.class, new ManualWagonProvider());
-      locator.addService(RepositoryConnectorFactory.class, WagonRepositoryConnectorFactory.class);
+      locator.addService(TransporterFactory.class, WagonTransporterFactory.class);
+      locator.addService(RepositoryConnectorFactory.class, BasicRepositoryConnectorFactory.class);
       final RepositorySystem repositorySystem = locator.getService(RepositorySystem.class);
       return repositorySystem;
    }

@@ -332,7 +332,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       {
          result = system.collectDependencies(session, collectRequest);
       }
-      catch (DependencyCollectionException e)
+      catch (Exception e)
       {
          throw new RuntimeException(e);
       }
