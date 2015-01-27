@@ -6,12 +6,15 @@
  */
 package org.jboss.forge.furnace.impl.graph;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.impl.addons.AddonRepositoryImpl;
@@ -24,6 +27,8 @@ import org.jgrapht.graph.SimpleDirectedGraph;
 
 public class CompleteAddonGraph extends AddonGraph<CompleteAddonGraph>
 {
+   private Logger logger = Logger.getLogger(CompleteAddonGraph.class.getName());
+
    DirectedGraph<AddonVertex, AddonDependencyEdge> graph = new SimpleDirectedGraph<AddonVertex, AddonDependencyEdge>(
             AddonDependencyEdge.class);
 
@@ -84,9 +89,20 @@ public class CompleteAddonGraph extends AddonGraph<CompleteAddonGraph>
       Set<AddonId> result = new HashSet<AddonId>();
       for (AddonRepository repository : repositories)
       {
-         for (AddonId enabled : repository.listEnabledCompatibleWithVersion(AddonRepositoryImpl.getRuntimeAPIVersion()))
+         List<AddonId> enabled = repository.listEnabled();
+         List<AddonId> enabledCompatible = repository.listEnabledCompatibleWithVersion(AddonRepositoryImpl
+                  .getRuntimeAPIVersion());
+
+         result.addAll(enabledCompatible);
+
+         List<AddonId> incompatible = new ArrayList<>(enabled);
+         incompatible.removeAll(enabledCompatible);
+         for (AddonId addon : enabledCompatible)
          {
-            result.add(enabled);
+            logger.warning("Addon [" + addon + "] with API version [" + addon.getApiVersion()
+                     + "] is incompatible with the current Furnace runtime version ["
+                     + AddonRepositoryImpl.getRuntimeAPIVersion() + "] and will not be loaded, from repository ["
+                     + repository + "]");
          }
       }
       return result;
