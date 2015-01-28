@@ -34,6 +34,11 @@ public class ConfigurationScanListener implements ContainerLifecycleListener
    }
 
    @Override
+   public void afterStart(Furnace furnace) throws ContainerException
+   {
+   }
+
+   @Override
    public void beforeStop(Furnace furnace) throws ContainerException
    {
    }

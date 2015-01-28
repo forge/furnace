@@ -38,6 +38,11 @@ public interface ContainerLifecycleListener
    public void afterConfigurationScan(Furnace furnace) throws ContainerException;
 
    /**
+    * Called after the Furnace container starts and after the current addons are loaded
+    */
+   public void afterStart(Furnace furnace) throws ContainerException;
+
+   /**
     * Called before the Furnace container stops
     */
    public void beforeStop(Furnace furnace) throws ContainerException;

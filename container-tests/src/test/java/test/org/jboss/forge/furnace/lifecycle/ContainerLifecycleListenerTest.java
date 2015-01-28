@@ -34,6 +34,7 @@ public class ContainerLifecycleListenerTest
       furnace.startAsync();
       waitUntilStarted(furnace);
       Assert.assertEquals(1, listener.beforeStartTimesCalled);
+      Assert.assertEquals(1, listener.afterStartTimesCalled);
       registration.removeListener();
       furnace.stop();
    }

@@ -14,6 +14,7 @@ import org.jboss.forge.furnace.spi.ContainerLifecycleListener;
 public class TestLifecycleListener implements ContainerLifecycleListener
 {
    public int beforeStartTimesCalled;
+   public int afterStartTimesCalled;
    public int beforeStopTimesCalled;
    public int afterStopTimesCalled;
 
@@ -27,6 +28,12 @@ public class TestLifecycleListener implements ContainerLifecycleListener
    public void beforeStop(Furnace forge) throws ContainerException
    {
       beforeStopTimesCalled++;
+   }
+   
+   @Override
+   public void afterStart(Furnace furnace) throws ContainerException
+   {
+      afterStartTimesCalled++;
    }
 
    @Override

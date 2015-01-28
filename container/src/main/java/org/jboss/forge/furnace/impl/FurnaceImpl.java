@@ -170,7 +170,8 @@ public class FurnaceImpl implements Furnace
    @Override
    public void start(ClassLoader loader)
    {
-      logger.log(Level.INFO, "Furnace [" + AddonRepositoryImpl.getRuntimeAPIVersion() + "] starting.");
+      boolean firedAfterStart = false;
+      logger.log(Level.INFO, "Furnace [" + getVersion() + "] starting.");
       assertNotAlive();
       alive = true;
 
@@ -233,11 +234,15 @@ public class FurnaceImpl implements Furnace
                }
             }
             status = ContainerStatus.STARTED;
-
+            // Fire the afterStart() event
+            if (!firedAfterStart)
+            {
+               fireAfterContainerStartedEvent();
+               firedAfterStart = true;
+            }
             Thread.sleep(100);
          }
          while (alive && serverMode);
-
          while (alive && getLifecycleManager().isStartingAddons())
          {
             Thread.sleep(100);
@@ -302,6 +307,14 @@ public class FurnaceImpl implements Furnace
       for (ContainerLifecycleListener listener : registeredListeners)
       {
          listener.beforeStop(this);
+      }
+   }
+
+   private void fireAfterContainerStartedEvent()
+   {
+      for (ContainerLifecycleListener listener : registeredListeners)
+      {
+         listener.afterStart(this);
       }
    }
 
