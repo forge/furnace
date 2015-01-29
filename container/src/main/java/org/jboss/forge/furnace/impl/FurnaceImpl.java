@@ -394,15 +394,12 @@ public class FurnaceImpl implements Furnace
                {
                   if (repositories == null || repositories.length == 0)
                   {
-                     System.out.println("Creating new ROOT view.");
                      String name = "ROOT" + "_" + UUID.randomUUID().toString();
                      registry = new AddonRegistryImpl(lock, getLifecycleManager(), getRepositories(), name);
                   }
                   else
                   {
                      String name = String.valueOf(registryCount++ + "_" + UUID.randomUUID().toString());
-                     System.out.println("Creating new view [" + name + "] with [" + repositories.length
-                              + "] repositories: " + repositories);
                      registry = new AddonRegistryImpl(lock, getLifecycleManager(), Arrays.asList(repositories), name);
                   }
                   getLifecycleManager().addView(registry);
