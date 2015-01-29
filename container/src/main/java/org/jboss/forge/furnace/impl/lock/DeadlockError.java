@@ -10,7 +10,7 @@ import org.jboss.forge.furnace.lock.LockManager;
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class DeadlockError extends Error
+class DeadlockError extends Error
 {
    private static final long serialVersionUID = -5559271290352031320L;
 
