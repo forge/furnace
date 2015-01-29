@@ -11,7 +11,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jboss.forge.furnace.exception.ContainerException;
-import org.jboss.forge.furnace.lock.DeadlockException;
+import org.jboss.forge.furnace.lock.DeadlockError;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.util.Assert;
@@ -35,7 +35,7 @@ public class LockManagerImpl implements LockManager
       else
       {
          if (readWriteLock.getReadHoldCount() > 0)
-            throw new DeadlockException(
+            throw new DeadlockError(
                      "Thread with READ lock attempted to obtain a WRITE lock (This is never allowed.)");
          return readWriteLock.writeLock();
       }

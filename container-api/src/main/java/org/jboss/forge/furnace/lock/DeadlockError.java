@@ -9,14 +9,14 @@ import org.jboss.forge.furnace.exception.ContainerException;
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class DeadlockException extends Error
+public class DeadlockError extends Error
 {
     private static final long serialVersionUID = -5559271290352031320L;
 
     /**
-     * Create a new {@link DeadlockException} with the given message.
+     * Create a new {@link DeadlockError} with the given message.
      */
-    public DeadlockException(String string)
+    public DeadlockError(String string)
     {
         super(string);
     }

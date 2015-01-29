@@ -13,7 +13,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
-import org.jboss.forge.furnace.lock.DeadlockException;
+import org.jboss.forge.furnace.lock.DeadlockError;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -56,7 +56,7 @@ public class LockManagerDeadlockTest
                         }
                     });
                 }
-                catch (DeadlockException e)
+                catch (DeadlockError e)
                 {
                     return true;
                 }
