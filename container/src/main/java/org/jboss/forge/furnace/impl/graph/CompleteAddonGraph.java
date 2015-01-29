@@ -97,7 +97,7 @@ public class CompleteAddonGraph extends AddonGraph<CompleteAddonGraph>
 
          List<AddonId> incompatible = new ArrayList<>(enabled);
          incompatible.removeAll(enabledCompatible);
-         for (AddonId addon : enabledCompatible)
+         for (AddonId addon : incompatible)
          {
             logger.warning("Addon [" + addon + "] with API version [" + addon.getApiVersion()
                      + "] is incompatible with the current Furnace runtime version ["
