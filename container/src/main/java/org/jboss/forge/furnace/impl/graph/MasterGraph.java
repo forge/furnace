@@ -121,7 +121,8 @@ public class MasterGraph
    public boolean isSubtreeEquivalent(AddonVertex localVertex,
             DirectedGraph<AddonVertex, AddonDependencyEdge> otherGraph, AddonVertex otherVertex)
    {
-      Set<AddonDependencyEdge> otherOutgoing = otherGraph.outgoingEdgesOf(otherVertex);
+      Set<AddonDependencyEdge> otherOutgoing;
+      otherOutgoing = otherGraph.outgoingEdgesOf(otherVertex);
       Set<AddonDependencyEdge> localOutgoing = graph.outgoingEdgesOf(localVertex);
 
       if (otherOutgoing.size() == localOutgoing.size())

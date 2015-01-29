@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.addons.Addon;
@@ -58,8 +57,6 @@ public class AddonRegistryImpl implements AddonRegistry
       this.manager = manager;
       this.repositories = new LinkedHashSet<>(repositories);
       this.name = name;
-
-      logger.log(Level.FINE, "Instantiated AddonRegistryImpl: " + this);
    }
 
    @Override
@@ -116,6 +113,14 @@ public class AddonRegistryImpl implements AddonRegistry
             return result;
          }
       });
+   }
+
+   /**
+    * OMLY CALLED INTERNALLY WHEN NEW REPOSITORIES ARE ADDED TO THE ROOT VIEW
+    */
+   public void addRepository(AddonRepository repository)
+   {
+      this.repositories.add(repository);
    }
 
    @Override
@@ -206,7 +211,9 @@ public class AddonRegistryImpl implements AddonRegistry
    {
       StringBuilder builder = new StringBuilder();
 
-      builder.append("REPOSITORIES:").append("\n");
+      builder.append(name);
+      builder.append("\n");
+      builder.append("---REPOSITORIES---").append("\n");
 
       Iterator<AddonRepository> repositoryIterator = getRepositories().iterator();
       while (repositoryIterator.hasNext())
@@ -218,8 +225,7 @@ public class AddonRegistryImpl implements AddonRegistry
       }
 
       builder.append("\n");
-      builder.append("\n");
-      builder.append("ADDONS:").append("\n");
+      builder.append("---ADDONS---").append("\n");
 
       Iterator<Addon> addonIterator = getAddons().iterator();
       while (addonIterator.hasNext())
@@ -234,11 +240,17 @@ public class AddonRegistryImpl implements AddonRegistry
    }
 
    @Override
+   public String getName()
+   {
+      return name;
+   }
+
+   @Override
    public int hashCode()
    {
       final int prime = 31;
       int result = 1;
-      result = prime * result + ((repositories == null) ? 0 : repositories.hashCode());
+      result = prime * result + ((name == null) ? 0 : name.hashCode());
       return result;
    }
 
@@ -252,19 +264,14 @@ public class AddonRegistryImpl implements AddonRegistry
       if (getClass() != obj.getClass())
          return false;
       AddonRegistryImpl other = (AddonRegistryImpl) obj;
-      if (repositories == null)
+      if (name == null)
       {
-         if (other.repositories != null)
+         if (other.name != null)
             return false;
       }
-      else if (!repositories.equals(other.repositories))
+      else if (!name.equals(other.name))
          return false;
       return true;
    }
 
-   @Override
-   public String getName()
-   {
-      return name;
-   }
 }

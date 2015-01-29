@@ -58,8 +58,8 @@ public class AddonLoader
       {
          stateManager.cancel(addon);
          loader.releaseAddonModule(addon);
-         Set<AddonRepository> repositories =
-                  stateManager.getViewsOf(addon).iterator().next().getRepositories();
+         Set<AddonView> views = stateManager.getViewsOf(addon);
+         Set<AddonRepository> repositories = views.iterator().next().getRepositories();
 
          for (AddonRepository repository : repositories)
          {

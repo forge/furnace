@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,6 +37,7 @@ import org.jboss.forge.furnace.impl.addons.AddonRegistryImpl;
 import org.jboss.forge.furnace.impl.addons.AddonRepositoryImpl;
 import org.jboss.forge.furnace.impl.addons.ImmutableAddonRepository;
 import org.jboss.forge.furnace.lock.LockManager;
+import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 import org.jboss.forge.furnace.spi.ContainerLifecycleListener;
@@ -72,6 +74,7 @@ public class FurnaceImpl implements Furnace
    private String[] args;
 
    private int registryCount = 0;
+   boolean firedAfterStart = false;
 
    private WatchService watcher;
 
@@ -170,7 +173,6 @@ public class FurnaceImpl implements Furnace
    @Override
    public void start(ClassLoader loader)
    {
-      boolean firedAfterStart = false;
       logger.log(Level.INFO, "Furnace [" + getVersion() + "] starting.");
       assertNotAlive();
       alive = true;
@@ -190,59 +192,71 @@ public class FurnaceImpl implements Furnace
          getAddonRegistry();
          do
          {
-            boolean dirty = false;
-            if (!getLifecycleManager().isStartingAddons())
+            lock.performLocked(LockMode.WRITE, new Callable<Void>()
             {
-               for (AddonRepository repository : repositories)
+               @Override
+               public Void call() throws Exception
                {
-                  int repoVersion = repository.getVersion();
-                  if (repoVersion > lastRepoVersionSeen.get(repository))
+                  boolean dirty = false;
+                  if (!getLifecycleManager().isStartingAddons())
                   {
-                     logger.log(Level.INFO, "Detected changes in repository [" + repository + "].");
-                     lastRepoVersionSeen.put(repository, repoVersion);
-                     dirty = true;
-                  }
+                     for (AddonRepository repository : repositories)
+                     {
+                        int repoVersion = repository.getVersion();
+                        if (repoVersion > lastRepoVersionSeen.get(repository))
+                        {
+                           logger.log(Level.INFO, "Detected changes in repository [" + repository + "].");
+                           lastRepoVersionSeen.put(repository, repoVersion);
+                           dirty = true;
+                        }
+                     }
 
-               }
+                     WatchKey key = watcher.poll();
+                     while (key != null)
+                     {
+                        List<WatchEvent<?>> events = key.pollEvents();
+                        if (!events.isEmpty())
+                        {
+                           logger.log(Level.INFO, "Detected changes in repository ["
+                                    + events.iterator().next().context()
+                                    + "].");
+                           dirty = true;
+                        }
+                        key.reset();
+                        key = watcher.poll();
+                     }
 
-               WatchKey key = watcher.poll();
-               while (key != null)
-               {
-                  List<WatchEvent<?>> events = key.pollEvents();
-                  if (!events.isEmpty())
-                  {
-                     logger.log(Level.INFO, "Detected changes in repository [" + events.iterator().next().context()
-                              + "].");
-                     dirty = true;
-                  }
-                  key.reset();
-                  key = watcher.poll();
-               }
+                     if (dirty)
+                     {
+                        if (status.isStarted())
+                           status = ContainerStatus.RELOADING;
 
-               if (dirty)
-               {
-                  try
-                  {
-                     fireBeforeConfigurationScanEvent();
-                     getLifecycleManager().forceUpdate();
-                     fireAfterConfigurationScanEvent();
+                        try
+                        {
+                           fireBeforeConfigurationScanEvent();
+                           getLifecycleManager().forceUpdate();
+                           fireAfterConfigurationScanEvent();
+                        }
+                        catch (Exception e)
+                        {
+                           logger.log(Level.SEVERE, "Error occurred.", e);
+                        }
+                     }
                   }
-                  catch (Exception e)
+                  status = ContainerStatus.STARTED;
+                  // Fire the afterStart() event
+                  if (!firedAfterStart)
                   {
-                     logger.log(Level.SEVERE, "Error occurred.", e);
+                     fireAfterContainerStartedEvent();
+                     firedAfterStart = true;
                   }
+                  return null;
                }
-            }
-            status = ContainerStatus.STARTED;
-            // Fire the afterStart() event
-            if (!firedAfterStart)
-            {
-               fireAfterContainerStartedEvent();
-               firedAfterStart = true;
-            }
+            });
             Thread.sleep(100);
          }
          while (alive && serverMode);
+
          while (alive && getLifecycleManager().isStartingAddons())
          {
             Thread.sleep(100);
@@ -276,6 +290,7 @@ public class FurnaceImpl implements Furnace
       manager = null;
       repositories.clear();
       executor.shutdownNow();
+      firedAfterStart = false;
    }
 
    private void fireBeforeConfigurationScanEvent()
@@ -361,7 +376,7 @@ public class FurnaceImpl implements Furnace
    }
 
    @Override
-   public AddonRegistry getAddonRegistry(AddonRepository... repositories)
+   public AddonRegistry getAddonRegistry(final AddonRepository... repositories)
    {
       assertIsAlive();
 
@@ -369,18 +384,33 @@ public class FurnaceImpl implements Furnace
 
       if (result == null)
       {
-         if (repositories == null || repositories.length == 0)
+         result = lock.performLocked(LockMode.WRITE, new Callable<AddonRegistry>()
          {
-            result = new AddonRegistryImpl(lock, getLifecycleManager(), getRepositories(), "ROOT");
-            getLifecycleManager().addView(result);
-         }
-         else
-         {
-            result = new AddonRegistryImpl(lock, getLifecycleManager(), Arrays.asList(repositories),
-                     String.valueOf(registryCount++));
-            getLifecycleManager().addView(result);
-            getLifecycleManager().forceUpdate();
-         }
+            @Override
+            public AddonRegistry call() throws Exception
+            {
+               AddonRegistry registry = getLifecycleManager().findView(repositories);
+               if (registry == null)
+               {
+                  if (repositories == null || repositories.length == 0)
+                  {
+                     System.out.println("Creating new ROOT view.");
+                     String name = "ROOT" + "_" + UUID.randomUUID().toString();
+                     registry = new AddonRegistryImpl(lock, getLifecycleManager(), getRepositories(), name);
+                  }
+                  else
+                  {
+                     String name = String.valueOf(registryCount++ + "_" + UUID.randomUUID().toString());
+                     System.out.println("Creating new view [" + name + "] with [" + repositories.length
+                              + "] repositories: " + repositories);
+                     registry = new AddonRegistryImpl(lock, getLifecycleManager(), Arrays.asList(repositories), name);
+                  }
+                  getLifecycleManager().addView(registry);
+                  getLifecycleManager().forceUpdate();
+               }
+               return registry;
+            }
+         });
       }
 
       return result;
@@ -468,7 +498,7 @@ public class FurnaceImpl implements Furnace
    }
 
    @Override
-   public AddonRepository addRepository(AddonRepository repository)
+   public AddonRepository addRepository(final AddonRepository repository)
    {
       Assert.notNull(repository, "Addon repository must not be null.");
 
@@ -480,8 +510,24 @@ public class FurnaceImpl implements Furnace
          }
       }
 
-      this.repositories.add(repository);
-      lastRepoVersionSeen.put(repository, 0);
+      lock.performLocked(LockMode.WRITE, new Callable<Void>()
+      {
+         @Override
+         public Void call() throws Exception
+         {
+            /*
+             * The existing ROOT view must be updated *before*
+             */
+            if (alive)
+            {
+               AddonRegistry registry = getAddonRegistry();
+               ((AddonRegistryImpl) registry).addRepository(repository);
+            }
+            lastRepoVersionSeen.put(repository, 0);
+            repositories.add(repository);
+            return null;
+         }
+      });
 
       return repository;
    }
@@ -502,11 +548,18 @@ public class FurnaceImpl implements Furnace
    @Override
    public ContainerStatus getStatus()
    {
-      if (!alive)
-         return ContainerStatus.STOPPED;
+      return lock.performLocked(LockMode.READ, new Callable<ContainerStatus>()
+      {
+         @Override
+         public ContainerStatus call() throws Exception
+         {
+            if (!alive)
+               return ContainerStatus.STOPPED;
 
-      boolean startingAddons = getLifecycleManager().isStartingAddons();
-      return startingAddons ? ContainerStatus.STARTING : status;
+            boolean startingAddons = getLifecycleManager().isStartingAddons();
+            return startingAddons ? ContainerStatus.STARTING : status;
+         }
+      });
    }
 
    public List<ContainerLifecycleListener> getRegisteredListeners()

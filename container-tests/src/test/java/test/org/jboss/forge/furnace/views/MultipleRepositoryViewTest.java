@@ -30,6 +30,7 @@ import org.jboss.forge.furnace.se.FurnaceFactory;
 import org.jboss.forge.furnace.spi.ContainerLifecycleListener;
 import org.jboss.forge.furnace.spi.ListenerRegistration;
 import org.jboss.forge.furnace.util.Addons;
+import org.jboss.forge.furnace.util.OperatingSystemUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -42,8 +43,8 @@ import org.junit.Test;
  */
 public class MultipleRepositoryViewTest
 {
-   File repodir1;
-   File repodir2;
+   File leftRepo;
+   File rightRepo;
 
    private static String previousUserSettings;
    private static String previousLocalRepository;
@@ -89,25 +90,25 @@ public class MultipleRepositoryViewTest
    @Before
    public void init() throws IOException
    {
-      repodir1 = File.createTempFile("forge", "repo1");
-      repodir1.deleteOnExit();
-      repodir2 = File.createTempFile("forge", "repo2");
-      repodir2.deleteOnExit();
+      leftRepo = OperatingSystemUtils.createTempDir();
+      leftRepo.deleteOnExit();
+      rightRepo = OperatingSystemUtils.createTempDir();
+      rightRepo.deleteOnExit();
    }
 
    @After
    public void teardown()
    {
-      Files.delete(repodir1, true);
-      Files.delete(repodir2, true);
+      Files.delete(leftRepo, true);
+      Files.delete(rightRepo, true);
    }
 
    @Test
    public void testAddonsSharedIfSubgraphEquivalent() throws IOException, InterruptedException, TimeoutException
    {
       Furnace furnace = FurnaceFactory.getInstance();
-      AddonRepository left = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
-      AddonRepository right = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir2);
+      AddonRepository left = furnace.addRepository(AddonRepositoryMode.MUTABLE, leftRepo);
+      AddonRepository right = furnace.addRepository(AddonRepositoryMode.MUTABLE, rightRepo);
 
       AddonDependencyResolver resolver = new MavenAddonDependencyResolver();
       AddonManager manager = new AddonManagerImpl(furnace, resolver);
@@ -134,11 +135,11 @@ public class MultipleRepositoryViewTest
       manager.deploy(no_dep2, right).perform();
 
       Assert.assertFalse(left.isDeployed(one_dep_a));
-      Assert.assertFalse(right.isDeployed(one_dep));
-      Assert.assertFalse(right.isDeployed(no_dep));
       Assert.assertFalse(left.isDeployed(no_dep2));
       Assert.assertTrue(left.isDeployed(no_dep));
       Assert.assertTrue(left.isDeployed(one_dep));
+      Assert.assertFalse(right.isDeployed(one_dep));
+      Assert.assertFalse(right.isDeployed(no_dep));
       Assert.assertTrue(right.isDeployed(one_dep_a));
       Assert.assertTrue(right.isDeployed(no_dep2));
 
@@ -153,12 +154,35 @@ public class MultipleRepositoryViewTest
       AddonRegistry registry = furnace.getAddonRegistry();
       Addons.waitUntilStarted(registry.getAddon(one_dep_a), 10, TimeUnit.SECONDS);
       AddonRegistry leftRegistry = furnace.getAddonRegistry(left);
+      AddonRegistry rightRegistry = furnace.getAddonRegistry(right);
 
-      Assert.assertNotNull(leftRegistry.getAddon(no_dep));
-      Assert.assertTrue(registry.getAddon(no_dep).getStatus().isMissing());
+      Addon leftNoDep = leftRegistry.getAddon(no_dep);
+      Addon rightNoDep = rightRegistry.getAddon(no_dep);
+      Addon rootNoDep = registry.getAddon(no_dep);
+      Assert.assertTrue(leftNoDep.getStatus().isStarted());
+      Assert.assertFalse(rightNoDep.getStatus().isStarted()); // not deployed to this repository
+      Assert.assertFalse(rootNoDep.getStatus().isStarted()); // there is a newer version
 
-      Assert.assertNotNull(registry.getAddon(no_dep2));
-      Assert.assertTrue(leftRegistry.getAddon(no_dep2).getStatus().isMissing());
+      Addon leftNoDep2 = leftRegistry.getAddon(no_dep2);
+      Addon rightNoDep2 = rightRegistry.getAddon(no_dep2);
+      Addon rootNoDep2 = registry.getAddon(no_dep2);
+      Assert.assertFalse(leftNoDep2.getStatus().isStarted()); // not deployed to this repository
+      Assert.assertTrue(rightNoDep2.getStatus().isStarted());
+      Assert.assertTrue(rootNoDep2.getStatus().isStarted());
+
+      Addon leftOneDep = leftRegistry.getAddon(one_dep);
+      Addon rightOneDep = rightRegistry.getAddon(one_dep);
+      Addon rootOneDep = registry.getAddon(one_dep);
+      Assert.assertTrue(leftOneDep.getStatus().isStarted());
+      Assert.assertFalse(rightOneDep.getStatus().isStarted()); // not deployed to this repository
+      Assert.assertTrue(rootOneDep.getStatus().isStarted());
+
+      Addon leftOneDepA = leftRegistry.getAddon(one_dep_a);
+      Addon rightOneDepA = rightRegistry.getAddon(one_dep_a);
+      Addon rootOneDepA = registry.getAddon(one_dep_a);
+      Assert.assertFalse(leftOneDepA.getStatus().isStarted()); // not deployed to this repository
+      Assert.assertTrue(rightOneDepA.getStatus().isStarted());
+      Assert.assertTrue(rootOneDepA.getStatus().isStarted());
 
       registration.removeListener();
 
@@ -169,8 +193,8 @@ public class MultipleRepositoryViewTest
    public void testAddonsDuplicatedIfSubgraphDiffers() throws IOException, InterruptedException, TimeoutException
    {
       Furnace furnace = FurnaceFactory.getInstance();
-      AddonRepository left = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir1);
-      AddonRepository right = furnace.addRepository(AddonRepositoryMode.MUTABLE, repodir2);
+      AddonRepository left = furnace.addRepository(AddonRepositoryMode.MUTABLE, leftRepo);
+      AddonRepository right = furnace.addRepository(AddonRepositoryMode.MUTABLE, rightRepo);
       AddonDependencyResolver resolver = new MavenAddonDependencyResolver();
       AddonManager manager = new AddonManagerImpl(furnace, resolver);
 

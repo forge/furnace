@@ -15,7 +15,7 @@ package org.jboss.forge.furnace;
  */
 public enum ContainerStatus
 {
-   STARTING, STARTED, STOPPED;
+   STARTING, STARTED, RELOADING, STOPPED;
 
    public boolean isStarting()
    {
@@ -25,6 +25,11 @@ public enum ContainerStatus
    public boolean isStarted()
    {
       return this == STARTED;
+   }
+
+   public boolean isReloading()
+   {
+      return this == RELOADING;
    }
 
    public boolean isStopped()

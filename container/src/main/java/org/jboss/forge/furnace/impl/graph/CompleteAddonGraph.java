@@ -99,10 +99,11 @@ public class CompleteAddonGraph extends AddonGraph<CompleteAddonGraph>
          incompatible.removeAll(enabledCompatible);
          for (AddonId addon : incompatible)
          {
-            logger.warning("Addon [" + addon + "] with API version [" + addon.getApiVersion()
-                     + "] is incompatible with the current Furnace runtime version ["
-                     + AddonRepositoryImpl.getRuntimeAPIVersion() + "] and will not be loaded, from repository ["
-                     + repository + "]");
+            if (addon.getApiVersion() != null)
+               logger.warning("Addon [" + addon + "] with API version [" + addon.getApiVersion()
+                        + "] is incompatible with the current Furnace runtime version ["
+                        + AddonRepositoryImpl.getRuntimeAPIVersion() + "] and will not be loaded, from repository ["
+                        + repository + "]");
          }
       }
       return result;

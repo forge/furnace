@@ -6,9 +6,11 @@
  */
 package org.jboss.forge.furnace.impl.addons;
 
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -31,7 +33,12 @@ public class AddonStateManager
 {
    private final LockManager lock;
    private MasterGraph graph;
-   private final Map<Addon, AddonState> states = new HashMap<Addon, AddonState>();
+
+   /**
+    * Use an {@link IdentityHashMap} because we may have separate copies of {@link Addon} instances for each
+    * {@link AddonView}.
+    */
+   private final Map<Addon, AddonState> states = new IdentityHashMap<Addon, AddonState>();
    private AddonModuleLoader loader;
 
    public AddonStateManager(LockManager lock)
@@ -49,6 +56,14 @@ public class AddonStateManager
    public void setModuleLoader(AddonModuleLoader loader)
    {
       this.loader = loader;
+   }
+
+   /**
+    * Ensure that the given {@link Addon} has an {@link AddonState} that is recorded in the internal registry.
+    */
+   public void initialize(Addon addon)
+   {
+      getState(addon);
    }
 
    public Set<AddonDependency> getDependenciesOf(Addon addon)
@@ -89,6 +104,29 @@ public class AddonStateManager
    public ServiceRegistry getServiceRegistryOf(Addon addon)
    {
       return getState(addon).getServiceRegistry();
+   }
+
+   /**
+    * Return an {@link Addon} compatible with the given {@link AddonView}, if it is already registered (this occurs when
+    * {@link AddonView} instances share {@link Addon} sub-graphs.
+    */
+   public Addon getAddonForView(final AddonView view, final AddonId id)
+   {
+      return lock.performLocked(LockMode.READ, new Callable<Addon>()
+      {
+         @Override
+         public Addon call() throws Exception
+         {
+            for (AddonVertex vertex : getCurrentGraph().getGraph().vertexSet())
+            {
+               if (vertex.getAddonId().equals(id) && vertex.getViews().contains(view))
+               {
+                  return vertex.getAddon();
+               }
+            }
+            return null;
+         }
+      });
    }
 
    public Set<AddonView> getViewsOf(final Addon addon)
@@ -286,5 +324,22 @@ public class AddonStateManager
             return null;
          }
       });
+   }
+
+   @Override
+   public String toString()
+   {
+      StringBuilder builder = new StringBuilder();
+
+      Iterator<Entry<Addon, AddonState>> entries = states.entrySet().iterator();
+      while (entries.hasNext())
+      {
+         Entry<Addon, AddonState> entry = entries.next();
+         builder.append("- ").append(entry.toString());
+         if (entries.hasNext())
+            builder.append("\n");
+      }
+
+      return builder.toString();
    }
 }

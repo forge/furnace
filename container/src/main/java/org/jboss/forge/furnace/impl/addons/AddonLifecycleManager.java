@@ -8,7 +8,6 @@ package org.jboss.forge.furnace.impl.addons;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -52,7 +51,7 @@ public class AddonLifecycleManager
    private final AddonLoader loader;
    private final AddonStateManager stateManager;
 
-   private final Set<Addon> addons = Sets.getConcurrentSet();
+   private final Map<AddonView, Set<Addon>> addonViews = new ConcurrentHashMap<>();
    private final Map<AddonView, Long> views = new ConcurrentHashMap<AddonView, Long>();
    private final AtomicInteger starting = new AtomicInteger(-1);
    private final ExecutorService executor = Executors.newCachedThreadPool();
@@ -106,11 +105,14 @@ public class AddonLifecycleManager
          public Set<Addon> call() throws Exception
          {
             Set<Addon> result = new HashSet<Addon>();
-            for (Addon addon : addons)
+            for (Entry<AddonView, Set<Addon>> entry : addonViews.entrySet())
             {
-               if (addon.getId().equals(id) && stateManager.getViewsOf(addon).isEmpty())
+               for (Addon addon : entry.getValue())
                {
-                  result.add(addon);
+                  if (addon.getId().equals(id) && stateManager.getViewsOf(addon).isEmpty())
+                  {
+                     result.add(addon);
+                  }
                }
             }
             return result;
@@ -123,6 +125,7 @@ public class AddonLifecycleManager
     */
    public Addon getAddon(final AddonView view, final AddonId id)
    {
+      Assert.notNull(view, "AddonView must not be null.");
       Assert.notNull(id, "AddonId must not be null.");
       return lock.performLocked(LockMode.WRITE, new Callable<Addon>()
       {
@@ -142,11 +145,17 @@ public class AddonLifecycleManager
 
             if (result == null)
             {
-               result = new AddonImpl(stateManager, id);
+               result = stateManager.getAddonForView(view, id);
+               if (result == null)
+                  result = new AddonImpl(stateManager, id);
+
+               Set<Addon> addons = _getAddonsForView(view);
                addons.add(result);
             }
+
             return result;
          }
+
       });
    }
 
@@ -164,16 +173,27 @@ public class AddonLifecycleManager
          {
             HashSet<Addon> result = new HashSet<Addon>();
 
-            AddonViewFilter viewFilter = new AddonViewFilter(stateManager, view);
-            for (Addon addon : addons)
+            for (Addon addon : _getAddonsForView(view))
             {
-               if (viewFilter.accept(addon) && filter.accept(addon))
+               if (filter.accept(addon))
                   result.add(addon);
             }
 
             return result;
          }
+
       });
+   }
+
+   private Set<Addon> _getAddonsForView(final AddonView view)
+   {
+      Set<Addon> addons = addonViews.get(view);
+      if (addons == null)
+      {
+         addons = Sets.getConcurrentSet();
+         addonViews.put(view, addons);
+      }
+      return addons;
    }
 
    public void forceUpdate()
@@ -196,12 +216,14 @@ public class AddonLifecycleManager
 
                master.merge(graph);
 
-               if (logger.isLoggable(Level.FINE))
+               if (logger.isLoggable(Level.INFO))
                {
                   String graphOutput = master.toString();
-                  logger.log(Level.FINE, "\n ------------ VIEW [" + view.getName() + "]------------ "
-                           + (graphOutput.isEmpty() ? "EMPTY" : graphOutput)
-                           + " ------------ END [" + view.getName() + "]------------ ");
+                  logger.log(Level.INFO,
+                           "\n ------------ VIEW [" + view.getName() + " - " + view.hashCode() + "]------------ "
+                                    + (graphOutput.isEmpty() ? "EMPTY" : graphOutput)
+                                    + " ------------ END [" + view.getName() + " - " + view.hashCode()
+                                    + "]------------ ");
                }
             }
 
@@ -251,9 +273,12 @@ public class AddonLifecycleManager
          @Override
          public Void call() throws Exception
          {
-            for (Addon addon : addons)
+            for (Entry<AddonView, Set<Addon>> entry : addonViews.entrySet())
             {
-               stopAddon(addon);
+               for (Addon addon : entry.getValue())
+               {
+                  stopAddon(addon);
+               }
             }
 
             List<Runnable> waiting = executor.shutdownNow();
@@ -335,16 +360,10 @@ public class AddonLifecycleManager
    public String toString()
    {
       StringBuilder builder = new StringBuilder();
-
-      Iterator<Addon> addonsIterator = addons.iterator();
-      while (addonsIterator.hasNext())
+      for (AddonView view : addonViews.keySet())
       {
-         Addon addon = addonsIterator.next();
-         builder.append("- ").append(addon.toString());
-         if (addonsIterator.hasNext())
-            builder.append("\n");
+         builder.append("---").append(view.toString()).append("\n");
       }
-
       return builder.toString();
    }
 
