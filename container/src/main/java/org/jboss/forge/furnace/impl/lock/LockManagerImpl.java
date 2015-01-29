@@ -4,14 +4,13 @@
  * Licensed under the Eclipse Public License version 1.0, available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.jboss.forge.furnace.impl;
+package org.jboss.forge.furnace.impl.lock;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jboss.forge.furnace.exception.ContainerException;
-import org.jboss.forge.furnace.lock.DeadlockError;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.util.Assert;

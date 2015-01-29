@@ -13,7 +13,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.archive.ForgeArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
-import org.jboss.forge.furnace.lock.DeadlockError;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -27,40 +26,44 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class LockManagerDeadlockTest
 {
-    @Deployment
-    public static ForgeArchive getDeployment()
-    {
-        ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
-                    .addAsLocalServices(LockManagerDeadlockTest.class);
+   @Deployment
+   public static ForgeArchive getDeployment()
+   {
+      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+               .addAsLocalServices(LockManagerDeadlockTest.class);
 
-        return archive;
-    }
+      return archive;
+   }
 
-    @Test
-    public void testIsSameThreadDeadlockReported()
-    {
-        final LockManager lock = LocalServices.getFurnace(LockManagerDeadlockTest.class.getClassLoader()).getLockManager();
-        Assert.assertTrue(lock.performLocked(LockMode.READ, new Callable<Boolean>()
-        {
-            @Override
-            public Boolean call() throws Exception
+   @Test
+   public void testIsSameThreadDeadlockReported()
+   {
+      final LockManager lock = LocalServices.getFurnace(LockManagerDeadlockTest.class.getClassLoader())
+               .getLockManager();
+      Assert.assertTrue(lock.performLocked(LockMode.READ, new Callable<Boolean>()
+      {
+         @Override
+         public Boolean call() throws Exception
+         {
+            try
             {
-                try
-                {
-                    return lock.performLocked(LockMode.WRITE, new Callable<Boolean>()
-                    {
-                        @Override
-                        public Boolean call() throws Exception
-                        {
-                            return false;
-                        }
-                    });
-                }
-                catch (DeadlockError e)
-                {
-                    return true;
-                }
+               return lock.performLocked(LockMode.WRITE, new Callable<Boolean>()
+               {
+                  @Override
+                  public Boolean call() throws Exception
+                  {
+                     return false;
+                  }
+               });
             }
-        }));
-    }
+            catch (Error e)
+            {
+               if (e.getClass().getSimpleName().equals("DeadlockError"))
+                  return true;
+               else
+                  return false;
+            }
+         }
+      }));
+   }
 }

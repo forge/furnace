@@ -36,6 +36,7 @@ import org.jboss.forge.furnace.impl.addons.AddonLifecycleManager;
 import org.jboss.forge.furnace.impl.addons.AddonRegistryImpl;
 import org.jboss.forge.furnace.impl.addons.AddonRepositoryImpl;
 import org.jboss.forge.furnace.impl.addons.ImmutableAddonRepository;
+import org.jboss.forge.furnace.impl.lock.LockManagerImpl;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.repositories.AddonRepository;
