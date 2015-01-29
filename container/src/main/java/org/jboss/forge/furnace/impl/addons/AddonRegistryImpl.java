@@ -74,12 +74,19 @@ public class AddonRegistryImpl implements AddonRegistry
    public Addon getAddon(final AddonId id)
    {
       Assert.notNull(id, "AddonId must not be null.");
-      return lock.performLocked(LockMode.READ, new Callable<Addon>()
+      return lock.performLocked(LockMode.WRITE, new Callable<Addon>()
       {
          @Override
          public Addon call() throws Exception
          {
-            return manager.getAddon(AddonRegistryImpl.this, id);
+            Addon result = null;
+            while (result == null)
+            {
+               result = manager.getAddon(AddonRegistryImpl.this, id);
+               if (result == null)
+                  Thread.sleep(10);
+            }
+            return result;
          }
       });
    }

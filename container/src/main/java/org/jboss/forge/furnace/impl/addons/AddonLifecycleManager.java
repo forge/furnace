@@ -118,16 +118,19 @@ public class AddonLifecycleManager
       });
    }
 
+   /**
+    * Requires a {@link LockMode#WRITE} lock.
+    */
    public Addon getAddon(final AddonView view, final AddonId id)
    {
       Assert.notNull(id, "AddonId must not be null.");
-      return lock.performLocked(LockMode.READ, new Callable<Addon>()
+      return lock.performLocked(LockMode.WRITE, new Callable<Addon>()
       {
-         private Addon result;
-
          @Override
          public Addon call() throws Exception
          {
+            Addon result = null;
+
             for (Addon addon : getAddons(view))
             {
                if (id.equals(addon.getId()))
@@ -142,7 +145,6 @@ public class AddonLifecycleManager
                result = new AddonImpl(stateManager, id);
                addons.add(result);
             }
-
             return result;
          }
       });
