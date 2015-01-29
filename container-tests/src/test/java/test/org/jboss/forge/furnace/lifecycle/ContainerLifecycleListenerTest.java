@@ -13,6 +13,7 @@ import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 import org.jboss.forge.furnace.se.FurnaceFactory;
 import org.jboss.forge.furnace.spi.ContainerLifecycleListener;
 import org.jboss.forge.furnace.spi.ListenerRegistration;
+import org.jboss.forge.furnace.util.OperatingSystemUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -27,7 +28,7 @@ public class ContainerLifecycleListenerTest
       Furnace furnace = FurnaceFactory.getInstance();
       TestLifecycleListener listener = new TestLifecycleListener();
       ListenerRegistration<ContainerLifecycleListener> registration = furnace.addContainerLifecycleListener(listener);
-      File temp = File.createTempFile("addonDir", "sdfsdf");
+      File temp = OperatingSystemUtils.createTempDir();
       temp.deleteOnExit();
       furnace.addRepository(AddonRepositoryMode.IMMUTABLE, temp);
 
