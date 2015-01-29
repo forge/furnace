@@ -33,8 +33,6 @@ public class ContainerLifecycleListenerTest
 
       furnace.startAsync();
       waitUntilStarted(furnace);
-      // Wait until the listener is called
-      Thread.sleep(100);
       Assert.assertEquals(1, listener.beforeStartTimesCalled);
       Assert.assertEquals(1, listener.afterStartTimesCalled);
       registration.removeListener();
