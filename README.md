@@ -1,7 +1,7 @@
 Furnace
 =======
 
-Lightweight Modular Service Container - Based Maven and JBoss Modules. It's easier than OSGi :)
+Lightweight Modular Service Container - Based JBoss Modules and Maven. It's easier than OSGi :)
 
 Usage
 =====
