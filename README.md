@@ -1,4 +1,4 @@
-furnace
+Furnace
 =======
 
 Lightweight Modular Service Container - Based Maven and JBoss Modules. It's easier than OSGi :)
