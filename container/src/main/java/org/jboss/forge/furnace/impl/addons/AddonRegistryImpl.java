@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonFilter;
@@ -29,14 +28,15 @@ import org.jboss.forge.furnace.services.Imported;
 import org.jboss.forge.furnace.spi.ServiceRegistry;
 import org.jboss.forge.furnace.util.AddonFilters;
 import org.jboss.forge.furnace.util.Assert;
+import org.jboss.forge.furnace.util.OperatingSystemUtils;
 
 /**
+ * Implementation of the {@link AddonRegistry} interface
+ * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
 public class AddonRegistryImpl implements AddonRegistry
 {
-   private static final Logger logger = Logger.getLogger(AddonRegistryImpl.class.getName());
-
    private final LockManager lock;
    private final Set<AddonRepository> repositories;
    private final AddonLifecycleManager manager;
@@ -116,7 +116,7 @@ public class AddonRegistryImpl implements AddonRegistry
    }
 
    /**
-    * OMLY CALLED INTERNALLY WHEN NEW REPOSITORIES ARE ADDED TO THE ROOT VIEW
+    * ONLY CALLED INTERNALLY WHEN NEW REPOSITORIES ARE ADDED TO THE ROOT VIEW
     */
    public void addRepository(AddonRepository repository)
    {
@@ -212,8 +212,8 @@ public class AddonRegistryImpl implements AddonRegistry
       StringBuilder builder = new StringBuilder();
 
       builder.append(name);
-      builder.append("\n");
-      builder.append("---REPOSITORIES---").append("\n");
+      builder.append(OperatingSystemUtils.getLineSeparator());
+      builder.append("---REPOSITORIES---").append(OperatingSystemUtils.getLineSeparator());
 
       Iterator<AddonRepository> repositoryIterator = getRepositories().iterator();
       while (repositoryIterator.hasNext())
@@ -221,11 +221,11 @@ public class AddonRegistryImpl implements AddonRegistry
          AddonRepository addon = repositoryIterator.next();
          builder.append(addon.toString());
          if (repositoryIterator.hasNext())
-            builder.append("\n");
+            builder.append(OperatingSystemUtils.getLineSeparator());
       }
 
-      builder.append("\n");
-      builder.append("---ADDONS---").append("\n");
+      builder.append(OperatingSystemUtils.getLineSeparator());
+      builder.append("---ADDONS---").append(OperatingSystemUtils.getLineSeparator());
 
       Iterator<Addon> addonIterator = getAddons().iterator();
       while (addonIterator.hasNext())
@@ -233,7 +233,7 @@ public class AddonRegistryImpl implements AddonRegistry
          Addon addon = addonIterator.next();
          builder.append(addon.toString());
          if (addonIterator.hasNext())
-            builder.append("\n");
+            builder.append(OperatingSystemUtils.getLineSeparator());
       }
 
       return builder.toString();
