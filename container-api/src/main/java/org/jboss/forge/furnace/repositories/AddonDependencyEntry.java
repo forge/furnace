@@ -139,8 +139,9 @@ public class AddonDependencyEntry
    @Override
    public String toString()
    {
-      return "name=" + name + ", version=" + version + ", exported=" + exported + ", optional="
-               + optional;
+      String exportedMessage = exported ? "IMPORTED/EXPORTED" : "IMPORTED";
+      String optionalMessage = optional ? "OPTIONAL" : "REQUIRED";
+      return name + "," + version + ": [" + exportedMessage + "] [" + optionalMessage + "]";
    }
 
    @Override

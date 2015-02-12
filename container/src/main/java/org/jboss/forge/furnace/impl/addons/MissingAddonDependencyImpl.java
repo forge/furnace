@@ -46,7 +46,7 @@ public class MissingAddonDependencyImpl implements AddonDependency
    @Override
    public String toString()
    {
-      return "Missing: " + entry + "";
+      return "[MISSING: " + entry + "]";
    }
 
 }

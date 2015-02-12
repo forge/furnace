@@ -130,7 +130,7 @@ public final class OperatingSystemUtils
    /**
     * Create a temporary directory.
     */
-   public static File createTempDir()
+   public static File createTempDir() throws IllegalStateException
    {
       File baseDir = getTempDirectory();
       String baseName = System.currentTimeMillis() + "-";

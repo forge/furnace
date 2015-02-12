@@ -38,6 +38,7 @@ import org.jboss.forge.furnace.util.AddonFilters;
 import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.util.Callables;
 import org.jboss.forge.furnace.util.Sets;
+import org.jgrapht.Graph;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
@@ -216,10 +217,10 @@ public class AddonLifecycleManager
 
                master.merge(graph);
 
-               if (logger.isLoggable(Level.INFO))
+               if (logger.isLoggable(Level.FINE))
                {
                   String graphOutput = master.toString();
-                  logger.log(Level.INFO,
+                  logger.log(Level.FINE,
                            "\n ------------ VIEW [" + view.getName() + " - " + view.hashCode() + "]------------ "
                                     + (graphOutput.isEmpty() ? "EMPTY" : graphOutput)
                                     + " ------------ END [" + view.getName() + " - " + view.hashCode()
@@ -365,6 +366,14 @@ public class AddonLifecycleManager
          builder.append("---").append(view.toString()).append("\n");
       }
       return builder.toString();
+   }
+
+   /**
+    * Return a {@link Graph} representation of the entire system.
+    */
+   public String toGraph()
+   {
+      return stateManager.getCurrentGraph().toString();
    }
 
 }

@@ -225,6 +225,7 @@ public class AddonRegistryImpl implements AddonRegistry
       }
 
       builder.append(OperatingSystemUtils.getLineSeparator());
+      builder.append(OperatingSystemUtils.getLineSeparator());
       builder.append("---ADDONS---").append(OperatingSystemUtils.getLineSeparator());
 
       Iterator<Addon> addonIterator = getAddons().iterator();
@@ -235,6 +236,10 @@ public class AddonRegistryImpl implements AddonRegistry
          if (addonIterator.hasNext())
             builder.append(OperatingSystemUtils.getLineSeparator());
       }
+
+      builder.append(OperatingSystemUtils.getLineSeparator());
+      builder.append("---GRAPH VIEW---").append(OperatingSystemUtils.getLineSeparator());
+      builder.append(manager.toGraph());
 
       return builder.toString();
    }

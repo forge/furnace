@@ -206,7 +206,7 @@ public class FurnaceImpl implements Furnace
                         int repoVersion = repository.getVersion();
                         if (repoVersion > lastRepoVersionSeen.get(repository))
                         {
-                           logger.log(Level.INFO, "Detected changes in repository [" + repository + "].");
+                           logger.log(Level.FINE, "Detected changes in repository [" + repository + "].");
                            lastRepoVersionSeen.put(repository, repoVersion);
                            dirty = true;
                         }
@@ -218,7 +218,7 @@ public class FurnaceImpl implements Furnace
                         List<WatchEvent<?>> events = key.pollEvents();
                         if (!events.isEmpty())
                         {
-                           logger.log(Level.INFO, "Detected changes in repository ["
+                           logger.log(Level.FINE, "Detected changes in repository ["
                                     + events.iterator().next().context()
                                     + "].");
                            dirty = true;
@@ -477,7 +477,7 @@ public class FurnaceImpl implements Furnace
                            StandardWatchEventKinds.ENTRY_CREATE,
                            StandardWatchEventKinds.ENTRY_DELETE,
                            StandardWatchEventKinds.OVERFLOW);
-                  logger.log(Level.INFO, "Monitoring repository [" + directory.toString() + "] for file changes.");
+                  logger.log(Level.FINE, "Monitoring repository [" + directory.toString() + "] for file changes.");
                }
                else
                {

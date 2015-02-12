@@ -6,6 +6,7 @@
  */
 package org.jboss.forge.arquillian;
 
+import java.io.PrintStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -37,17 +38,18 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
 
    public ForgeTestMethodExecutor(ForgeProtocolConfiguration config, final FurnaceHolder holder)
    {
-      Assert.notNull(config, "ForgeProtocolConfiguration must be specified");
-      Assert.notNull(holder, "Furnace runtime must be provided");
+      Assert.notNull(config, ForgeProtocolConfiguration.class.getName() + " must be provided.");
+      Assert.notNull(holder, FurnaceHolder.class.getName() + " runtime must be provided");
       this.furnace = holder.getFurnace();
    }
 
    @Override
    public TestResult invoke(final TestMethodExecutor testMethodExecutor)
    {
+      TestResult result = null;
       try
       {
-         Assert.notNull(testMethodExecutor, "TestMethodExecutor must be specified");
+         Assert.notNull(testMethodExecutor, TestMethodExecutor.class.getName() + " must be specified");
          final String testClassName = testMethodExecutor.getInstance().getClass().getName();
 
          Object testInstance = null;
@@ -57,7 +59,7 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
             final AddonRegistry addonRegistry = furnace.getAddonRegistry();
 
             waitUntilStable(furnace);
-            System.out.println("Searching for test [" + testClassName + "]");
+            System.out.println("Furnace test harness is searching for test [" + testClassName + "]");
 
             for (Addon addon : addonRegistry.getAddons())
             {
@@ -85,10 +87,10 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
          }
          catch (Exception e)
          {
-            String message = "Error launching test "
+            String message = "Furnace test harness encountered an error while launching test: "
                      + testMethodExecutor.getInstance().getClass().getName() + "."
                      + testMethodExecutor.getMethod().getName() + "()";
-            System.out.println(message);
+            System.err.println(message);
             throw new IllegalStateException(message, e);
          }
 
@@ -96,7 +98,6 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
          {
             try
             {
-               TestResult result = null;
                try
                {
                   try
@@ -107,7 +108,8 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
                   }
                   catch (Exception e)
                   {
-                     System.out.println("Could not enhance test class. Falling back to un-proxied invocation.");
+                     System.err
+                              .println("Furnace test harness could not enhance test class. Falling back to un-proxied invocation.");
                   }
 
                   Method method = testInstance.getClass().getMethod(testMethodExecutor.getMethod().getName());
@@ -125,7 +127,7 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
                   {
                      try
                      {
-                        System.out.println("Executing test method: "
+                        System.out.println("Furnace test harness is executing test method: "
                                  + testMethodExecutor.getInstance().getClass().getName() + "."
                                  + testMethodExecutor.getMethod().getName() + "()");
 
@@ -137,8 +139,10 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
                         }
                         catch (Exception e)
                         {
+                           /*
+                            * https://issues.jboss.org/browse/FORGE-1677
+                            */
                            Throwable rootCause = getRootCause(e);
-                           // FORGE-1677
                            if (rootCause != null
                                     && Proxies.isForgeProxy(rootCause)
                                     && "org.junit.internal.AssumptionViolatedException".equals(Proxies
@@ -147,8 +151,10 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
                            {
                               try
                               {
-                                 // Due to classloader and serialization restrictions, we need to create a new instance
-                                 // of this class
+                                 /*
+                                  * Due to ClassLoader and serialization restrictions, we need to create a new instance
+                                  * of this class.
+                                  */
                                  Throwable thisClassloaderException = (Throwable) Class
                                           .forName("org.junit.internal.AssumptionViolatedException")
                                           .getConstructor(String.class).newInstance(rootCause.getMessage());
@@ -157,8 +163,8 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
                               }
                               catch (Exception ex)
                               {
-                                 // ignore
-                                 result = TestResult.skipped(ex);
+                                 // Ignore failure to create a new exception, just pass through the original.
+                                 result = TestResult.skipped(e);
                               }
                            }
                            else
@@ -200,6 +206,12 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
                      cause = cause.getCause();
                   }
                }
+
+               if (TestResult.Status.FAILED.equals(result.getStatus()))
+               {
+                  printGraphToStream(System.err);
+               }
+
                return result;
             }
             catch (Exception e)
@@ -207,7 +219,7 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
                String message = "Error launching test "
                         + testMethodExecutor.getInstance().getClass().getName() + "."
                         + testMethodExecutor.getMethod().getName() + "()";
-               System.out.println(message);
+               System.err.println(message);
                throw new IllegalStateException(message, e);
             }
          }
@@ -235,10 +247,21 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
                      "Test runner could not locate test class [" + testClassName + "] in any deployed Addon.");
          }
       }
+      catch (RuntimeException e)
+      {
+         printGraphToStream(System.err);
+         throw e;
+      }
       finally
       {
          furnace = null;
       }
+   }
+
+   private void printGraphToStream(PrintStream stream)
+   {
+      stream.println("Test failed - printing current Addon graph:");
+      stream.println(furnace.getAddonRegistry().toString());
    }
 
    @SuppressWarnings("unchecked")

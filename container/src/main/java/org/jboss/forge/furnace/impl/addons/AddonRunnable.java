@@ -75,7 +75,7 @@ public final class AddonRunnable implements Runnable
       currentThread.setName(addon.getId().toCoordinates());
       try
       {
-         logger.info("> Starting container [" + addon.getId() + "] [" + addon.getRepository().getRootDirectory() + "]");
+         logger.fine("> Starting container [" + addon.getId() + "] [" + addon.getRepository().getRootDirectory() + "]");
          long start = System.currentTimeMillis();
 
          lifecycleProviderEntry = detectLifecycleProvider();
@@ -112,7 +112,7 @@ public final class AddonRunnable implements Runnable
             });
          }
 
-         logger.info(">> Started container [" + addon.getId() + "] - " + (System.currentTimeMillis() - start) + "ms");
+         logger.fine(">> Started container [" + addon.getId() + "] - " + (System.currentTimeMillis() - start) + "ms");
 
       }
       catch (Throwable e)
@@ -147,7 +147,7 @@ public final class AddonRunnable implements Runnable
       shutdownRequested = true;
       try
       {
-         logger.info("< Stopping container [" + addon.getId() + "] [" + addon.getRepository().getRootDirectory() + "]");
+         logger.fine("< Stopping container [" + addon.getId() + "] [" + addon.getRepository().getRootDirectory() + "]");
          long start = System.currentTimeMillis();
 
          if (lifecycleProviderEntry != null)
@@ -188,7 +188,7 @@ public final class AddonRunnable implements Runnable
             });
          }
 
-         logger.info("<< Stopped container [" + addon.getId() + "] - " + (System.currentTimeMillis() - start) + "ms");
+         logger.fine("<< Stopped container [" + addon.getId() + "] - " + (System.currentTimeMillis() - start) + "ms");
       }
       catch (Throwable e)
       {

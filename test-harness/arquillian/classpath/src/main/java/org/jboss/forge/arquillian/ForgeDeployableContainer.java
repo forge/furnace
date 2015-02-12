@@ -7,7 +7,6 @@
 package org.jboss.forge.arquillian;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -209,7 +208,8 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
       destDir.mkdirs();
       ShrinkWrapUtil.toFile(new File(destDir.getAbsolutePath(), archive.getName()), archive);
       ShrinkWrapUtil.unzip(destDir, archive);
-      System.out.println("Deploying [" + addonToDeploy + "] to repository [" + repository + "]");
+      System.out.println("Furnace test harness is deploying [" + addonToDeploy + "] to repository [" + repository
+               + "] ...");
       repository.deploy(addonToDeploy, ((ForgeArchive) archive).getAddonDependencies(), new ArrayList<File>());
       repository.enable(addonToDeploy);
    }
@@ -276,14 +276,18 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
    {
       try
       {
-         this.addonDir = File.createTempFile("furnace", "test-addon-dir");
-         System.out.println("Executing test case with addon dir [" + addonDir + "]");
-         initContainer();
-         startContainer();
+         this.addonDir = OperatingSystemUtils.createTempDir();
       }
-      catch (IOException e)
+      catch (IllegalStateException e)
       {
          throw new LifecycleException("Failed to create temporary addon directory", e);
+      }
+
+      try
+      {
+         System.out.println("Furnace test harness is initializing with addon dir [" + addonDir + "]");
+         initContainer();
+         startContainer();
       }
       catch (Exception e)
       {
@@ -334,7 +338,7 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
       undeploying = true;
       AddonId addonToUndeploy = getAddonEntry(deploymentInstance.get());
       AddonRegistry registry = runnable.getForge().getAddonRegistry();
-      System.out.println("Undeploying [" + addonToUndeploy + "] ... ");
+      System.out.println("Furance test harness is undeploying [" + addonToUndeploy + "] ... ");
 
       try
       {
@@ -386,7 +390,7 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
                public Object call() throws Exception
                {
                   System.setProperty("org.jboss.forge.furnace.test", "true");
-                  
+
                   furnace.setServerMode(true);
                   furnace.start(loader);
 
