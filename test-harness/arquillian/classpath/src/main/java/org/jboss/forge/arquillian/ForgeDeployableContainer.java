@@ -338,7 +338,7 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
       undeploying = true;
       AddonId addonToUndeploy = getAddonEntry(deploymentInstance.get());
       AddonRegistry registry = runnable.getForge().getAddonRegistry();
-      System.out.println("Furance test harness is undeploying [" + addonToUndeploy + "] ... ");
+      System.out.println("Furnace test harness is undeploying [" + addonToUndeploy + "] ... ");
 
       try
       {
