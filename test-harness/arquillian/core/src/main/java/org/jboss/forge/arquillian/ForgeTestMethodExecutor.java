@@ -10,7 +10,8 @@ import java.io.PrintStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.jboss.arquillian.container.test.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.test.spi.TestMethodExecutor;
@@ -60,30 +61,45 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
 
             waitUntilStable(furnace);
             System.out.println("Furnace test harness is searching for test [" + testClassName + "]");
-
-            for (Addon addon : addonRegistry.getAddons())
+            // Threshold is 1 minute
+            long threshold = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(1);
+            do
             {
-               if (addon.getStatus().isStarted())
+               for (Addon addon : addonRegistry.getAddons())
                {
-                  ServiceRegistry registry = addon.getServiceRegistry();
-                  ExportedInstance<?> exportedInstance = registry.getExportedInstance(testClassName);
-
-                  if (exportedInstance != null)
+                  if (addon.getStatus().isStarted())
                   {
-                     if (testInstance == null)
+                     ServiceRegistry registry = addon.getServiceRegistry();
+                     ExportedInstance<?> exportedInstance = registry.getExportedInstance(testClassName);
+
+                     if (exportedInstance != null)
                      {
-                        testInstance = exportedInstance.get();
-                        testClass = ClassLoaders.loadClass(addon.getClassLoader(), testClassName);
-                     }
-                     else
-                     {
-                        throw new IllegalStateException(
-                                 "Multiple test classes found in deployed addons. " +
-                                          "You must have only one @Deployment(testable=true\"); deployment");
+                        if (testInstance == null)
+                        {
+                           testInstance = exportedInstance.get();
+                           testClass = ClassLoaders.loadClass(addon.getClassLoader(), testClassName);
+                           break;
+                        }
+                        else
+                        {
+                           throw new IllegalStateException(
+                                    "Multiple test classes found in deployed addons. " +
+                                             "You must have only one @Deployment(testable=true\"); deployment");
+                        }
                      }
                   }
                }
+               // Exit if threshold is reached
+               if (System.currentTimeMillis() > threshold)
+               {
+                  throw new TimeoutException("Timeout exception while trying to locate test :" + testClassName);
+               }
+               if (testInstance == null)
+               {
+                  Thread.sleep(10);
+               }
             }
+            while (testInstance == null);
          }
          catch (Exception e)
          {
@@ -94,157 +110,131 @@ public class ForgeTestMethodExecutor implements ContainerMethodExecutor
             throw new IllegalStateException(message, e);
          }
 
-         if (testInstance != null)
+         try
          {
             try
             {
                try
                {
-                  try
-                  {
-                     testInstance = ClassLoaderAdapterBuilder.callingLoader(getClass().getClassLoader())
-                              .delegateLoader(testInstance.getClass().getClassLoader())
-                              .enhance(testInstance, testClass);
-                  }
-                  catch (Exception e)
-                  {
-                     System.err
-                              .println("Furnace test harness could not enhance test class. Falling back to un-proxied invocation.");
-                  }
-
-                  Method method = testInstance.getClass().getMethod(testMethodExecutor.getMethod().getName());
-                  Annotation[] annotations = method.getAnnotations();
-
-                  for (Annotation annotation : annotations)
-                  {
-                     if ("org.junit.Ignore".equals(annotation.getClass().getName()))
-                     {
-                        result = TestResult.skipped(null);
-                     }
-                  }
-
-                  if (result == null)
-                  {
-                     try
-                     {
-                        System.out.println("Furnace test harness is executing test method: "
-                                 + testMethodExecutor.getInstance().getClass().getName() + "."
-                                 + testMethodExecutor.getMethod().getName() + "()");
-
-                        try
-                        {
-                           invokeBefore(testInstance.getClass(), testInstance);
-                           method.invoke(testInstance);
-                           result = TestResult.passed();
-                        }
-                        catch (Exception e)
-                        {
-                           /*
-                            * https://issues.jboss.org/browse/FORGE-1677
-                            */
-                           Throwable rootCause = getRootCause(e);
-                           if (rootCause != null
-                                    && Proxies.isForgeProxy(rootCause)
-                                    && "org.junit.internal.AssumptionViolatedException".equals(Proxies
-                                             .unwrap(rootCause).getClass()
-                                             .getName()))
-                           {
-                              try
-                              {
-                                 /*
-                                  * Due to ClassLoader and serialization restrictions, we need to create a new instance
-                                  * of this class.
-                                  */
-                                 Throwable thisClassloaderException = (Throwable) Class
-                                          .forName("org.junit.internal.AssumptionViolatedException")
-                                          .getConstructor(String.class).newInstance(rootCause.getMessage());
-                                 thisClassloaderException.setStackTrace(rootCause.getStackTrace());
-                                 result = TestResult.skipped(thisClassloaderException);
-                              }
-                              catch (Exception ex)
-                              {
-                                 // Ignore failure to create a new exception, just pass through the original.
-                                 result = TestResult.skipped(e);
-                              }
-                           }
-                           else
-                           {
-                              throw e;
-                           }
-                        }
-                        finally
-                        {
-                           invokeAfter(testInstance.getClass(), testInstance);
-                        }
-
-                     }
-                     catch (InvocationTargetException e)
-                     {
-                        if (e.getCause() != null && e.getCause() instanceof Exception)
-                           throw (Exception) e.getCause();
-                        else
-                           throw e;
-                     }
-                  }
-               }
-               catch (AssertionError e)
-               {
-                  result = TestResult.failed(e);
+                  testInstance = ClassLoaderAdapterBuilder.callingLoader(getClass().getClassLoader())
+                           .delegateLoader(testInstance.getClass().getClassLoader())
+                           .enhance(testInstance, testClass);
                }
                catch (Exception e)
                {
-                  result = TestResult.failed(e);
+                  System.err
+                           .println("Furnace test harness could not enhance test class. Falling back to un-proxied invocation.");
+               }
 
-                  Throwable cause = e.getCause();
-                  while (cause != null)
+               Method method = testInstance.getClass().getMethod(testMethodExecutor.getMethod().getName());
+               Annotation[] annotations = method.getAnnotations();
+
+               for (Annotation annotation : annotations)
+               {
+                  if ("org.junit.Ignore".equals(annotation.getClass().getName()))
                   {
-                     if (cause instanceof AssertionError)
-                     {
-                        result = TestResult.failed(cause);
-                        break;
-                     }
-                     cause = cause.getCause();
+                     result = TestResult.skipped(null);
                   }
                }
 
-               if (TestResult.Status.FAILED.equals(result.getStatus()))
+               if (result == null)
                {
-                  printGraphToStream(System.err);
-               }
+                  try
+                  {
+                     System.out.println("Furnace test harness is executing test method: "
+                              + testMethodExecutor.getInstance().getClass().getName() + "."
+                              + testMethodExecutor.getMethod().getName() + "()");
 
-               return result;
+                     try
+                     {
+                        invokeBefore(testInstance.getClass(), testInstance);
+                        method.invoke(testInstance);
+                        result = TestResult.passed();
+                     }
+                     catch (Exception e)
+                     {
+                        /*
+                         * https://issues.jboss.org/browse/FORGE-1677
+                         */
+                        Throwable rootCause = getRootCause(e);
+                        if (rootCause != null
+                                 && Proxies.isForgeProxy(rootCause)
+                                 && "org.junit.internal.AssumptionViolatedException".equals(Proxies
+                                          .unwrap(rootCause).getClass()
+                                          .getName()))
+                        {
+                           try
+                           {
+                              /*
+                               * Due to ClassLoader and serialization restrictions, we need to create a new instance of
+                               * this class.
+                               */
+                              Throwable thisClassloaderException = (Throwable) Class
+                                       .forName("org.junit.internal.AssumptionViolatedException")
+                                       .getConstructor(String.class).newInstance(rootCause.getMessage());
+                              thisClassloaderException.setStackTrace(rootCause.getStackTrace());
+                              result = TestResult.skipped(thisClassloaderException);
+                           }
+                           catch (Exception ex)
+                           {
+                              // Ignore failure to create a new exception, just pass through the original.
+                              result = TestResult.skipped(e);
+                           }
+                        }
+                        else
+                        {
+                           throw e;
+                        }
+                     }
+                     finally
+                     {
+                        invokeAfter(testInstance.getClass(), testInstance);
+                     }
+
+                  }
+                  catch (InvocationTargetException e)
+                  {
+                     if (e.getCause() != null && e.getCause() instanceof Exception)
+                        throw (Exception) e.getCause();
+                     else
+                        throw e;
+                  }
+               }
+            }
+            catch (AssertionError e)
+            {
+               result = TestResult.failed(e);
             }
             catch (Exception e)
             {
-               String message = "Error launching test "
-                        + testMethodExecutor.getInstance().getClass().getName() + "."
-                        + testMethodExecutor.getMethod().getName() + "()";
-               System.err.println(message);
-               throw new IllegalStateException(message, e);
-            }
-         }
-         else
-         {
+               result = TestResult.failed(e);
 
-            for (Addon addon : furnace.getAddonRegistry().getAddons())
-            {
-               try
+               Throwable cause = e.getCause();
+               while (cause != null)
                {
-                  addon.getFuture().get();
-               }
-               catch (InterruptedException e)
-               {
-                  // Do nothing
-               }
-               catch (ExecutionException e)
-               {
-                  throw new IllegalStateException(
-                           "Test runner could not locate test class [" + testClassName + "] in any deployed Addon.",
-                           e.getCause());
+                  if (cause instanceof AssertionError)
+                  {
+                     result = TestResult.failed(cause);
+                     break;
+                  }
+                  cause = cause.getCause();
                }
             }
-            throw new IllegalStateException(
-                     "Test runner could not locate test class [" + testClassName + "] in any deployed Addon.");
+
+            if (TestResult.Status.FAILED.equals(result.getStatus()))
+            {
+               printGraphToStream(System.err);
+            }
+
+            return result;
+         }
+         catch (Exception e)
+         {
+            String message = "Error launching test "
+                     + testMethodExecutor.getInstance().getClass().getName() + "."
+                     + testMethodExecutor.getMethod().getName() + "()";
+            System.err.println(message);
+            throw new IllegalStateException(message, e);
          }
       }
       catch (RuntimeException e)
