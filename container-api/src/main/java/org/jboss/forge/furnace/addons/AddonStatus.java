@@ -6,9 +6,33 @@
  */
 package org.jboss.forge.furnace.addons;
 
+import java.util.concurrent.Future;
+
+/**
+ * The possible states for an {@link Addon}
+ * 
+ * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
+ * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
+ */
 public enum AddonStatus
 {
-   MISSING, LOADED, STARTED, FAILED;
+   /**
+    * When the {@link Addon} is missing its dependencies to load
+    */
+   MISSING,
+   /**
+    * When the {@link Addon} is loaded (has assigned a {@link ClassLoader}) but has not been started
+    */
+   LOADED,
+   /**
+    * When the {@link Addon} is started and ready to be consumed.
+    */
+   STARTED,
+   /**
+    * When the {@link Addon} fails to start. The caught exception is thrown in the {@link Future#get()} method from the
+    * {@link Addon#getFuture()} object
+    */
+   FAILED;
 
    public boolean isMissing()
    {
