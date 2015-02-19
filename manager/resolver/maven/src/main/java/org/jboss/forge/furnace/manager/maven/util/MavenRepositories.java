@@ -30,9 +30,10 @@ public class MavenRepositories
    {
       Set<RemoteRepository> remoteRepos = new HashSet<>();
       remoteRepos.addAll(container.getEnabledRepositoriesFromProfile(settings));
-      if (remoteRepos.isEmpty())
+      // If no remote repositories found or no mirrors found, add central
+      if (remoteRepos.isEmpty() || settings.getMirrors().isEmpty())
       {
-         // Add central in case remote repo list is empty
+         // Add central
          remoteRepos.add(convertToMavenRepo("central", MAVEN_CENTRAL_REPO, settings));
       }
       return new ArrayList<>(remoteRepos);
