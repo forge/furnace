@@ -187,16 +187,16 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
          {
             future.get();
          }
-         if (addon.getStatus().isFailed())
-         {
-            DeploymentException e = new DeploymentException("AddonDependency " + addonToDeploy
-                     + " failed to deploy.");
-            deployment.deployedWithError(e);
-            throw new DeploymentException("AddonDependency " + addonToDeploy + " failed to deploy.", e);
-         }
       }
       catch (Exception e)
       {
+         deployment.deployedWithError(e);
+         throw new DeploymentException("AddonDependency " + addonToDeploy + " failed to deploy.", e);
+      }
+      if (addon.getStatus().isFailed())
+      {
+         DeploymentException e = new DeploymentException("AddonDependency " + addonToDeploy
+                  + " failed to deploy.");
          deployment.deployedWithError(e);
          throw new DeploymentException("AddonDependency " + addonToDeploy + " failed to deploy.", e);
       }
