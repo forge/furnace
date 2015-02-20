@@ -139,7 +139,7 @@ public class ImportedImpl<T> implements Imported<T>
 
                for (Addon addon : addonRegistry.getAddons())
                {
-                  if (AddonStatus.STARTED.equals(addon.getStatus()))
+                  if (addon.getStatus().isStarted())
                   {
                      ServiceRegistry serviceRegistry = addon.getServiceRegistry();
                      if (type != null)

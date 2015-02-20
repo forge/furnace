@@ -167,7 +167,7 @@ public class AddonRegistryImpl implements AddonRegistry
             Set<Class<?>> result = new HashSet<>();
             for (Addon addon : getAddons())
             {
-               if (AddonStatus.STARTED.equals(addon.getStatus()))
+               if (addon.getStatus().isStarted())
                {
                   ServiceRegistry serviceRegistry = addon.getServiceRegistry();
                   result.addAll(serviceRegistry.getExportedTypes());
@@ -189,7 +189,7 @@ public class AddonRegistryImpl implements AddonRegistry
             Set<Class<T>> result = new HashSet<>();
             for (Addon addon : getAddons())
             {
-               if (AddonStatus.STARTED.equals(addon.getStatus()))
+               if (addon.getStatus().isStarted())
                {
                   ServiceRegistry serviceRegistry = addon.getServiceRegistry();
                   result.addAll(serviceRegistry.getExportedTypes(type));
