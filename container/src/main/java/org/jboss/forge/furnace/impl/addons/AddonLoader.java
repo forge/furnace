@@ -54,7 +54,7 @@ public class AddonLoader
    {
       Assert.notNull(addon, "Addon to load must not be null.");
 
-      if (addon.getStatus().isMissing())
+      if (!addon.getStatus().isLoaded())
       {
          stateManager.cancel(addon);
          loader.releaseAddonModule(addon);
@@ -63,7 +63,7 @@ public class AddonLoader
 
          for (AddonRepository repository : repositories)
          {
-            if (addon.getStatus().isMissing()
+            if (!addon.getStatus().isLoaded()
                      && repository.isEnabled(addon.getId())
                      && repository.isDeployed(addon.getId()))
             {

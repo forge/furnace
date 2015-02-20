@@ -17,6 +17,10 @@ import java.util.concurrent.Future;
 public enum AddonStatus
 {
    /**
+    * When the {@link Addon} is not started yet
+    */
+   NEW,
+   /**
     * When the {@link Addon} is missing its dependencies to load
     */
    MISSING,
@@ -34,6 +38,11 @@ public enum AddonStatus
     */
    FAILED;
 
+   public boolean isNew()
+   {
+      return this == NEW;
+   }
+
    public boolean isMissing()
    {
       return this == MISSING;
@@ -41,7 +50,7 @@ public enum AddonStatus
 
    public boolean isLoaded()
    {
-      return !isMissing();
+      return this.ordinal() >= LOADED.ordinal();
    }
 
    public boolean isFailed()

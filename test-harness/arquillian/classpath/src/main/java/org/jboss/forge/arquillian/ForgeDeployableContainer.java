@@ -187,6 +187,10 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
          {
             future.get();
          }
+         while (!addon.getStatus().isStarted() && !addon.getStatus().isMissing())
+         {
+            Thread.sleep(100);
+         }
       }
       catch (Exception e)
       {
