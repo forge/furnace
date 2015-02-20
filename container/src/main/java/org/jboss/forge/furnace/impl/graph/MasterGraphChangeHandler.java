@@ -73,7 +73,7 @@ public class MasterGraphChangeHandler
                   break;
             }
 
-            if (!found && !last.getAddon().getStatus().isMissing())
+            if (!found && last.getAddon().getStatus().isLoaded())
             {
                graph.getGraph().addVertex(last);
                last.setDirty(true);
@@ -157,7 +157,7 @@ public class MasterGraphChangeHandler
             // If this vertex is missing or any dependency was missing (is dirty), then this is dirty also
             AddonVertex vertex = event.getVertex();
             Addon addon = vertex.getAddon();
-            if (addon.getStatus().isMissing() || addon.getStatus().isFailed())
+            if (!addon.getStatus().isLoaded() || addon.getStatus().isFailed())
             {
                vertex.setDirty(true);
             }
@@ -292,7 +292,7 @@ public class MasterGraphChangeHandler
          public void vertexFinished(VertexTraversalEvent<AddonVertex> event)
          {
             Addon addon = event.getVertex().getAddon();
-            if (addon.getStatus().isMissing())
+            if (!addon.getStatus().isLoaded())
                lifecycleManager.loadAddon(addon);
          };
       });

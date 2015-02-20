@@ -83,10 +83,12 @@ public class AddonImpl implements Addon
    @Override
    public AddonStatus getStatus()
    {
-      AddonStatus result = AddonStatus.MISSING;
-
+      AddonStatus result = AddonStatus.NEW;
       if (getClassLoader() != null)
          result = AddonStatus.LOADED;
+
+      if (manager.getMissingDependenciesOf(this).size() > 0)
+         result = AddonStatus.MISSING;
 
       if (getFuture() != null)
       {
