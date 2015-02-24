@@ -54,9 +54,10 @@ public class Addons
    public static void waitUntilStarted(Addon addon, int quantity, TimeUnit unit) throws TimeoutException
    {
       long start = System.currentTimeMillis();
+      long threshold = start + TimeUnit.MILLISECONDS.convert(quantity, unit);
       while (!addon.getStatus().isStarted())
       {
-         if (System.currentTimeMillis() > (start + TimeUnit.MILLISECONDS.convert(quantity, unit)))
+         if (System.currentTimeMillis() > threshold)
          {
             throw new TimeoutException("Timeout expired waiting for [" + addon + "] to start.");
          }
@@ -81,9 +82,10 @@ public class Addons
       if (addon != null)
       {
          long start = System.currentTimeMillis();
+         long threshold = start + TimeUnit.MILLISECONDS.convert(quantity, unit);
          while (addon.getStatus().isStarted())
          {
-            if (System.currentTimeMillis() > (start + TimeUnit.MILLISECONDS.convert(quantity, unit)))
+            if (System.currentTimeMillis() > threshold)
             {
                throw new TimeoutException("Timeout expired waiting for [" + addon + "] to stop.");
             }
@@ -99,6 +101,38 @@ public class Addons
             catch (Exception e)
             {
                throw new ContainerException("Addon [" + addon + "] was not stopped.", e);
+            }
+         }
+      }
+   }
+
+   /**
+    * Waits until the specified {@link Addon} starts or is missing
+    */
+   public static void waitUntilStartedOrMissing(Addon addon, int quantity, TimeUnit unit) throws TimeoutException
+   {
+      if (addon != null)
+      {
+         long start = System.currentTimeMillis();
+         long threshold = start + TimeUnit.MILLISECONDS.convert(quantity, unit);
+         while (!addon.getStatus().isStarted() && !addon.getStatus().isMissing())
+         {
+            if (System.currentTimeMillis() > threshold)
+            {
+               throw new TimeoutException("Timeout expired waiting for [" + addon + "] to load.");
+            }
+
+            try
+            {
+               Thread.sleep(10);
+            }
+            catch (RuntimeException re)
+            {
+               throw re;
+            }
+            catch (Exception e)
+            {
+               throw new ContainerException("Addon [" + addon + "] was not loaded.", e);
             }
          }
       }

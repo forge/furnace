@@ -14,6 +14,7 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
@@ -187,10 +188,7 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
          {
             future.get();
          }
-         while (!addon.getStatus().isStarted() && !addon.getStatus().isMissing())
-         {
-            Thread.sleep(100);
-         }
+         Addons.waitUntilStartedOrMissing(addon, 10, TimeUnit.SECONDS);
       }
       catch (Exception e)
       {
