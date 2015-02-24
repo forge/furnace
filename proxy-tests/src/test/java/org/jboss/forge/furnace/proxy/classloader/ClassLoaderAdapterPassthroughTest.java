@@ -9,7 +9,7 @@ package org.jboss.forge.furnace.proxy.classloader;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.classloader.mock.MockResult;
 import org.jboss.forge.classloader.mock.collisions.ClassWithGetterAndSetter;
@@ -28,9 +28,9 @@ import org.junit.runner.RunWith;
 public class ClassLoaderAdapterPassthroughTest
 {
    @Deployment(order = 3)
-   public static ForgeArchive getDeployment()
+   public static AddonArchive getDeployment()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addBeansXML()
                .addClass(MockResult.class)
                .addAsAddonDependencies(
@@ -42,9 +42,9 @@ public class ClassLoaderAdapterPassthroughTest
    }
 
    @Deployment(name = "dep,1", testable = false, order = 1)
-   public static ForgeArchive getDeploymentDep2()
+   public static AddonArchive getDeploymentDep2()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addPackages(true, ClassWithGetterAndSetter.class.getPackage())
                .addBeansXML();
 

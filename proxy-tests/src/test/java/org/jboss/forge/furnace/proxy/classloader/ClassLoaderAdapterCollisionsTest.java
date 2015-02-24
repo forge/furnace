@@ -12,7 +12,7 @@ import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.classloader.mock.collisions.ClassCreatesInstanceFromClassLoader;
 import org.jboss.forge.classloader.mock.collisions.ClassImplementsInterfaceExtendsInterfaceValue;
@@ -38,9 +38,9 @@ import org.junit.runner.RunWith;
 public class ClassLoaderAdapterCollisionsTest
 {
    @Deployment(order = 3)
-   public static ForgeArchive getDeployment()
+   public static AddonArchive getDeployment()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addBeansXML()
                .addPackages(true, ClassWithGetterAndSetter.class.getPackage())
                .addAsLocalServices(ClassLoaderAdapterCollisionsTest.class);
@@ -49,9 +49,9 @@ public class ClassLoaderAdapterCollisionsTest
    }
 
    @Deployment(name = "dep1,1", testable = false, order = 2)
-   public static ForgeArchive getDeploymentDep1()
+   public static AddonArchive getDeploymentDep1()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addPackages(true, ClassWithGetterAndSetter.class.getPackage())
                .addBeansXML();
 
@@ -59,9 +59,9 @@ public class ClassLoaderAdapterCollisionsTest
    }
 
    @Deployment(name = "dep2,2", testable = false, order = 1)
-   public static ForgeArchive getDeploymentDep2()
+   public static AddonArchive getDeploymentDep2()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addPackages(true, ClassWithGetterAndSetter.class.getPackage())
                .addBeansXML();
 

@@ -10,7 +10,7 @@ package test.org.jboss.forge.furnace.repositories;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.DeployToRepository;
-import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
@@ -27,10 +27,10 @@ public class AddonRepositoryLoadingTest
 {
    @Deployment(order = 0)
    @DeployToRepository("1")
-   public static ForgeArchive getDeployment()
+   public static AddonArchive getDeployment()
    {
-      ForgeArchive archive = ShrinkWrap
-               .create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap
+               .create(AddonArchive.class)
                .addAsAddonDependencies(
                         AddonDependencyEntry.create("dep1", "1"),
                         AddonDependencyEntry.create("dep2", "2"),
@@ -46,37 +46,37 @@ public class AddonRepositoryLoadingTest
 
    @DeployToRepository("2")
    @Deployment(name = "dep1,1", testable = false, order = 5)
-   public static ForgeArchive getDeployment1()
+   public static AddonArchive getDeployment1()
    {
-      return ShrinkWrap.create(ForgeArchive.class).addBeansXML();
+      return ShrinkWrap.create(AddonArchive.class).addBeansXML();
    }
 
    @DeployToRepository("2")
    @Deployment(name = "dep2,2", testable = false, order = 1)
-   public static ForgeArchive getDeployment2()
+   public static AddonArchive getDeployment2()
    {
-      return ShrinkWrap.create(ForgeArchive.class).addBeansXML();
+      return ShrinkWrap.create(AddonArchive.class).addBeansXML();
    }
 
    @DeployToRepository("3")
    @Deployment(name = "dep3,3", testable = false, order = 2)
-   public static ForgeArchive getDeployment3()
+   public static AddonArchive getDeployment3()
    {
-      return ShrinkWrap.create(ForgeArchive.class).addBeansXML();
+      return ShrinkWrap.create(AddonArchive.class).addBeansXML();
    }
 
    @DeployToRepository("3")
    @Deployment(name = "dep4,4", testable = false, order = 3)
-   public static ForgeArchive getDeployment4()
+   public static AddonArchive getDeployment4()
    {
-      return ShrinkWrap.create(ForgeArchive.class).addBeansXML();
+      return ShrinkWrap.create(AddonArchive.class).addBeansXML();
    }
 
    @DeployToRepository("3")
    @Deployment(name = "dep5,5", testable = false, order = 4)
-   public static ForgeArchive getDeployment5()
+   public static AddonArchive getDeployment5()
    {
-      return ShrinkWrap.create(ForgeArchive.class).addBeansXML();
+      return ShrinkWrap.create(AddonArchive.class).addBeansXML();
    }
 
    @Test

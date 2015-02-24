@@ -12,10 +12,21 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.jboss.arquillian.container.test.api.Deployment;
+
+/**
+ * Contains multiple {@link AddonDeployment} instances that must be deployed before this {@link Deployment} may be
+ * performed. (May be used to establish dependencies as shorthand notation for
+ * 
+ * @author <a href="lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
+ */
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Dependencies
+public @interface AddonDeployments
 {
-   AddonDependency[] value();
+   /**
+    * The {@link AddonDeployment} annotations.
+    */
+   AddonDeployment[] value();
 }

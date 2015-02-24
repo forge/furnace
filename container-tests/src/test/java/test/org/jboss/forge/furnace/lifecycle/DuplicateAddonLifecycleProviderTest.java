@@ -9,7 +9,7 @@ package test.org.jboss.forge.furnace.lifecycle;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.ShouldThrowException;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.furnace.lifecycle.AddonLifecycleProvider;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.junit.Assert;
@@ -24,9 +24,9 @@ public class DuplicateAddonLifecycleProviderTest
 {
    @Deployment
    @ShouldThrowException
-   public static ForgeArchive getDeployment()
+   public static AddonArchive getDeployment()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addClass(MockAddonLifecycleProvider.class)
                .addClass(MockAddonLifecycleProvider2.class)
                .addAsServiceProvider(AddonLifecycleProvider.class, MockAddonLifecycleProvider.class,

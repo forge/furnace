@@ -6,7 +6,7 @@
  */
 package org.jboss.forge.furnace.impl.addons;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -70,7 +70,7 @@ public class AddonLoader
                Set<AddonDependency> dependencies = fromAddonDependencyEntries(addon,
                         repository.getAddonDependencies(addon.getId()));
 
-               Set<AddonDependency> missingRequiredDependencies = new HashSet<AddonDependency>();
+               Set<AddonDependency> missingRequiredDependencies = new LinkedHashSet<AddonDependency>();
                for (AddonDependency addonDependency : dependencies)
                {
                   if (addonDependency instanceof MissingAddonDependencyImpl && !addonDependency.isOptional())
@@ -116,7 +116,7 @@ public class AddonLoader
    private Set<AddonDependency> fromAddonDependencyEntries(Addon addon,
             Set<AddonDependencyEntry> entries)
    {
-      Set<AddonDependency> result = new HashSet<AddonDependency>();
+      Set<AddonDependency> result = new LinkedHashSet<AddonDependency>();
       for (AddonDependencyEntry entry : entries)
       {
          Set<AddonView> views = stateManager.getViewsOf(addon);

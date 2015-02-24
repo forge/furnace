@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>org.jboss.forge.furnace</groupId>
+  <artifactId>furnace-api</artifactId>
+  <versioning>
+    <versions>
+      <version>9999.9.9.Final</version>
+    </versions>
+    <lastUpdated>20150225213128</lastUpdated>
+  </versioning>
+</metadata>

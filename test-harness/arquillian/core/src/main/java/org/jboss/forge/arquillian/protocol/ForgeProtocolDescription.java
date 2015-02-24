@@ -15,6 +15,6 @@ public class ForgeProtocolDescription extends ProtocolDescription
 {
    public ForgeProtocolDescription()
    {
-      super("_FORGE_2_");
+      super(ForgeProtocol.NAME);
    }
 }

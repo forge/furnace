@@ -2,7 +2,9 @@ package test.org.jboss.forge.furnace.harness;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.arquillian.AddonDeployment;
+import org.jboss.forge.arquillian.AddonDeployments;
+import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.junit.Assert;
@@ -19,11 +21,13 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class AssumptionViolatedTest
 {
-
    @Deployment
-   public static ForgeArchive getDeployment()
+   @AddonDeployments({
+            @AddonDeployment(name = "org.jboss.forge.furnace.container:cdi", version = "2.13.0.Final")
+   })
+   public static AddonArchive getDeployment()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class);
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class);
       archive.addAsLocalServices(AssumptionViolatedTest.class);
       return archive;
    }

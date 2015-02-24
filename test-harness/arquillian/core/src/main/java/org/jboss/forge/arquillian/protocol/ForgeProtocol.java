@@ -25,6 +25,7 @@ import org.jboss.forge.furnace.Furnace;
  */
 public class ForgeProtocol implements Protocol<ForgeProtocolConfiguration>
 {
+   public static final String NAME = "_FORGE_";
 
    @Override
    public Class<ForgeProtocolConfiguration> getProtocolConfigurationClass()

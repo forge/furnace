@@ -9,7 +9,7 @@ package test.org.jboss.forge.furnace.services;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonRegistry;
@@ -27,9 +27,9 @@ import test.org.jboss.forge.furnace.mocks.MockInterface;
 public class ImportedTest
 {
    @Deployment
-   public static ForgeArchive getDeployment()
+   public static AddonArchive getDeployment()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class);
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class);
 
       archive.addClass(MockInterface.class);
       archive.addClass(MockImpl1.class);

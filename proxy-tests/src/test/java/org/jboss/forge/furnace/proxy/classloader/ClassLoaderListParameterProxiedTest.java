@@ -12,7 +12,7 @@ import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.classloader.mock.MockResult;
 import org.jboss.forge.classloader.mock.Result;
@@ -31,9 +31,9 @@ import org.junit.runner.RunWith;
 public class ClassLoaderListParameterProxiedTest
 {
    @Deployment(order = 3)
-   public static ForgeArchive getDeployment()
+   public static AddonArchive getDeployment()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addBeansXML()
                .addClasses(Result.class, MockResult.class, ClassWithListAsParameter.class)
                .addAsLocalServices(ClassLoaderListParameterProxiedTest.class);
@@ -42,9 +42,9 @@ public class ClassLoaderListParameterProxiedTest
    }
 
    @Deployment(name = "dep,1", testable = false, order = 2)
-   public static ForgeArchive getDeploymentDep1()
+   public static AddonArchive getDeploymentDep1()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addClasses(Result.class, MockResult.class, ClassWithListAsParameter.class)
                .addBeansXML();
 

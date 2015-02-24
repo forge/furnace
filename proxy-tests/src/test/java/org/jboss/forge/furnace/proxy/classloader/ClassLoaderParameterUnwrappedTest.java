@@ -9,7 +9,7 @@ package org.jboss.forge.furnace.proxy.classloader;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.classloader.mock.IterableFactory;
 import org.jboss.forge.classloader.mock.MockResult;
@@ -30,9 +30,9 @@ import org.junit.runner.RunWith;
 public class ClassLoaderParameterUnwrappedTest
 {
    @Deployment(order = 3)
-   public static ForgeArchive getDeployment()
+   public static AddonArchive getDeployment()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addBeansXML()
                .addClasses(IterableFactory.class, ClassWithClassAsParameter.class)
                .addAsAddonDependencies(
@@ -44,9 +44,9 @@ public class ClassLoaderParameterUnwrappedTest
    }
 
    @Deployment(name = "dep1,1", testable = false, order = 2)
-   public static ForgeArchive getDeploymentDep1()
+   public static AddonArchive getDeploymentDep1()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addClasses(IterableFactory.class, ClassWithClassAsParameter.class)
                .addBeansXML();
 
@@ -54,9 +54,9 @@ public class ClassLoaderParameterUnwrappedTest
    }
 
    @Deployment(name = "dep2,2", testable = false, order = 1)
-   public static ForgeArchive getDeploymentDep2()
+   public static AddonArchive getDeploymentDep2()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addClasses(MockResult.class, Result.class)
                .addBeansXML();
 

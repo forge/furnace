@@ -11,7 +11,7 @@ import java.util.Arrays;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.classloader.mock.collections.Profile;
 import org.jboss.forge.classloader.mock.collections.ProfileFactory;
@@ -30,9 +30,9 @@ import org.junit.runner.RunWith;
 public class CLACProxiedCollectionsReturnTypeUnwrappingTest
 {
    @Deployment(order = 3)
-   public static ForgeArchive getDeployment()
+   public static AddonArchive getDeployment()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addBeansXML()
                .addClasses(Profile.class, ProfileManager.class, ProfileFactory.class)
                .addAsLocalServices(CLACProxiedCollectionsReturnTypeUnwrappingTest.class);
@@ -41,9 +41,9 @@ public class CLACProxiedCollectionsReturnTypeUnwrappingTest
    }
 
    @Deployment(name = "dep1,1", testable = false, order = 2)
-   public static ForgeArchive getDeploymentDep1()
+   public static AddonArchive getDeploymentDep1()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addClasses()
                .addAsAddonDependencies(AddonDependencyEntry.create("dep2", "2"))
                .addBeansXML();
@@ -52,9 +52,9 @@ public class CLACProxiedCollectionsReturnTypeUnwrappingTest
    }
 
    @Deployment(name = "dep2,2", testable = false, order = 2)
-   public static ForgeArchive getDeploymentDep2()
+   public static AddonArchive getDeploymentDep2()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addClasses(Profile.class, ProfileManager.class, ProfileManagerImpl.class, ProfileFactory.class)
                .addBeansXML();
 

@@ -9,7 +9,7 @@ package test.org.jboss.forge.furnace.lifecycle;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
@@ -30,9 +30,9 @@ import test.org.jboss.forge.furnace.mocks.MockInterface;
 public class PreShutdownEventTest
 {
    @Deployment(order = 2)
-   public static ForgeArchive getDeployment()
+   public static AddonArchive getDeployment()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addAsAddonDependencies(
                         AddonDependencyEntry.create("dep1")
                );
@@ -43,9 +43,9 @@ public class PreShutdownEventTest
    }
 
    @Deployment(name = "dep2,2", testable = false, order = 1)
-   public static ForgeArchive getDeployment2()
+   public static AddonArchive getDeployment2()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addAsLocalServices(MockImpl1.class)
                .addClasses(MockImpl1.class, MockInterface.class)
                .addBeansXML();
@@ -53,9 +53,9 @@ public class PreShutdownEventTest
    }
 
    @Deployment(name = "dep1,1", testable = false, order = 0)
-   public static ForgeArchive getDeployment1()
+   public static AddonArchive getDeployment1()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addClass(RecordingEventManager.class)
                .addAsLocalServices(RecordingEventManager.class);
       return archive;

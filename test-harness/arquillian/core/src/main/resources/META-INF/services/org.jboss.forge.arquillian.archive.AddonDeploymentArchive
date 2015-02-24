@@ -1,0 +1,3 @@
+implementingClassName=org.jboss.forge.arquillian.archive.impl.AddonDeploymentArchiveImpl
+extension=.jar
+archiveFormat=ZIP

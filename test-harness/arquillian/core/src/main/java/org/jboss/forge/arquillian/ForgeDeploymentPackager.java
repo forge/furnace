@@ -15,8 +15,9 @@ import java.util.regex.Pattern;
 import org.jboss.arquillian.container.test.spi.TestDeployment;
 import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPackager;
 import org.jboss.arquillian.container.test.spi.client.deployment.ProtocolArchiveProcessor;
-import org.jboss.forge.arquillian.archive.ForgeArchive;
-import org.jboss.forge.arquillian.archive.ForgeRemoteAddon;
+import org.jboss.forge.arquillian.AddonDeployment;
+import org.jboss.forge.arquillian.archive.AddonArchiveBase;
+import org.jboss.forge.arquillian.archive.AddonDeploymentArchive;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.Filter;
@@ -31,14 +32,15 @@ public class ForgeDeploymentPackager implements DeploymentPackager
    public Archive<?> generateDeployment(TestDeployment testDeployment, Collection<ProtocolArchiveProcessor> processors)
    {
       Archive<?> applicationArchive = testDeployment.getApplicationArchive();
-      if (applicationArchive instanceof ForgeArchive)
+
+      if (applicationArchive instanceof AddonArchiveBase<?>)
       {
-         ForgeArchive deployment = ForgeArchive.class.cast(applicationArchive);
+         AddonArchiveBase<?> deployment = AddonArchiveBase.class.cast(applicationArchive);
 
          Collection<Archive<?>> auxiliaryArchives = testDeployment.getAuxiliaryArchives();
          for (Archive<?> archive : auxiliaryArchives)
          {
-            Map<ArchivePath, Node> content = archive.getContent(new Filter<ArchivePath>()
+            Map<ArchivePath, Node> shrinkwrapDescriptorsTypes = archive.getContent(new Filter<ArchivePath>()
             {
                @Override
                public boolean include(ArchivePath path)
@@ -47,9 +49,11 @@ public class ForgeDeploymentPackager implements DeploymentPackager
                }
             });
 
-            // Reversing the paths to avoid concurrent modification exceptions
+            /*
+             * Remove the ShrinkWrap Descriptors types to avoid conflicts.
+             */
             TreeSet<ArchivePath> toRemove = new TreeSet<ArchivePath>(Collections.reverseOrder());
-            toRemove.addAll(content.keySet());
+            toRemove.addAll(shrinkwrapDescriptorsTypes.keySet());
             for (ArchivePath path : toRemove)
             {
                archive.delete(path);
@@ -57,18 +61,21 @@ public class ForgeDeploymentPackager implements DeploymentPackager
 
             deployment.addAsLibrary(archive);
          }
-         deployment.addClasses(ForgeArchive.class);
 
+         /*
+          * Ensure that all test harness classes are available in the addon under test.
+          */
+         deployment.addPackages(true, AddonDeployment.class.getPackage());
          return deployment;
       }
-      else if (applicationArchive instanceof ForgeRemoteAddon)
+      else if (applicationArchive instanceof AddonDeploymentArchive)
       {
          return applicationArchive;
       }
       else
       {
          throw new IllegalArgumentException(
-                  "Invalid Archive type. Ensure that your @Deployment method returns type 'ForgeArchive'.");
+                  "Invalid Archive type. Ensure that your @Deployment method returns type 'AddonArchive'.");
       }
    }
 }

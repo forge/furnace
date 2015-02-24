@@ -11,7 +11,7 @@ import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.classloader.mock.system.ArrayListFactory;
 import org.jboss.forge.classloader.mock.system.EmptyClassLoader;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
@@ -30,9 +30,9 @@ import org.junit.runner.RunWith;
 public class SystemClassLoaderNullClassLoaderAdapterTest
 {
    @Deployment
-   public static ForgeArchive getDeployment()
+   public static AddonArchive getDeployment()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addClasses(ArrayListFactory.class, EmptyClassLoader.class)
                .addAsLocalServices(SystemClassLoaderNullClassLoaderAdapterTest.class);
 

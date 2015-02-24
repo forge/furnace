@@ -9,7 +9,7 @@ package org.jboss.forge.furnace.proxy.dispatch;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.classloader.mock.dispatch.AbstractB;
 import org.jboss.forge.classloader.mock.dispatch.ConcreteC;
@@ -26,9 +26,9 @@ import org.junit.runner.RunWith;
 public class ProxyMethodHandlerDispatchTest
 {
    @Deployment(order = 1)
-   public static ForgeArchive getDeployment()
+   public static AddonArchive getDeployment()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addAsLocalServices(ProxyMethodHandlerDispatchTest.class)
                .addAsAddonDependencies(AddonDependencyEntry.create("dep"));
 
@@ -36,9 +36,9 @@ public class ProxyMethodHandlerDispatchTest
    }
 
    @Deployment(name = "dep,1", testable = false, order = 0)
-   public static ForgeArchive getDeploymentDep1()
+   public static AddonArchive getDeploymentDep1()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addPackages(false, AbstractB.class.getPackage())
                .addAsLocalServices(ConcreteC.class)
                .addBeansXML();

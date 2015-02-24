@@ -6,7 +6,7 @@
  */
 package org.jboss.forge.furnace.impl.addons;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.Future;
 
@@ -20,8 +20,8 @@ import org.jboss.forge.furnace.util.Assert;
 public class AddonState
 {
    private Future<Void> future = new NullFuture<Void>(null);
-   private Set<AddonDependency> dependencies = new HashSet<AddonDependency>();
-   private Set<AddonDependency> missingDependencies = new HashSet<AddonDependency>();
+   private Set<AddonDependency> dependencies = new LinkedHashSet<AddonDependency>();
+   private Set<AddonDependency> missingDependencies = new LinkedHashSet<AddonDependency>();
    private AddonRepository repository;
    private ServiceRegistry registry = new NullServiceRegistry();
    private EventManager eventManager = new NullEventManager();

@@ -9,7 +9,7 @@ package org.jboss.forge.furnace.proxy.classloader;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.classloader.mock.sidewaysproxy.AbstractExtra;
 import org.jboss.forge.classloader.mock.sidewaysproxy.Action;
@@ -35,10 +35,10 @@ import org.junit.runner.RunWith;
 public class SidewaysProxyAnonymousCollisionTest
 {
    @Deployment(order = 3)
-   public static ForgeArchive getDeploymentA()
+   public static AddonArchive getDeploymentA()
    {
-      ForgeArchive archive = ShrinkWrap
-               .create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap
+               .create(AddonArchive.class)
                .addBeansXML()
                .addClasses(Context.class, ContextImpl.class, ContextValue.class, Action.class, Action1.class,
                         Payload.class, Payload1.class, Extra.class, AbstractExtra.class, ContextValueImpl.class)
@@ -48,9 +48,9 @@ public class SidewaysProxyAnonymousCollisionTest
    }
 
    @Deployment(name = "B,1", testable = false, order = 2)
-   public static ForgeArchive getDeploymentB()
+   public static AddonArchive getDeploymentB()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addClasses(Action1.class)
                .addAsAddonDependencies(
                         AddonDependencyEntry.create("D", "1")
@@ -60,9 +60,9 @@ public class SidewaysProxyAnonymousCollisionTest
    }
 
    @Deployment(name = "C,1", testable = false, order = 1)
-   public static ForgeArchive getDeploymentC()
+   public static AddonArchive getDeploymentC()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addClasses(Payload.class, Payload1.class)
                .addAsAddonDependencies(
                         AddonDependencyEntry.create("E", "1")
@@ -72,18 +72,18 @@ public class SidewaysProxyAnonymousCollisionTest
    }
 
    @Deployment(name = "D,1", testable = false, order = 1)
-   public static ForgeArchive getDeploymentD()
+   public static AddonArchive getDeploymentD()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addClasses(Context.class, Action.class, ContextImpl.class, ContextValue.class);
 
       return archive;
    }
 
    @Deployment(name = "E,1", testable = false, order = 1)
-   public static ForgeArchive getDeploymentE()
+   public static AddonArchive getDeploymentE()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addClasses(Extra.class, AbstractExtra.class);
 
       return archive;

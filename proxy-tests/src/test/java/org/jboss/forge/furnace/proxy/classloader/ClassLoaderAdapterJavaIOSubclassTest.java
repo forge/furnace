@@ -12,7 +12,7 @@ import java.io.PrintStream;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.classloader.mock.CustomPrintStream;
 import org.jboss.forge.classloader.mock.CustomPrintStreamFactory;
@@ -29,9 +29,9 @@ import org.junit.runner.RunWith;
 public class ClassLoaderAdapterJavaIOSubclassTest
 {
    @Deployment(order = 3)
-   public static ForgeArchive getDeployment()
+   public static AddonArchive getDeployment()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addBeansXML()
                .addClasses(CustomPrintStreamFactory.class)
                .addClasses(CustomPrintStream.class)
@@ -41,9 +41,9 @@ public class ClassLoaderAdapterJavaIOSubclassTest
    }
 
    @Deployment(name = "dep,1", testable = false, order = 2)
-   public static ForgeArchive getDeploymentDep1()
+   public static AddonArchive getDeploymentDep1()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addClasses(CustomPrintStreamFactory.class)
                .addClasses(CustomPrintStream.class)
                .addBeansXML();

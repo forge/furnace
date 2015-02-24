@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.forge.arquillian.archive;
+package org.jboss.forge.arquillian.archive.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.furnace.lifecycle.AddonLifecycleProvider;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
@@ -31,20 +32,19 @@ import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.impl.base.Validate;
 import org.jboss.shrinkwrap.impl.base.container.ContainerBase;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class ForgeArchiveImpl extends ContainerBase<ForgeArchive> implements ForgeArchive, RepositoryForgeArchive
+public class AddonArchiveImpl extends ContainerBase<AddonArchive> implements AddonArchive
 {
    // -------------------------------------------------------------------------------------||
    // Class Members ----------------------------------------------------------------------||
    // -------------------------------------------------------------------------------------||
 
    @SuppressWarnings("unused")
-   private static final Logger log = Logger.getLogger(ForgeArchiveImpl.class.getName());
+   private static final Logger log = Logger.getLogger(AddonArchiveImpl.class.getName());
 
    /**
     * Path to the web inside of the Archive.
@@ -89,13 +89,13 @@ public class ForgeArchiveImpl extends ContainerBase<ForgeArchive> implements For
    // -------------------------------------------------------------------------------------||
 
    /**
-    * Create a new {@link ForgeArchive} with any type storage engine as backing.
+    * Create a new {@link AddonArchive} with any type storage engine as backing.
     * 
     * @param delegate The storage backing.
     */
-   public ForgeArchiveImpl(final Archive<?> delegate)
+   public AddonArchiveImpl(final Archive<?> delegate)
    {
-      super(ForgeArchive.class, delegate);
+      super(AddonArchive.class, delegate);
    }
 
    // -------------------------------------------------------------------------------------||
@@ -152,14 +152,7 @@ public class ForgeArchiveImpl extends ContainerBase<ForgeArchive> implements For
    }
 
    @Override
-   public ForgeArchive setAsForgeXML(final Asset resource) throws IllegalArgumentException
-   {
-      Validate.notNull(resource, "Resource should be specified");
-      return add(resource, getForgeXMLPath());
-   }
-
-   @Override
-   public ForgeArchive addAsAddonDependencies(AddonDependencyEntry... dependencies)
+   public AddonArchive addAsAddonDependencies(AddonDependencyEntry... dependencies)
    {
       if (dependencies != null)
          addonDependencies.addAll(Arrays.asList(dependencies));
@@ -173,14 +166,14 @@ public class ForgeArchiveImpl extends ContainerBase<ForgeArchive> implements For
    }
 
    @Override
-   public ForgeArchive addBeansXML()
+   public AddonArchive addBeansXML()
    {
       addAsManifestResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"));
       return this;
    }
 
    @Override
-   public ForgeArchive addBeansXML(Asset resource)
+   public AddonArchive addBeansXML(Asset resource)
    {
       addAsManifestResource(resource, ArchivePaths.create("beans.xml"));
       return this;
@@ -193,7 +186,7 @@ public class ForgeArchiveImpl extends ContainerBase<ForgeArchive> implements For
    }
 
    @Override
-   public RepositoryForgeArchive setAddonRepository(String repository)
+   public AddonArchive setAddonRepository(String repository)
    {
       this.repository = repository;
       return this;
@@ -202,7 +195,7 @@ public class ForgeArchiveImpl extends ContainerBase<ForgeArchive> implements For
    private static final String SERVICE_REGISTRATION_FILE_NAME = "org.jboss.forge.furnace.services.Exported";
 
    @Override
-   public ForgeArchive addAsLocalServices(Class<?>... serviceTypes)
+   public AddonArchive addAsLocalServices(Class<?>... serviceTypes)
    {
       addAsServiceProvider(AddonLifecycleProvider.class, LocalServices.class);
       addPackages(true, LocalServices.class.getPackage());

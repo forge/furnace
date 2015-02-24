@@ -5,9 +5,7 @@
         http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
    <container qualifier="forge-managed" default="true">
       <configuration>
-         <property name="forgeHome">
-            
-         </property>
+         <property name="forgeHome" />
       </configuration>
    </container>
 </arquillian>

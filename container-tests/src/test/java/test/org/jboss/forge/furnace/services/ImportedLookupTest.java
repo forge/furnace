@@ -9,7 +9,7 @@ package test.org.jboss.forge.furnace.services;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.exception.ContainerException;
@@ -28,9 +28,9 @@ import test.org.jboss.forge.furnace.mocks.services.MockServicePayload;
 public class ImportedLookupTest
 {
    @Deployment(order = 3)
-   public static ForgeArchive getDeployment()
+   public static AddonArchive getDeployment()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addClasses(MockService.class, MockServiceConsumer.class)
                .addAsLocalServices(ImportedLookupTest.class);
 
@@ -38,9 +38,9 @@ public class ImportedLookupTest
    }
 
    @Deployment(name = "dep1,1", testable = false, order = 2)
-   public static ForgeArchive getDeploymentDep1()
+   public static AddonArchive getDeploymentDep1()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addClasses(MockServiceConsumer.class, MockService.class)
                .addAsAddonDependencies(
                         AddonDependencyEntry.create("dep3")
@@ -50,9 +50,9 @@ public class ImportedLookupTest
    }
 
    @Deployment(name = "dep3,1", testable = false, order = 0)
-   public static ForgeArchive getDeploymentDep3()
+   public static AddonArchive getDeploymentDep3()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addClasses(MockServicePayload.class);
 
       return archive;

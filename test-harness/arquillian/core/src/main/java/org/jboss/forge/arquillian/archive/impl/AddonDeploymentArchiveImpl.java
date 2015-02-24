@@ -14,8 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.forge.arquillian.archive;
+package org.jboss.forge.arquillian.archive.impl;
 
+import org.jboss.forge.arquillian.DeploymentListener;
+import org.jboss.forge.arquillian.NullDeploymentListener;
+import org.jboss.forge.arquillian.archive.AddonDeploymentArchive;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;
@@ -24,10 +27,11 @@ import org.jboss.shrinkwrap.impl.base.container.ContainerBase;
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class ForgeRemoteAddonImpl extends ContainerBase<ForgeRemoteAddon> implements ForgeRemoteAddon
+public class AddonDeploymentArchiveImpl extends ContainerBase<AddonDeploymentArchive> implements AddonDeploymentArchive
 {
    private AddonId id;
    private String repository;
+   private DeploymentListener listener;
 
    @Override
    public AddonId getAddonId()
@@ -36,7 +40,7 @@ public class ForgeRemoteAddonImpl extends ContainerBase<ForgeRemoteAddon> implem
    }
 
    @Override
-   public ForgeRemoteAddon setAddonId(AddonId id)
+   public AddonDeploymentArchive setAddonId(AddonId id)
    {
       this.id = id;
       return this;
@@ -49,15 +53,15 @@ public class ForgeRemoteAddonImpl extends ContainerBase<ForgeRemoteAddon> implem
    }
 
    @Override
-   public ForgeRemoteAddon setAddonRepository(String repository)
+   public AddonDeploymentArchive setAddonRepository(String repository)
    {
       this.repository = repository;
       return this;
    }
 
-   public ForgeRemoteAddonImpl(Archive<?> archive)
+   public AddonDeploymentArchiveImpl(Archive<?> archive)
    {
-      super(ForgeRemoteAddon.class, archive);
+      super(AddonDeploymentArchive.class, archive);
    }
 
    @Override
@@ -82,5 +86,21 @@ public class ForgeRemoteAddonImpl extends ContainerBase<ForgeRemoteAddon> implem
    protected ArchivePath getResourcePath()
    {
       throw new UnsupportedOperationException("Placeholder Archive Type");
+   }
+
+   @Override
+   public DeploymentListener getDeploymentListener()
+   {
+      if (listener == null)
+      {
+         return NullDeploymentListener.INSTANCE;
+      }
+      return listener;
+   }
+
+   @Override
+   public void setDeploymentListener(DeploymentListener listener)
+   {
+      this.listener = listener;
    }
 }

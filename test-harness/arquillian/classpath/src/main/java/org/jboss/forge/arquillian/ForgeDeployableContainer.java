@@ -7,7 +7,7 @@
 package org.jboss.forge.arquillian;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -24,9 +24,10 @@ import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
 import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.annotation.Inject;
-import org.jboss.forge.arquillian.archive.ForgeArchive;
-import org.jboss.forge.arquillian.archive.ForgeRemoteAddon;
-import org.jboss.forge.arquillian.archive.RepositoryForgeArchive;
+import org.jboss.forge.arquillian.archive.AddonArchiveBase;
+import org.jboss.forge.arquillian.archive.AddonDependencyAware;
+import org.jboss.forge.arquillian.archive.AddonDeploymentArchive;
+import org.jboss.forge.arquillian.archive.RepositoryLocationAware;
 import org.jboss.forge.arquillian.protocol.ForgeProtocolDescription;
 import org.jboss.forge.arquillian.protocol.FurnaceHolder;
 import org.jboss.forge.arquillian.util.ShrinkWrapUtil;
@@ -38,8 +39,10 @@ import org.jboss.forge.furnace.impl.FurnaceImpl;
 import org.jboss.forge.furnace.impl.util.Files;
 import org.jboss.forge.furnace.manager.AddonManager;
 import org.jboss.forge.furnace.manager.impl.AddonManagerImpl;
+import org.jboss.forge.furnace.manager.maven.MavenContainer;
 import org.jboss.forge.furnace.manager.maven.addon.MavenAddonDependencyResolver;
 import org.jboss.forge.furnace.manager.spi.AddonDependencyResolver;
+import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 import org.jboss.forge.furnace.repositories.MutableAddonRepository;
@@ -74,54 +77,93 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
    private boolean undeploying = false;
    private ForgeContainerConfiguration configuration;
 
+   private static String originalUserSettings;
+   private static String originalLocalRepository;
+   private static String originalGlobalSettings;
+
+   static
+   {
+      originalUserSettings = System.getProperty(MavenContainer.ALT_USER_SETTINGS_XML_LOCATION);
+      originalLocalRepository = System.getProperty(MavenContainer.ALT_LOCAL_REPOSITORY_LOCATION);
+      originalGlobalSettings = System.getProperty(MavenContainer.ALT_GLOBAL_SETTINGS_XML_LOCATION);
+   }
+
    @Override
    public ProtocolMetaData deploy(final Archive<?> archive) throws DeploymentException
    {
-
-      Deployment deployment = deploymentInstance.get();
-      final AddonId addonToDeploy = getAddonEntry(deployment);
-
-      if (undeploying)
+      try
       {
-         System.out.println("Cleaning test runtime.");
-         undeploying = false;
-         cleanup();
-      }
+         resetMavenSettings();
+         Deployment deployment = deploymentInstance.get();
+         final AddonId addonToDeploy = getAddonEntry(deployment);
 
-      if (archive instanceof ForgeArchive)
-      {
-         final MutableAddonRepository target = selectTargetRepository(archive);
-
-         waitForConfigurationRescan(new Callable<Void>()
+         if (undeploying)
          {
-            @Override
-            public Void call() throws Exception
+            System.out.println("Cleaning test runtime.");
+            undeploying = false;
+            cleanup();
+         }
+
+         if (archive instanceof AddonDeploymentArchive)
+         {
+            AddonDeploymentArchive deploymentArchive = (AddonDeploymentArchive) archive;
+            AddonDependencyResolver resolver = new MavenAddonDependencyResolver(configuration.getClassifier());
+            AddonManager addonManager = new AddonManagerImpl(runnable.furnace, resolver);
+
+            AddonRepository target = selectTargetRepository(deploymentArchive);
+
+            deploymentArchive.getDeploymentListener().preDeploy();
+            addonManager.install(deploymentArchive.getAddonId(), target).perform();
+
+            waitForDeploymentCompletion(deployment, addonToDeploy);
+            deploymentArchive.getDeploymentListener().postDeploy();
+         }
+         else if (archive instanceof AddonArchiveBase<?>)
+         {
+            final MutableAddonRepository target = selectTargetRepository((AddonArchiveBase<?>) archive);
+
+            waitForConfigurationRescan(new Callable<Void>()
             {
-               deployToRepository(archive, target, addonToDeploy);
-               return null;
-            }
-         });
+               @Override
+               public Void call() throws Exception
+               {
+                  deployToRepository(archive, target, addonToDeploy);
+                  return null;
+               }
+            });
 
-         waitForDeploymentCompletion(deployment, addonToDeploy);
+            waitForDeploymentCompletion(deployment, addonToDeploy);
+         }
+         else
+         {
+            throw new IllegalArgumentException(
+                     "Invalid Archive type. Ensure that your @Deployment method returns type 'AddonArchive'.");
+         }
+
+         return new ProtocolMetaData().addContext(furnaceHolder);
       }
-      else if (archive instanceof ForgeRemoteAddon)
+      catch (Exception e)
       {
-         ForgeRemoteAddon remoteAddon = (ForgeRemoteAddon) archive;
-         AddonDependencyResolver resolver = new MavenAddonDependencyResolver(configuration.getClassifier());
-         AddonManager addonManager = new AddonManagerImpl(runnable.furnace, resolver);
-
-         AddonRepository target = selectTargetRepository(archive);
-         addonManager.install(remoteAddon.getAddonId(), target).perform();
-
-         waitForDeploymentCompletion(deployment, addonToDeploy);
+         throw new DeploymentException(e.getMessage(), e);
       }
+   }
+
+   private void resetMavenSettings()
+   {
+      if (originalUserSettings != null)
+         System.setProperty(MavenContainer.ALT_USER_SETTINGS_XML_LOCATION, originalUserSettings);
       else
-      {
-         throw new IllegalArgumentException(
-                  "Invalid Archive type. Ensure that your @Deployment method returns type 'ForgeArchive'.");
-      }
+         System.clearProperty(MavenContainer.ALT_USER_SETTINGS_XML_LOCATION);
 
-      return new ProtocolMetaData().addContext(furnaceHolder);
+      if (originalLocalRepository != null)
+         System.setProperty(MavenContainer.ALT_LOCAL_REPOSITORY_LOCATION, originalLocalRepository);
+      else
+         System.clearProperty(MavenContainer.ALT_LOCAL_REPOSITORY_LOCATION);
+
+      if (originalLocalRepository != null)
+         System.setProperty(MavenContainer.ALT_GLOBAL_SETTINGS_XML_LOCATION, originalGlobalSettings);
+      else
+         System.clearProperty(MavenContainer.ALT_GLOBAL_SETTINGS_XML_LOCATION);
    }
 
    private <T> T waitForConfigurationRescan(Callable<T> action)
@@ -150,13 +192,13 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
       return result;
    }
 
-   private MutableAddonRepository selectTargetRepository(Archive<?> archive)
+   private MutableAddonRepository selectTargetRepository(RepositoryLocationAware<?> archive)
    {
       MutableAddonRepository target = repository;
-      if (archive instanceof RepositoryForgeArchive
-               && ((RepositoryForgeArchive) archive).getAddonRepository() != null)
+      if (archive instanceof RepositoryLocationAware<?>
+               && ((RepositoryLocationAware<?>) archive).getAddonRepository() != null)
       {
-         final String repositoryName = ((RepositoryForgeArchive) archive).getAddonRepository();
+         final String repositoryName = ((RepositoryLocationAware<?>) archive).getAddonRepository();
          if (deploymentRepositories.get(repositoryName) == null)
          {
             target = waitForConfigurationRescan(new Callable<MutableAddonRepository>()
@@ -212,7 +254,20 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
       ShrinkWrapUtil.unzip(destDir, archive);
       System.out.println("Furnace test harness is deploying [" + addonToDeploy + "] to repository [" + repository
                + "] ...");
-      repository.deploy(addonToDeploy, ((ForgeArchive) archive).getAddonDependencies(), new ArrayList<File>());
+
+      if (archive instanceof AddonDependencyAware)
+      {
+         repository.deploy(addonToDeploy,
+                  ((AddonDependencyAware<?>) archive).getAddonDependencies(),
+                  Collections.<File> emptyList());
+      }
+      else
+      {
+         repository.deploy(addonToDeploy,
+                  Collections.<AddonDependencyEntry> emptyList(),
+                  Collections.<File> emptyList());
+      }
+
       repository.enable(addonToDeploy);
    }
 
@@ -344,10 +399,20 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
 
       try
       {
+         if (archive instanceof AddonDeploymentArchive)
+         {
+            ((AddonDeploymentArchive) archive).getDeploymentListener().preUndeploy();
+         }
+
          Addon addonToStop = registry.getAddon(addonToUndeploy);
          if (addonToStop.getStatus().isLoaded())
             ((MutableAddonRepository) addonToStop.getRepository()).disable(addonToUndeploy);
          Addons.waitUntilStopped(addonToStop);
+
+         if (archive instanceof AddonDeploymentArchive)
+         {
+            ((AddonDeploymentArchive) archive).getDeploymentListener().postUndeploy();
+         }
       }
       catch (Exception e)
       {
