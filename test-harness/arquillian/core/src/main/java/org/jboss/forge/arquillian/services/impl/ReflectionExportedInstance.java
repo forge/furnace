@@ -4,7 +4,7 @@
  * Licensed under the Eclipse Public License version 1.0, available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.jboss.forge.arquillian.services;
+package org.jboss.forge.arquillian.services.impl;
 
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.exception.ContainerException;

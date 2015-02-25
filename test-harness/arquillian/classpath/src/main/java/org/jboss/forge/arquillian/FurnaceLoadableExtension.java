@@ -11,16 +11,18 @@ import org.jboss.arquillian.container.test.spi.client.deployment.AuxiliaryArchiv
 import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentScenarioGenerator;
 import org.jboss.arquillian.container.test.spi.client.protocol.Protocol;
 import org.jboss.arquillian.core.spi.LoadableExtension;
-import org.jboss.forge.arquillian.protocol.ForgeProtocol;
+import org.jboss.forge.arquillian.impl.FurnaceAuxiliaryArchiveProcessor;
+import org.jboss.forge.arquillian.impl.FurnaceDeploymentScenarioGenerator;
+import org.jboss.forge.arquillian.protocol.FurnaceProtocol;
 
-public class ForgeLoadableExtension implements LoadableExtension
+public class FurnaceLoadableExtension implements LoadableExtension
 {
    @Override
    public void register(ExtensionBuilder builder)
    {
-      builder.service(DeployableContainer.class, ForgeDeployableContainer.class);
-      builder.service(DeploymentScenarioGenerator.class, ForgeDeploymentScenarioGenerator.class);
-      builder.service(Protocol.class, ForgeProtocol.class);
-      builder.service(AuxiliaryArchiveProcessor.class, ForgeAuxiliaryArchiveProcessor.class);
+      builder.service(DeployableContainer.class, FurnaceDeployableContainer.class);
+      builder.service(DeploymentScenarioGenerator.class, FurnaceDeploymentScenarioGenerator.class);
+      builder.service(Protocol.class, FurnaceProtocol.class);
+      builder.service(AuxiliaryArchiveProcessor.class, FurnaceAuxiliaryArchiveProcessor.class);
    }
 }

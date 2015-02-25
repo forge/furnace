@@ -4,7 +4,7 @@
  * Licensed under the Eclipse Public License version 1.0, available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.jboss.forge.arquillian;
+package org.jboss.forge.arquillian.impl;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
@@ -29,11 +29,17 @@ import org.jboss.arquillian.container.test.api.ShouldThrowException;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentScenarioGenerator;
 import org.jboss.arquillian.test.spi.TestClass;
+import org.jboss.forge.arquillian.AddonDependencies;
+import org.jboss.forge.arquillian.AddonDependency;
+import org.jboss.forge.arquillian.AddonDeployment;
+import org.jboss.forge.arquillian.AddonDeployments;
+import org.jboss.forge.arquillian.DeployToRepository;
+import org.jboss.forge.arquillian.DeploymentListener;
 import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.archive.AddonDeploymentArchive;
 import org.jboss.forge.arquillian.archive.RepositoryLocationAware;
 import org.jboss.forge.arquillian.maven.ProjectHelper;
-import org.jboss.forge.arquillian.protocol.ForgeProtocolDescription;
+import org.jboss.forge.arquillian.protocol.FurnaceProtocolDescription;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.furnace.util.Annotations;
@@ -42,7 +48,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 
-public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGenerator
+public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGenerator
 {
 
    Map<String, String> dependencyMap;
@@ -289,7 +295,7 @@ public class ForgeDeploymentScenarioGenerator implements DeploymentScenarioGener
       {
          return new ProtocolDescription(deploymentMethod.getAnnotation(OverProtocol.class).value());
       }
-      return new ForgeProtocolDescription();
+      return new FurnaceProtocolDescription();
    }
 
    private <T> T invoke(Class<T> type, Method deploymentMethod)

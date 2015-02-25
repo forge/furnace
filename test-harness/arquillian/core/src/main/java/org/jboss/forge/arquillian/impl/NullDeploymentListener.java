@@ -1,4 +1,6 @@
-package org.jboss.forge.arquillian;
+package org.jboss.forge.arquillian.impl;
+
+import org.jboss.forge.arquillian.DeploymentListener;
 
 /**
  * No-op implementation of {@link DeploymentListener}.

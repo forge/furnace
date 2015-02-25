@@ -17,8 +17,8 @@
 package org.jboss.forge.arquillian.archive.impl;
 
 import org.jboss.forge.arquillian.DeploymentListener;
-import org.jboss.forge.arquillian.NullDeploymentListener;
 import org.jboss.forge.arquillian.archive.AddonDeploymentArchive;
+import org.jboss.forge.arquillian.impl.NullDeploymentListener;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;

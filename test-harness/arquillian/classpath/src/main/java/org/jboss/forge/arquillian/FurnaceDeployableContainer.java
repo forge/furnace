@@ -28,9 +28,9 @@ import org.jboss.forge.arquillian.archive.AddonArchiveBase;
 import org.jboss.forge.arquillian.archive.AddonDependencyAware;
 import org.jboss.forge.arquillian.archive.AddonDeploymentArchive;
 import org.jboss.forge.arquillian.archive.RepositoryLocationAware;
-import org.jboss.forge.arquillian.protocol.ForgeProtocolDescription;
+import org.jboss.forge.arquillian.impl.ShrinkWrapUtil;
+import org.jboss.forge.arquillian.protocol.FurnaceProtocolDescription;
 import org.jboss.forge.arquillian.protocol.FurnaceHolder;
-import org.jboss.forge.arquillian.util.ShrinkWrapUtil;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonId;
@@ -59,7 +59,7 @@ import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class ForgeDeployableContainer implements DeployableContainer<ForgeContainerConfiguration>
+public class FurnaceDeployableContainer implements DeployableContainer<FurnaceContainerConfiguration>
 {
    @Inject
    private Instance<Deployment> deploymentInstance;
@@ -75,7 +75,7 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
    private Thread thread;
 
    private boolean undeploying = false;
-   private ForgeContainerConfiguration configuration;
+   private FurnaceContainerConfiguration configuration;
 
    private static String originalUserSettings;
    private static String originalLocalRepository;
@@ -311,19 +311,19 @@ public class ForgeDeployableContainer implements DeployableContainer<ForgeContai
    }
 
    @Override
-   public Class<ForgeContainerConfiguration> getConfigurationClass()
+   public Class<FurnaceContainerConfiguration> getConfigurationClass()
    {
-      return ForgeContainerConfiguration.class;
+      return FurnaceContainerConfiguration.class;
    }
 
    @Override
    public ProtocolDescription getDefaultProtocol()
    {
-      return new ForgeProtocolDescription();
+      return new FurnaceProtocolDescription();
    }
 
    @Override
-   public void setup(ForgeContainerConfiguration configuration)
+   public void setup(FurnaceContainerConfiguration configuration)
    {
       this.configuration = configuration;
    }

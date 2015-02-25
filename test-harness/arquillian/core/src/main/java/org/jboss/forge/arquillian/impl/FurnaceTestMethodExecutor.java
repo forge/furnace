@@ -4,7 +4,7 @@
  * Licensed under the Eclipse Public License version 1.0, available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.jboss.forge.arquillian;
+package org.jboss.forge.arquillian.impl;
 
 import java.io.PrintStream;
 import java.lang.annotation.Annotation;
@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutionException;
 import org.jboss.arquillian.container.test.spi.ContainerMethodExecutor;
 import org.jboss.arquillian.test.spi.TestMethodExecutor;
 import org.jboss.arquillian.test.spi.TestResult;
-import org.jboss.forge.arquillian.protocol.ForgeProtocolConfiguration;
+import org.jboss.forge.arquillian.protocol.FurnaceProtocolConfiguration;
 import org.jboss.forge.arquillian.protocol.FurnaceHolder;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
@@ -32,13 +32,13 @@ import org.jboss.forge.furnace.util.ClassLoaders;
  * @author <a href="mailto:aslak@conduct.no">Aslak Knutsen</a>
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class ForgeTestMethodExecutor implements ContainerMethodExecutor
+public class FurnaceTestMethodExecutor implements ContainerMethodExecutor
 {
    private Furnace furnace;
 
-   public ForgeTestMethodExecutor(ForgeProtocolConfiguration config, final FurnaceHolder holder)
+   public FurnaceTestMethodExecutor(FurnaceProtocolConfiguration config, final FurnaceHolder holder)
    {
-      Assert.notNull(config, ForgeProtocolConfiguration.class.getName() + " must be provided.");
+      Assert.notNull(config, FurnaceProtocolConfiguration.class.getName() + " must be provided.");
       Assert.notNull(holder, FurnaceHolder.class.getName() + " runtime must be provided");
       this.furnace = holder.getFurnace();
    }

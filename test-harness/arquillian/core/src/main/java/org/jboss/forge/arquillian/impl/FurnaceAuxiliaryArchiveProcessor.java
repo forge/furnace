@@ -4,13 +4,13 @@
  * Licensed under the Eclipse Public License version 1.0, available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.jboss.forge.arquillian;
+package org.jboss.forge.arquillian.impl;
 
 import org.jboss.arquillian.container.test.spi.client.deployment.AuxiliaryArchiveProcessor;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.Node;
 
-public class ForgeAuxiliaryArchiveProcessor implements AuxiliaryArchiveProcessor
+public class FurnaceAuxiliaryArchiveProcessor implements AuxiliaryArchiveProcessor
 {
    @Override
    public void process(Archive<?> archive)

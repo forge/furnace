@@ -4,7 +4,7 @@
  * Licensed under the Eclipse Public License version 1.0, available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.jboss.forge.arquillian;
+package org.jboss.forge.arquillian.impl;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -23,7 +23,7 @@ import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.Filter;
 import org.jboss.shrinkwrap.api.Node;
 
-public class ForgeDeploymentPackager implements DeploymentPackager
+public class FurnaceDeploymentPackager implements DeploymentPackager
 {
 
    private Pattern SHRINKWRAP_DESCRIPTOR_PATTERN = Pattern.compile("/org/jboss/shrinkwrap/descriptor/.*");

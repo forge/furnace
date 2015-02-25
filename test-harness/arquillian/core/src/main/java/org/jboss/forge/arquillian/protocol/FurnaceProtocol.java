@@ -16,37 +16,37 @@ import org.jboss.arquillian.container.test.spi.client.protocol.Protocol;
 import org.jboss.arquillian.container.test.spi.command.CommandCallback;
 import org.jboss.arquillian.test.spi.TestMethodExecutor;
 import org.jboss.arquillian.test.spi.TestResult;
-import org.jboss.forge.arquillian.ForgeDeploymentPackager;
-import org.jboss.forge.arquillian.ForgeTestMethodExecutor;
+import org.jboss.forge.arquillian.impl.FurnaceDeploymentPackager;
+import org.jboss.forge.arquillian.impl.FurnaceTestMethodExecutor;
 import org.jboss.forge.furnace.Furnace;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class ForgeProtocol implements Protocol<ForgeProtocolConfiguration>
+public class FurnaceProtocol implements Protocol<FurnaceProtocolConfiguration>
 {
-   public static final String NAME = "_FORGE_";
+   public static final String NAME = "_FURNACE_";
 
    @Override
-   public Class<ForgeProtocolConfiguration> getProtocolConfigurationClass()
+   public Class<FurnaceProtocolConfiguration> getProtocolConfigurationClass()
    {
-      return ForgeProtocolConfiguration.class;
+      return FurnaceProtocolConfiguration.class;
    }
 
    @Override
    public ProtocolDescription getDescription()
    {
-      return new ForgeProtocolDescription();
+      return new FurnaceProtocolDescription();
    }
 
    @Override
    public DeploymentPackager getPackager()
    {
-      return new ForgeDeploymentPackager();
+      return new FurnaceDeploymentPackager();
    }
 
    @Override
-   public ContainerMethodExecutor getExecutor(ForgeProtocolConfiguration protocolConfiguration,
+   public ContainerMethodExecutor getExecutor(FurnaceProtocolConfiguration protocolConfiguration,
             ProtocolMetaData metaData, CommandCallback callback)
    {
       if (metaData == null)
@@ -68,7 +68,7 @@ public class ForgeProtocol implements Protocol<ForgeProtocolConfiguration>
                   "No " + Furnace.class.getName() + " found in " + ProtocolMetaData.class.getName() + ". " +
                            "Furnace protocol can not be used");
       }
-      return new ForgeTestMethodExecutor(protocolConfiguration, contexts.iterator().next());
+      return new FurnaceTestMethodExecutor(protocolConfiguration, contexts.iterator().next());
    }
 
 }

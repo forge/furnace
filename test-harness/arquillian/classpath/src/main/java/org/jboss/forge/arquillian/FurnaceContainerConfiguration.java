@@ -11,11 +11,11 @@ import org.jboss.arquillian.container.spi.client.container.ContainerConfiguratio
 import org.jboss.forge.furnace.manager.maven.addon.MavenAddonDependencyResolver;
 import org.jboss.forge.furnace.util.Strings;
 
-public class ForgeContainerConfiguration implements ContainerConfiguration
+public class FurnaceContainerConfiguration implements ContainerConfiguration
 {
    private String classifier;
 
-   public ForgeContainerConfiguration()
+   public FurnaceContainerConfiguration()
    {
       this.classifier = MavenAddonDependencyResolver.FORGE_ADDON_CLASSIFIER;
    }

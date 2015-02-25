@@ -11,10 +11,10 @@ import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class ForgeProtocolDescription extends ProtocolDescription
+public class FurnaceProtocolDescription extends ProtocolDescription
 {
-   public ForgeProtocolDescription()
+   public FurnaceProtocolDescription()
    {
-      super(ForgeProtocol.NAME);
+      super(FurnaceProtocol.NAME);
    }
 }

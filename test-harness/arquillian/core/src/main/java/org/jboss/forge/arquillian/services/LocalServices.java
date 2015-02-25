@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jboss.forge.arquillian.services.impl.LazyServiceRegistryEventManager;
+import org.jboss.forge.arquillian.services.impl.ReflectionServiceRegistry;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonRegistry;
