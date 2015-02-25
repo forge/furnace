@@ -112,7 +112,6 @@ public class AddonImpl implements Addon
       builder.append(getId().toCoordinates() + " +" + getStatus());
       if (getFuture() == null)
          builder.append(" READY");
-      builder.append(" HC: ").append(hashCode());
       return builder.toString();
    }
 
