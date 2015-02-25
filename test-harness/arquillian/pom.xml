@@ -10,7 +10,7 @@
    </parent>
 
    <packaging>pom</packaging>
-   <artifactId>arquillian-forge-parent</artifactId>
+   <artifactId>arquillian-furnace-parent</artifactId>
    <name>Furnace - Arquillian Container Adapters</name>
 
    <modules>
@@ -39,7 +39,7 @@
    </dependencies>
 
    <build>
-      <finalName>arquillian-forge-managed</finalName>
+      <finalName>arquillian-furnace-managed</finalName>
       <plugins>
          <plugin>
             <artifactId>maven-compiler-plugin</artifactId>

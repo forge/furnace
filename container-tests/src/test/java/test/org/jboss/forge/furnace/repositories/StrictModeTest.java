@@ -6,7 +6,9 @@
  */
 package test.org.jboss.forge.furnace.repositories;
 
+import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.ShouldThrowException;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.AddonDependencies;
 import org.jboss.forge.arquillian.AddonDependency;
@@ -39,6 +41,7 @@ public class StrictModeTest
             @AddonDependency(name = TEST_ONE_DEP_INCOMPATIBLE, version = "9999.0.0.Final", listener = TestRepositoryDeploymentListener.class),
             @AddonDependency(name = TEST_NO_DEP, version = "1.0.0.Final", listener = TestRepositoryDeploymentListener.class)
    })
+   @ShouldThrowException(DeploymentException.class)
    public static AddonArchive getDeployment() throws Exception
    {
       AddonArchive archive = ShrinkWrap.create(AddonArchive.class);
