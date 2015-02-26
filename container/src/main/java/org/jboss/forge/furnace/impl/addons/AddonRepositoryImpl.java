@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -70,23 +70,29 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
 
    public static MutableAddonRepository forDirectory(Furnace furnace, File dir)
    {
-      return new AddonRepositoryImpl(furnace.getLockManager(), dir);
+      return new AddonRepositoryImpl(furnace, dir);
    }
 
-   public static MutableAddonRepository forDefaultDirectory(Furnace forge)
+   public static MutableAddonRepository forDefaultDirectory(Furnace furnace)
    {
-      return new AddonRepositoryImpl(forge.getLockManager(), new File(OperatingSystemUtils.getUserHomePath(),
-               DEFAULT_ADDON_DIR));
+      return new AddonRepositoryImpl(furnace, new File(OperatingSystemUtils.getUserHomePath(), DEFAULT_ADDON_DIR));
    }
 
    public static Version getRuntimeAPIVersion()
    {
+      String versionOverride = System.getProperty("furnace.version.override");
+      if (versionOverride != null)
+      {
+         return new SingleVersion(versionOverride);
+      }
+
       String version = AddonRepository.class.getPackage()
                .getImplementationVersion();
       if (version != null)
       {
          return new SingleVersion(version);
       }
+
       return EmptyVersion.getInstance();
    }
 
@@ -106,12 +112,15 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
 
    private int version = 1;
 
-   private AddonRepositoryImpl(LockManager lock, File dir)
+   private Furnace furnace;
+
+   private AddonRepositoryImpl(Furnace furnace, File dir)
    {
-      Assert.notNull(lock, "LockManager must not be null.");
+      this.furnace = furnace;
+      Assert.notNull(furnace, "Furnace must not be null.");
       Assert.notNull(dir, "Addon directory must not be null.");
       this.addonDir = dir;
-      this.lock = lock;
+      this.lock = furnace.getLockManager();
    }
 
    @Override
@@ -137,12 +146,12 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
                                  + resource.getParentFile().getParentFile().getName();
                         child = OperatingSystemUtils.getSafeFilename(child);
                         File target = new File(addonSlotDir, child);
-                        logger.fine("Copying "+resource+" to "+target);
+                        logger.fine("Copying " + resource + " to " + target);
                         Files.copyDirectory(resource, target);
                      }
                      else
                      {
-                        logger.fine("Copying "+resource+" to "+addonSlotDir);
+                        logger.fine("Copying " + resource + " to " + addonSlotDir);
                         Files.copyFileToDirectory(resource, addonSlotDir);
                      }
                   }
@@ -294,7 +303,7 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
          @Override
          public Set<AddonDependencyEntry> call() throws Exception
          {
-            Set<AddonDependencyEntry> result = new HashSet<AddonDependencyEntry>();
+            Set<AddonDependencyEntry> result = new LinkedHashSet<AddonDependencyEntry>();
             File descriptor = getAddonDescriptor(addon);
 
             try
@@ -484,8 +493,7 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
          @Override
          public Boolean call() throws Exception
          {
-            List<AddonId> enabled = listEnabledCompatibleWithVersion(getRuntimeAPIVersion());
-
+            List<AddonId> enabled = listEnabled();
             for (AddonId id : enabled)
             {
                if (id.equals(addon))
@@ -499,6 +507,40 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
 
    @Override
    public List<AddonId> listEnabled()
+   {
+      if (furnace.isStrictMode())
+         return listEnabledCompatibleWithVersion(getRuntimeAPIVersion());
+      else
+         return listEnabledCompatibleWithVersion(null);
+   }
+
+   @Override
+   public List<AddonId> listEnabledCompatibleWithVersion(final Version version)
+   {
+      return lock.performLocked(LockMode.READ, new Callable<List<AddonId>>()
+      {
+         @Override
+         public List<AddonId> call() throws Exception
+         {
+            List<AddonId> list = listAll();
+            List<AddonId> result = list;
+
+            result = new ArrayList<AddonId>();
+            for (AddonId entry : list)
+            {
+               if (version == null || entry.getApiVersion() == null
+                        || Versions.isApiCompatible(version, entry.getApiVersion()))
+               {
+                  result.add(entry);
+               }
+            }
+            return result;
+         }
+      });
+   }
+
+   @Override
+   public List<AddonId> listAll()
    {
       return lock.performLocked(LockMode.READ, new Callable<List<AddonId>>()
       {
@@ -531,31 +573,6 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
             catch (FileNotFoundException e)
             {
                // this is OK, no addons installed
-            }
-            return result;
-         }
-      });
-   }
-
-   @Override
-   public List<AddonId> listEnabledCompatibleWithVersion(final Version version)
-   {
-      return lock.performLocked(LockMode.READ, new Callable<List<AddonId>>()
-      {
-         @Override
-         public List<AddonId> call() throws Exception
-         {
-            List<AddonId> list = listEnabled();
-            List<AddonId> result = list;
-
-            result = new ArrayList<AddonId>();
-            for (AddonId entry : list)
-            {
-               if (version == null || entry.getApiVersion() == null
-                        || Versions.isApiCompatible(version, entry.getApiVersion()))
-               {
-                  result.add(entry);
-               }
             }
             return result;
          }
@@ -620,7 +637,6 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
       FileOutputStream outStream = null;
       try
       {
-         // TODO need to replace this with actual file-system transactionality, but should work for the common case
          outStream = new FileOutputStream(getRepositoryRegistryFile());
          incrementVersion();
          Streams.write(XMLParser.toXMLInputStream(installed), outStream);

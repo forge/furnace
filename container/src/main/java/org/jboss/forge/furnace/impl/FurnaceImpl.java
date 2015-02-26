@@ -53,6 +53,10 @@ import org.jboss.modules.log.StreamModuleLogger;
  */
 public class FurnaceImpl implements Furnace
 {
+   public static final String FURNACE_LOGGING_LEAK_CLASSLOADERS_PROPERTY = "furnace.logging.leak";
+   public static final String FURNACE_DEBUG_PROPERTY = "furnace.debug";
+   public static final String TEST_MODE_PROPERTY = "furnace.test.mode";
+
    private static Logger logger = Logger.getLogger(FurnaceImpl.class.getName());
 
    private volatile boolean alive = false;
@@ -78,6 +82,7 @@ public class FurnaceImpl implements Furnace
    boolean firedAfterStart = false;
 
    private WatchService watcher;
+   protected boolean strictMode = true;
 
    public FurnaceImpl()
    {
@@ -87,15 +92,15 @@ public class FurnaceImpl implements Furnace
                   "loading all addons, but failures may occur if versions are not compatible.");
       }
 
-      if (!Boolean.getBoolean("furnace.logging.leak"))
+      if (!Boolean.getBoolean(FURNACE_LOGGING_LEAK_CLASSLOADERS_PROPERTY))
       {
          /*
-          * If enabled, allows the JDK java.util.logging.Level to leak ClassLoaders.
+          * If enabled, allows the JDK java.util.logging.Level to leak ClassLoaders (memory leak).
           */
          LoggingRepair.init();
       }
 
-      if (Boolean.getBoolean("furnace.debug"))
+      if (Boolean.getBoolean(FURNACE_DEBUG_PROPERTY))
       {
          /*
           * If enabled, prints a LOT of debug logging from JBoss Modules.
@@ -229,23 +234,11 @@ public class FurnaceImpl implements Furnace
 
                      if (dirty)
                      {
-                        if (status.isStarted())
-                           status = ContainerStatus.RELOADING;
-
-                        try
-                        {
-                           fireBeforeConfigurationScanEvent();
-                           getLifecycleManager().forceUpdate();
-                           fireAfterConfigurationScanEvent();
-                        }
-                        catch (Exception e)
-                        {
-                           logger.log(Level.SEVERE, "Error occurred.", e);
-                        }
+                        reloadConfiguration();
                      }
                   }
+
                   status = ContainerStatus.STARTED;
-                  // Fire the afterStart() event
                   if (!firedAfterStart)
                   {
                      fireAfterContainerStartedEvent();
@@ -256,9 +249,9 @@ public class FurnaceImpl implements Furnace
             });
             Thread.sleep(100);
          }
-         while (alive && serverMode);
+         while (isAlive() && serverMode);
 
-         while (alive && getLifecycleManager().isStartingAddons())
+         while (isAlive() && getLifecycleManager().isStartingAddons())
          {
             Thread.sleep(100);
          }
@@ -276,70 +269,6 @@ public class FurnaceImpl implements Furnace
 
       fireAfterContainerStoppedEvent();
       cleanup();
-   }
-
-   private void cleanup()
-   {
-      for (ListenerRegistration<ContainerLifecycleListener> registation : loadedListenerRegistrations)
-      {
-         registation.removeListener();
-      }
-      registeredListeners.clear();
-      lastRepoVersionSeen.clear();
-      loader = null;
-      manager.dispose();
-      manager = null;
-      repositories.clear();
-      executor.shutdownNow();
-      firedAfterStart = false;
-   }
-
-   private void fireBeforeConfigurationScanEvent()
-   {
-      for (ContainerLifecycleListener listener : registeredListeners)
-      {
-         listener.beforeConfigurationScan(this);
-      }
-   }
-
-   private void fireAfterConfigurationScanEvent()
-   {
-      for (ContainerLifecycleListener listener : registeredListeners)
-      {
-         listener.afterConfigurationScan(this);
-      }
-   }
-
-   private void fireBeforeContainerStartedEvent()
-   {
-      for (ContainerLifecycleListener listener : registeredListeners)
-      {
-         listener.beforeStart(this);
-      }
-   }
-
-   private void fireBeforeContainerStoppedEvent()
-   {
-      for (ContainerLifecycleListener listener : registeredListeners)
-      {
-         listener.beforeStop(this);
-      }
-   }
-
-   private void fireAfterContainerStartedEvent()
-   {
-      for (ContainerLifecycleListener listener : registeredListeners)
-      {
-         listener.afterStart(this);
-      }
-   }
-
-   private void fireAfterContainerStoppedEvent()
-   {
-      for (ContainerLifecycleListener listener : registeredListeners)
-      {
-         listener.afterStop(this);
-      }
    }
 
    @Override
@@ -516,7 +445,7 @@ public class FurnaceImpl implements Furnace
             /*
              * The existing ROOT view must be updated *before*
              */
-            if (alive)
+            if (isAlive())
             {
                AddonRegistry registry = getAddonRegistry();
                ((AddonRegistryImpl) registry).addRepository(repository);
@@ -532,14 +461,14 @@ public class FurnaceImpl implements Furnace
 
    public void assertIsAlive()
    {
-      if (!alive)
+      if (!isAlive())
          throw new IllegalStateException(
                   "Cannot access this method until Furnace is running. Call .start() or .startAsync() first.");
    }
 
    public void assertNotAlive()
    {
-      if (alive)
+      if (isAlive())
          throw new IllegalStateException("Cannot modify a running Furnace instance. Call .stop() first.");
    }
 
@@ -551,7 +480,7 @@ public class FurnaceImpl implements Furnace
          @Override
          public ContainerStatus call() throws Exception
          {
-            if (!alive)
+            if (!isAlive())
                return ContainerStatus.STOPPED;
 
             boolean startingAddons = getLifecycleManager().isStartingAddons();
@@ -576,6 +505,43 @@ public class FurnaceImpl implements Furnace
       return getLifecycleManager().toString();
    }
 
+   @Override
+   public boolean isTestMode()
+   {
+      return Boolean.getBoolean(TEST_MODE_PROPERTY);
+   }
+
+   @Override
+   public void setStrictMode(final boolean strict)
+   {
+      if (isAlive())
+      {
+         lock.performLocked(LockMode.WRITE, new Callable<Void>()
+         {
+            @Override
+            public Void call() throws Exception
+            {
+               FurnaceImpl.this.strictMode = strict;
+               reloadConfiguration();
+               return null;
+            }
+         });
+      }
+      else
+      {
+         FurnaceImpl.this.strictMode = strict;
+      }
+   }
+
+   @Override
+   public boolean isStrictMode()
+   {
+      return this.strictMode;
+   }
+
+   /*
+    * Internal methods.
+    */
    private AddonLifecycleManager getLifecycleManager()
    {
       if (manager == null)
@@ -583,9 +549,92 @@ public class FurnaceImpl implements Furnace
       return manager;
    }
 
-   @Override
-   public boolean isTestMode()
+   private boolean isAlive()
    {
-      return Boolean.getBoolean("org.jboss.forge.furnace.test");
+      return alive;
+   }
+
+   private void reloadConfiguration()
+   {
+      if (status.isStarted())
+         status = ContainerStatus.RELOADING;
+
+      try
+      {
+         fireBeforeConfigurationScanEvent();
+         getLifecycleManager().forceUpdate();
+         fireAfterConfigurationScanEvent();
+      }
+      catch (Exception e)
+      {
+         logger.log(Level.SEVERE, "Error occurred.", e);
+      }
+
+      if (status.isReloading())
+         status = ContainerStatus.STARTED;
+   }
+
+   private void cleanup()
+   {
+      for (ListenerRegistration<ContainerLifecycleListener> registation : loadedListenerRegistrations)
+      {
+         registation.removeListener();
+      }
+      registeredListeners.clear();
+      lastRepoVersionSeen.clear();
+      loader = null;
+      manager.dispose();
+      manager = null;
+      repositories.clear();
+      executor.shutdownNow();
+      firedAfterStart = false;
+   }
+
+   private void fireBeforeConfigurationScanEvent()
+   {
+      for (ContainerLifecycleListener listener : registeredListeners)
+      {
+         listener.beforeConfigurationScan(this);
+      }
+   }
+
+   private void fireAfterConfigurationScanEvent()
+   {
+      for (ContainerLifecycleListener listener : registeredListeners)
+      {
+         listener.afterConfigurationScan(this);
+      }
+   }
+
+   private void fireBeforeContainerStartedEvent()
+   {
+      for (ContainerLifecycleListener listener : registeredListeners)
+      {
+         listener.beforeStart(this);
+      }
+   }
+
+   private void fireBeforeContainerStoppedEvent()
+   {
+      for (ContainerLifecycleListener listener : registeredListeners)
+      {
+         listener.beforeStop(this);
+      }
+   }
+
+   private void fireAfterContainerStartedEvent()
+   {
+      for (ContainerLifecycleListener listener : registeredListeners)
+      {
+         listener.afterStart(this);
+      }
+   }
+
+   private void fireAfterContainerStoppedEvent()
+   {
+      for (ContainerLifecycleListener listener : registeredListeners)
+      {
+         listener.afterStop(this);
+      }
    }
 }

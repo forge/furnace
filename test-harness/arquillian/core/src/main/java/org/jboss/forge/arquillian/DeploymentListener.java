@@ -1,5 +1,8 @@
 package org.jboss.forge.arquillian;
 
+import org.jboss.forge.furnace.Furnace;
+import org.jboss.shrinkwrap.api.Archive;
+
 /**
  * Listener for the deployment lifecycle of an {@link AddonDeployment}.
  * 
@@ -8,11 +11,23 @@ package org.jboss.forge.arquillian;
  */
 public interface DeploymentListener
 {
-   void preDeploy() throws Exception;
+   /**
+    * Called immediately before the given {@link Archive} is deployed.
+    */
+   void preDeploy(Furnace furnace, Archive<?> archive) throws Exception;
 
-   void postDeploy() throws Exception;
+   /**
+    * Called immediately after the given {@link Archive} is deployed.
+    */
+   void postDeploy(Furnace furnace, Archive<?> archive) throws Exception;
 
-   void preUndeploy() throws Exception;
+   /**
+    * Called immediately before the given {@link Archive} is undeployed.
+    */
+   void preUndeploy(Furnace furnace, Archive<?> archive) throws Exception;
 
-   void postUndeploy() throws Exception;
+   /**
+    * Called immediately after the given {@link Archive} is undeployed.
+    */
+   void postUndeploy(Furnace furnace, Archive<?> archive) throws Exception;
 }

@@ -22,7 +22,6 @@ import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonView;
 import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.impl.addons.AddonLifecycleManager;
-import org.jboss.forge.furnace.impl.addons.AddonRepositoryImpl;
 import org.jboss.forge.furnace.impl.addons.AddonStateManager;
 import org.jboss.forge.furnace.impl.modules.providers.CORBAClasspathSpec;
 import org.jboss.forge.furnace.impl.modules.providers.FurnaceContainerSpec;
@@ -33,7 +32,6 @@ import org.jboss.forge.furnace.impl.modules.providers.XATransactionJDKClasspathS
 import org.jboss.forge.furnace.impl.modules.providers.XPathJDKClasspathSpec;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.furnace.repositories.AddonRepository;
-import org.jboss.forge.furnace.versions.Version;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -300,11 +298,9 @@ public class AddonModuleLoader extends ModuleLoader
       ModuleIdentifier result = null;
 
       Addon addon = currentAddon.get();
-      Version runtimeAPIVersion = AddonRepositoryImpl.getRuntimeAPIVersion();
-
       for (AddonRepository repository : stateManager.getViewsOf(addon).iterator().next().getRepositories())
       {
-         List<AddonId> enabled = repository.listEnabledCompatibleWithVersion(runtimeAPIVersion);
+         List<AddonId> enabled = repository.listEnabled();
          for (AddonId id : enabled)
          {
             if (id.getName().equals(addonId.getName()))

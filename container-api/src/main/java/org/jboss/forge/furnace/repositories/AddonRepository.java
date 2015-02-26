@@ -62,6 +62,11 @@ public interface AddonRepository
    public boolean isEnabled(final AddonId addon);
 
    /**
+    * Returns a {@link List} of {@link AddonId} instances for all {@link Addon}s in this repository.
+    */
+   List<AddonId> listAll();
+
+   /**
     * Returns a {@link List} of {@link AddonId} instances for all enabled {@link Addon}s in this repository.
     */
    public List<AddonId> listEnabled();

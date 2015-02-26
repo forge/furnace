@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.jboss.forge.arquillian.archive.AddonArchive;
@@ -79,6 +80,10 @@ public class AddonArchiveImpl extends ContainerBase<AddonArchive> implements Add
    private List<AddonDependencyEntry> addonDependencies = new ArrayList<AddonDependencyEntry>();
 
    private String repository;
+
+   private int deploymentTimeout = 10000;
+
+   private TimeUnit deploymentTimeoutUnit;
 
    // -------------------------------------------------------------------------------------||
    // Instance Members -------------------------------------------------------------------||
@@ -210,4 +215,29 @@ public class AddonArchiveImpl extends ContainerBase<AddonArchive> implements Add
       return this;
    }
 
+   @Override
+   public AddonArchive setDeploymentTimeoutQuantity(int quantity)
+   {
+      this.deploymentTimeout = quantity;
+      return this;
+   }
+
+   @Override
+   public int getDeploymentTimeoutQuantity()
+   {
+      return this.deploymentTimeout;
+   }
+
+   @Override
+   public AddonArchive setDeploymentTimeoutUnit(TimeUnit unit)
+   {
+      this.deploymentTimeoutUnit = unit;
+      return this;
+   }
+
+   @Override
+   public TimeUnit getDeploymentTimeoutUnit()
+   {
+      return deploymentTimeoutUnit == null ? TimeUnit.MILLISECONDS : deploymentTimeoutUnit;
+   }
 }

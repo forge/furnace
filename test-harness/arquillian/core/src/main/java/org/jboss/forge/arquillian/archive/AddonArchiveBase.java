@@ -12,7 +12,7 @@ import org.jboss.shrinkwrap.api.container.ServiceProviderContainer;
  * @author <a href="lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
 public interface AddonArchiveBase<ORIGIN extends Archive<ORIGIN>> extends Archive<ORIGIN>, LibraryContainer<ORIGIN>,
-         ResourceContainer<ORIGIN>, ServiceProviderContainer<ORIGIN>,
-         RepositoryLocationAware<ORIGIN>, AddonDependencyAware<ORIGIN>
+         ResourceContainer<ORIGIN>, ServiceProviderContainer<ORIGIN>, RepositoryLocationAware<ORIGIN>,
+         AddonDependencyAware<ORIGIN>, DeploymentTimeoutAware<ORIGIN>
 {
 }

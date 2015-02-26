@@ -29,8 +29,8 @@ import org.jboss.forge.arquillian.archive.AddonDependencyAware;
 import org.jboss.forge.arquillian.archive.AddonDeploymentArchive;
 import org.jboss.forge.arquillian.archive.RepositoryLocationAware;
 import org.jboss.forge.arquillian.impl.ShrinkWrapUtil;
-import org.jboss.forge.arquillian.protocol.FurnaceProtocolDescription;
 import org.jboss.forge.arquillian.protocol.FurnaceHolder;
+import org.jboss.forge.arquillian.protocol.FurnaceProtocolDescription;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonId;
@@ -112,11 +112,20 @@ public class FurnaceDeployableContainer implements DeployableContainer<FurnaceCo
 
             AddonRepository target = selectTargetRepository(deploymentArchive);
 
-            deploymentArchive.getDeploymentListener().preDeploy();
-            addonManager.install(deploymentArchive.getAddonId(), target).perform();
+            for (DeploymentListener listener : deploymentArchive.getDeploymentListeners())
+            {
+               listener.preDeploy(furnaceHolder.getFurnace(), archive);
+            }
 
-            waitForDeploymentCompletion(deployment, addonToDeploy);
-            deploymentArchive.getDeploymentListener().postDeploy();
+            addonManager.install(deploymentArchive.getAddonId(), target).perform();
+            waitForDeploymentCompletion(deployment, addonToDeploy,
+                     deploymentArchive.getDeploymentTimeoutQuantity(),
+                     deploymentArchive.getDeploymentTimeoutUnit());
+
+            for (DeploymentListener listener : deploymentArchive.getDeploymentListeners())
+            {
+               listener.postDeploy(furnaceHolder.getFurnace(), archive);
+            }
          }
          else if (archive instanceof AddonArchiveBase<?>)
          {
@@ -132,7 +141,9 @@ public class FurnaceDeployableContainer implements DeployableContainer<FurnaceCo
                }
             });
 
-            waitForDeploymentCompletion(deployment, addonToDeploy);
+            waitForDeploymentCompletion(deployment, addonToDeploy,
+                     ((AddonArchiveBase<?>) archive).getDeploymentTimeoutQuantity(),
+                     ((AddonArchiveBase<?>) archive).getDeploymentTimeoutUnit());
          }
          else
          {
@@ -218,7 +229,8 @@ public class FurnaceDeployableContainer implements DeployableContainer<FurnaceCo
       return target;
    }
 
-   private void waitForDeploymentCompletion(Deployment deployment, final AddonId addonToDeploy)
+   private void waitForDeploymentCompletion(Deployment deployment, final AddonId addonToDeploy, int quantity,
+            TimeUnit unit)
             throws DeploymentException
    {
       AddonRegistry registry = runnable.getForge().getAddonRegistry();
@@ -230,7 +242,7 @@ public class FurnaceDeployableContainer implements DeployableContainer<FurnaceCo
          {
             future.get();
          }
-         Addons.waitUntilStartedOrMissing(addon, 10, TimeUnit.SECONDS);
+         Addons.waitUntilStartedOrMissing(addon, quantity, unit);
       }
       catch (Exception e)
       {
@@ -239,8 +251,7 @@ public class FurnaceDeployableContainer implements DeployableContainer<FurnaceCo
       }
       if (addon.getStatus().isFailed())
       {
-         DeploymentException e = new DeploymentException("AddonDependency " + addonToDeploy
-                  + " failed to deploy.");
+         DeploymentException e = new DeploymentException("AddonDependency " + addonToDeploy + " failed to deploy.");
          deployment.deployedWithError(e);
          throw new DeploymentException("AddonDependency " + addonToDeploy + " failed to deploy.", e);
       }
@@ -401,7 +412,10 @@ public class FurnaceDeployableContainer implements DeployableContainer<FurnaceCo
       {
          if (archive instanceof AddonDeploymentArchive)
          {
-            ((AddonDeploymentArchive) archive).getDeploymentListener().preUndeploy();
+            for (DeploymentListener listener : ((AddonDeploymentArchive) archive).getDeploymentListeners())
+            {
+               listener.preUndeploy(furnaceHolder.getFurnace(), archive);
+            }
          }
 
          Addon addonToStop = registry.getAddon(addonToUndeploy);
@@ -411,7 +425,10 @@ public class FurnaceDeployableContainer implements DeployableContainer<FurnaceCo
 
          if (archive instanceof AddonDeploymentArchive)
          {
-            ((AddonDeploymentArchive) archive).getDeploymentListener().postUndeploy();
+            for (DeploymentListener listener : ((AddonDeploymentArchive) archive).getDeploymentListeners())
+            {
+               listener.postUndeploy(furnaceHolder.getFurnace(), archive);
+            }
          }
       }
       catch (Exception e)
@@ -456,7 +473,7 @@ public class FurnaceDeployableContainer implements DeployableContainer<FurnaceCo
                @Override
                public Object call() throws Exception
                {
-                  System.setProperty("org.jboss.forge.furnace.test", "true");
+                  System.setProperty(FurnaceImpl.TEST_MODE_PROPERTY, "true");
 
                   furnace.setServerMode(true);
                   furnace.start(loader);

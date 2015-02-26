@@ -16,7 +16,6 @@ import java.util.concurrent.Callable;
 
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonRegistry;
-import org.jboss.forge.furnace.addons.AddonStatus;
 import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.lock.LockMode;

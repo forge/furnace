@@ -89,14 +89,13 @@ public class CompleteAddonGraph extends AddonGraph<CompleteAddonGraph>
       Set<AddonId> result = new HashSet<AddonId>();
       for (AddonRepository repository : repositories)
       {
+         List<AddonId> all = repository.listAll();
          List<AddonId> enabled = repository.listEnabled();
-         List<AddonId> enabledCompatible = repository.listEnabledCompatibleWithVersion(AddonRepositoryImpl
-                  .getRuntimeAPIVersion());
 
-         result.addAll(enabledCompatible);
+         result.addAll(enabled);
 
-         List<AddonId> incompatible = new ArrayList<>(enabled);
-         incompatible.removeAll(enabledCompatible);
+         List<AddonId> incompatible = new ArrayList<>(all);
+         incompatible.removeAll(enabled);
          for (AddonId addon : incompatible)
          {
             if (addon.getApiVersion() != null)

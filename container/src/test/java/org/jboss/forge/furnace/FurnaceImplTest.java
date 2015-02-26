@@ -142,6 +142,12 @@ public class FurnaceImplTest
       }
 
       @Override
+      public List<AddonId> listAll()
+      {
+         return Collections.emptyList();
+      }
+
+      @Override
       public List<AddonId> listEnabledCompatibleWithVersion(Version version)
       {
          return null;

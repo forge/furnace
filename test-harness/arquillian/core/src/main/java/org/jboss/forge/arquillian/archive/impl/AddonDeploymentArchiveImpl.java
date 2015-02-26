@@ -16,9 +16,13 @@
  */
 package org.jboss.forge.arquillian.archive.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.forge.arquillian.DeploymentListener;
 import org.jboss.forge.arquillian.archive.AddonDeploymentArchive;
-import org.jboss.forge.arquillian.impl.NullDeploymentListener;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;
@@ -27,11 +31,14 @@ import org.jboss.shrinkwrap.impl.base.container.ContainerBase;
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class AddonDeploymentArchiveImpl extends ContainerBase<AddonDeploymentArchive> implements AddonDeploymentArchive
+public class AddonDeploymentArchiveImpl extends ContainerBase<AddonDeploymentArchive> implements
+         AddonDeploymentArchive
 {
    private AddonId id;
    private String repository;
-   private DeploymentListener listener;
+   private List<DeploymentListener> listeners = new ArrayList<DeploymentListener>();
+   private int deploymentTimeout = 10000;
+   private TimeUnit deploymentTimeoutUnit;
 
    @Override
    public AddonId getAddonId()
@@ -89,18 +96,40 @@ public class AddonDeploymentArchiveImpl extends ContainerBase<AddonDeploymentArc
    }
 
    @Override
-   public DeploymentListener getDeploymentListener()
+   public List<DeploymentListener> getDeploymentListeners()
    {
-      if (listener == null)
-      {
-         return NullDeploymentListener.INSTANCE;
-      }
-      return listener;
+      return Collections.unmodifiableList(listeners);
    }
 
    @Override
-   public void setDeploymentListener(DeploymentListener listener)
+   public void addDeploymentListener(DeploymentListener listener)
    {
-      this.listener = listener;
+      this.listeners.add(listener);
+   }
+
+   @Override
+   public AddonDeploymentArchive setDeploymentTimeoutQuantity(int quantity)
+   {
+      this.deploymentTimeout = quantity;
+      return this;
+   }
+
+   @Override
+   public int getDeploymentTimeoutQuantity()
+   {
+      return this.deploymentTimeout;
+   }
+
+   @Override
+   public AddonDeploymentArchive setDeploymentTimeoutUnit(TimeUnit unit)
+   {
+      this.deploymentTimeoutUnit = unit;
+      return this;
+   }
+
+   @Override
+   public TimeUnit getDeploymentTimeoutUnit()
+   {
+      return deploymentTimeoutUnit == null ? TimeUnit.MILLISECONDS : deploymentTimeoutUnit;
    }
 }

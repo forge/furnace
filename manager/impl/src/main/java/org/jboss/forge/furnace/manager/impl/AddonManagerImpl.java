@@ -247,15 +247,15 @@ public class AddonManagerImpl implements AddonManager
    }
 
    /**
-    * Returns a {@link Map} of the installed addons with the key as the {@link AddonId} and the value as an
-    * {@link AddonRepository} indicating which repository is it from
+    * Returns a {@link Map} of the installed addons with the a key of {@link AddonId} and the value of
+    * {@link AddonRepository} indicating in which repository the addon is installed.
     */
    private Map<AddonId, AddonRepository> getInstalledAddons()
    {
       Map<AddonId, AddonRepository> addons = new HashMap<AddonId, AddonRepository>();
       for (AddonRepository repository : furnace.getRepositories())
       {
-         List<AddonId> listEnabled = repository.listEnabled();
+         List<AddonId> listEnabled = repository.listAll();
          for (AddonId addonId : listEnabled)
          {
             addons.put(addonId, repository);

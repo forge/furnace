@@ -76,6 +76,12 @@ public class ImmutableAddonRepository implements AddonRepository
    }
 
    @Override
+   public List<AddonId> listAll()
+   {
+      return delegate.listAll();
+   }
+
+   @Override
    public List<AddonId> listEnabled()
    {
       return delegate.listEnabled();

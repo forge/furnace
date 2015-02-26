@@ -133,8 +133,21 @@ public interface Furnace
    public String[] getArgs();
 
    /**
-    * Returns <code>true</code> or <code>false</code> if this this is running in a test environment.
+    * Returns <code>true</code> or <code>false</code> if this {@link Furnace} instance is running in a test environment.
     */
    public boolean isTestMode();
+
+   /**
+    * Set this {@link Furnace} instance to use strict {@link Version} checking when loading addons. If enabled, addons
+    * with an {@link Furnace} API version higher than the current {@link Furnace} runtime version will not be loaded. If
+    * disabled, addons will be loaded regardless of the {@link Furnace} runtime version on which they depend. (Defaults
+    * to <code>true</code>.)
+    */
+   public void setStrictMode(boolean strict);
+
+   /**
+    * Return <code>true</code> if this {@link Furnace} instance is using strict {@link Version} checking.
+    */
+   public boolean isStrictMode();
 
 }

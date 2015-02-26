@@ -4,15 +4,22 @@ import java.io.FileNotFoundException;
 import java.net.URL;
 
 import org.jboss.forge.arquillian.DeploymentListener;
+import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.manager.maven.MavenContainer;
+import org.jboss.shrinkwrap.api.Archive;
 
+/**
+ * Use the Maven repository in `target/the-other-repository` during deployment.
+ * 
+ * @author <a href="lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
+ */
 public class TestRepositoryDeploymentListener implements DeploymentListener
 {
    private static String previousUserSettings;
    private static String previousLocalRepository;
 
    @Override
-   public void preDeploy() throws Exception
+   public void preDeploy(Furnace furnace, Archive<?> archive) throws Exception
    {
       previousUserSettings = System.setProperty(MavenContainer.ALT_USER_SETTINGS_XML_LOCATION,
                getAbsolutePath("profiles/settings.xml"));
@@ -21,7 +28,7 @@ public class TestRepositoryDeploymentListener implements DeploymentListener
    }
 
    @Override
-   public void postDeploy() throws Exception
+   public void postDeploy(Furnace furnace, Archive<?> archive) throws Exception
    {
       if (previousUserSettings == null)
       {
@@ -42,12 +49,12 @@ public class TestRepositoryDeploymentListener implements DeploymentListener
    }
 
    @Override
-   public void preUndeploy() throws Exception
+   public void preUndeploy(Furnace furnace, Archive<?> archive) throws Exception
    {
    }
 
    @Override
-   public void postUndeploy() throws Exception
+   public void postUndeploy(Furnace furnace, Archive<?> archive) throws Exception
    {
    }
 

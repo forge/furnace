@@ -17,6 +17,7 @@ import org.jboss.forge.arquillian.services.impl.LazyServiceRegistryEventManager;
 import org.jboss.forge.arquillian.services.impl.ReflectionServiceRegistry;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
+import org.jboss.forge.furnace.addons.AddonFilter;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.event.EventManager;
 import org.jboss.forge.furnace.event.PostStartup;
@@ -54,9 +55,38 @@ public class LocalServices implements AddonLifecycleProvider
       started.remove(addon.getClassLoader());
    }
 
+   /**
+    * Get a reference to the {@link Furnace} instance from which the given {@link ClassLoader} was produced. (May be
+    * <code>null</code> if the loader was not produced by {@link Furnace}).
+    */
    public static Furnace getFurnace(ClassLoader loader)
    {
       return started.get(loader);
+   }
+
+   /**
+    * Get a reference to the {@link Addon} from which the given {@link ClassLoader} was produced. (May be
+    * <code>null</code> if the {@link ClassLoader} does not represent a loaded {@link Addon}).
+    */
+   public static Addon getAddon(final ClassLoader loader)
+   {
+      Furnace furnace = started.get(loader);
+      Set<Addon> addons = furnace.getAddonRegistry().getAddons(new AddonFilter()
+      {
+         @Override
+         public boolean accept(Addon addon)
+         {
+            return addon.getClassLoader() == loader;
+         }
+      });
+
+      if (addons.size() > 1)
+         throw new IllegalStateException("ClassLoader represents multiple addons; this should never happen.");
+
+      if (addons.size() == 1)
+         return addons.iterator().next();
+
+      return null;
    }
 
    @Override
@@ -104,5 +134,4 @@ public class LocalServices implements AddonLifecycleProvider
    {
       return ControlType.SELF;
    }
-
 }

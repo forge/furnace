@@ -6,6 +6,8 @@
  */
 package org.jboss.forge.arquillian.archive;
 
+import java.util.List;
+
 import org.jboss.forge.arquillian.AddonDeployment;
 import org.jboss.forge.arquillian.DeploymentListener;
 import org.jboss.forge.furnace.addons.AddonId;
@@ -17,7 +19,7 @@ import org.jboss.shrinkwrap.api.Archive;
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
 public interface AddonDeploymentArchive extends Archive<AddonDeploymentArchive>,
-         RepositoryLocationAware<AddonDeploymentArchive>
+         RepositoryLocationAware<AddonDeploymentArchive>, DeploymentTimeoutAware<AddonDeploymentArchive>
 {
    /**
     * Get the {@link AddonId} of this {@link AddonDeploymentArchive}.
@@ -30,12 +32,12 @@ public interface AddonDeploymentArchive extends Archive<AddonDeploymentArchive>,
    AddonDeploymentArchive setAddonId(AddonId id);
 
    /**
-    * Get the {@link DeploymentListener} for this {@link AddonDeploymentArchive}
+    * Get the {@link DeploymentListener} instances for this {@link AddonDeploymentArchive}
     */
-   DeploymentListener getDeploymentListener();
+   List<DeploymentListener> getDeploymentListeners();
 
    /**
     * Set the {@link DeploymentListener} for this {@link AddonDeploymentArchive}
     */
-   void setDeploymentListener(DeploymentListener listener);
+   void addDeploymentListener(DeploymentListener listener);
 }

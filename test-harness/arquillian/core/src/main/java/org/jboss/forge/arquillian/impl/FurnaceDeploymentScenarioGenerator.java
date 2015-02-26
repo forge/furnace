@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.maven.model.Model;
 import org.eclipse.aether.artifact.Artifact;
@@ -33,6 +34,7 @@ import org.jboss.forge.arquillian.AddonDependencies;
 import org.jboss.forge.arquillian.AddonDependency;
 import org.jboss.forge.arquillian.AddonDeployment;
 import org.jboss.forge.arquillian.AddonDeployments;
+import org.jboss.forge.arquillian.Dependencies;
 import org.jboss.forge.arquillian.DeployToRepository;
 import org.jboss.forge.arquillian.DeploymentListener;
 import org.jboss.forge.arquillian.archive.AddonArchive;
@@ -48,9 +50,15 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 
+/**
+ * Creates {@link DeploymentDescription} instances from annotated test cases - handles {@link AddonDeployments} and
+ * {@link AddonDependencies}.
+ * 
+ * @author <a href="lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
+ */
+@SuppressWarnings("deprecation")
 public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGenerator
 {
-
    Map<String, String> dependencyMap;
 
    @Override
@@ -67,7 +75,8 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
             primaryDeployment = generateDeployment(deploymentMethod);
 
             if (deploymentMethod.isAnnotationPresent(AddonDeployments.class)
-                     || deploymentMethod.isAnnotationPresent(AddonDependencies.class))
+                     || deploymentMethod.isAnnotationPresent(AddonDependencies.class)
+                     || deploymentMethod.isAnnotationPresent(Dependencies.class))
             {
                deployments.addAll(generateAnnotatedDeployments(primaryDeployment, testClass.getJavaClass(),
                         deploymentMethod));
@@ -86,8 +95,7 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
    }
 
    private Collection<DeploymentDescription> generateAnnotatedDeployments(DeploymentDescription primaryDeployment,
-            Class<?> classUnderTest,
-            Method deploymentMethod)
+            Class<?> classUnderTest, Method deploymentMethod)
    {
       Collection<DeploymentDescription> deployments = new ArrayList<DeploymentDescription>();
 
@@ -96,7 +104,6 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
       {
          if (annotation instanceof AddonDeployments)
          {
-
             AddonDeployments addonDeployments = (AddonDeployments) annotation;
             if (addonDeployments.value() != null)
             {
@@ -112,7 +119,10 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
                            addonDeployment.imported(),
                            addonDeployment.exported(),
                            addonDeployment.optional(),
-                           addonDeployment.listener());
+                           addonDeployment.listener(),
+                           addonDeployment.timeout(),
+                           addonDeployment.timeoutUnit(),
+                           addonDeployment.shouldThrowException());
                }
             }
          }
@@ -133,7 +143,34 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
                            addonDependency.imported(),
                            addonDependency.exported(),
                            addonDependency.optional(),
-                           addonDependency.listener());
+                           addonDependency.listener(),
+                           addonDependency.timeout(),
+                           addonDependency.timeoutUnit(),
+                           addonDependency.shouldThrowException());
+               }
+            }
+         }
+         else if (annotation instanceof Dependencies)
+         {
+            Dependencies addonDependencies = (Dependencies) annotation;
+            if (addonDependencies.value() != null)
+            {
+               for (AddonDependency addonDependency : addonDependencies.value())
+               {
+                  createAnnotatedDeployment(primaryDeployment,
+                           classUnderTest,
+                           deploymentMethod,
+                           deployments,
+                           addonDependency.name(),
+                           addonDependency.version(),
+                           AddonDependency.class.getSimpleName(),
+                           addonDependency.imported(),
+                           addonDependency.exported(),
+                           addonDependency.optional(),
+                           addonDependency.listener(),
+                           addonDependency.timeout(),
+                           addonDependency.timeoutUnit(),
+                           addonDependency.shouldThrowException());
                }
             }
          }
@@ -145,8 +182,12 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
    public void createAnnotatedDeployment(DeploymentDescription primaryDeployment, Class<?> classUnderTest,
             Method deploymentMethod, Collection<DeploymentDescription> deployments, String addonName,
             String addonVersion, String annotationSimpleName, boolean imported, boolean exported, boolean optional,
-            Class<? extends DeploymentListener> listener)
+            Class<? extends DeploymentListener>[] listenerClasses, int timeoutQuantity, TimeUnit timeoutUnit,
+            Class<? extends Exception> expectedException)
    {
+      /*
+       * Resolve version of annotated deployment (if possible)f
+       */
       String version;
       if (addonVersion.isEmpty())
       {
@@ -166,12 +207,24 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
       AddonId id = AddonId.from(addonName, version);
       AddonDeploymentArchive archive = ShrinkWrap.create(AddonDeploymentArchive.class).setAddonId(id);
 
+      /*
+       * Configure deploymenet timeout
+       */
+      archive.setDeploymentTimeoutUnit(timeoutUnit);
+      archive.setDeploymentTimeoutQuantity(timeoutQuantity);
+
+      /*
+       * Configure target repository
+       */
       if (Annotations.isAnnotationPresent(deploymentMethod, DeployToRepository.class))
       {
          archive.setAddonRepository(Annotations.getAnnotation(deploymentMethod, DeployToRepository.class)
                   .value());
       }
 
+      /*
+       * Configure automatic dependency registration to parent Archive
+       */
       if (imported)
       {
          AddonDependencyEntry dependency =
@@ -179,25 +232,38 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
          ((AddonArchive) primaryDeployment.getArchive()).addAsAddonDependencies(dependency);
       }
 
-      if (DeploymentListener.class.equals(listener))
+      /*
+       * Configure deployment listeners
+       */
+      for (Class<? extends DeploymentListener> listenerClass : listenerClasses)
       {
-         archive.setDeploymentListener(NullDeploymentListener.INSTANCE);
-      }
-      else
-      {
+         if (DeploymentListener.class.equals(listenerClass))
+            continue; // do nothing for the default
+
          try
          {
-            archive.setDeploymentListener(listener.newInstance());
+            archive.addDeploymentListener(listenerClass.newInstance());
          }
          catch (Exception e)
          {
             throw new RuntimeException("Could not instantiate " + DeploymentListener.class.getSimpleName()
-                     + " of type " + listener.getName(), e);
+                     + " of type " + listenerClass.getName(), e);
          }
       }
 
       DeploymentDescription deploymentDescription = new DeploymentDescription(id.toCoordinates(), archive);
+
+      /*
+       * Don't package supporting test classes in annotation deployments
+       */
       deploymentDescription.shouldBeTestable(false);
+
+      /*
+       * Configure expected deployment exception
+       */
+      if (!NullException.class.isAssignableFrom(expectedException))
+         deploymentDescription.setExpectedException(expectedException);
+
       deployments.add(deploymentDescription);
    }
 

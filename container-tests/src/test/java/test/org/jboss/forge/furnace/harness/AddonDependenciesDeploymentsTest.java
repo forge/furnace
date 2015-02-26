@@ -15,6 +15,7 @@ import org.jboss.forge.arquillian.AddonDependencies;
 import org.jboss.forge.arquillian.AddonDependency;
 import org.jboss.forge.arquillian.AddonDeployment;
 import org.jboss.forge.arquillian.AddonDeployments;
+import org.jboss.forge.arquillian.Dependencies;
 import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.furnace.addons.Addon;
@@ -31,7 +32,8 @@ import test.org.jboss.forge.furnace.util.TestRepositoryDeploymentListener;
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
 @RunWith(Arquillian.class)
-public class AddonDependenciesTest
+@SuppressWarnings("deprecation")
+public class AddonDependenciesDeploymentsTest
 {
    private static final String TEST_NO_DEP = "test:no_dep";
    private static final String TEST_ONE_DEP = "test:one_dep";
@@ -43,14 +45,16 @@ public class AddonDependenciesTest
             @AddonDeployment(name = TEST_ONE_DEP_A, version = "1.0.0.Final", listener = TestRepositoryDeploymentListener.class),
             @AddonDeployment(name = TEST_NO_DEP, version = "1.0.0.Final", listener = TestRepositoryDeploymentListener.class, imported = true)
    })
-   @AddonDependencies({
+   @Dependencies({
             @AddonDependency(name = TEST_ONE_DEP, version = "1.0.0.Final", listener = TestRepositoryDeploymentListener.class),
+   })
+   @AddonDependencies({
             @AddonDependency(name = TEST_ONE_DEP_LIB, version = "1.0.0.Final", listener = TestRepositoryDeploymentListener.class, imported = false)
    })
    public static AddonArchive getDeployment() throws Exception
    {
       AddonArchive archive = ShrinkWrap.create(AddonArchive.class);
-      archive.addAsLocalServices(AddonDependenciesTest.class);
+      archive.addAsLocalServices(AddonDependenciesDeploymentsTest.class);
       return archive;
    }
 

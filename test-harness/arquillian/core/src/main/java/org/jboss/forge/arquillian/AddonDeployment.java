@@ -11,8 +11,11 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.concurrent.TimeUnit;
 
+import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.forge.arquillian.impl.NullException;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonId;
 
@@ -57,7 +60,24 @@ public @interface AddonDeployment
    boolean optional() default false;
 
    /**
+    * Set the quantity of {@link TimeUnit} after which a {@link DeploymentException} should be thrown if this
+    * {@link AddonDeployment} has not yet finished deploying. (Default {@link TimeUnit#MILLISECONDS}).
+    */
+   int timeout() default 10000;
+
+   /**
+    * Set the {@link TimeUnit} after which a {@link DeploymentException} should be thrown if this
+    * {@link AddonDeployment} has not yet finished deploying. (Default {@link TimeUnit#MILLISECONDS}).
+    */
+   TimeUnit timeoutUnit() default TimeUnit.MILLISECONDS;
+
+   /**
     * Set the {@link DeploymentListener} for this {@link AddonDeployment}.
     */
-   Class<? extends DeploymentListener> listener() default DeploymentListener.class;
+   Class<? extends DeploymentListener>[] listener() default DeploymentListener.class;
+
+   /**
+    * Set the expected deployment exception for this {@link AddonDependency}
+    */
+   Class<? extends Exception> shouldThrowException() default NullException.class;
 }
