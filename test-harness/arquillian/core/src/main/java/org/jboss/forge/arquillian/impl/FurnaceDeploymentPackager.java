@@ -16,8 +16,12 @@ import org.jboss.arquillian.container.test.spi.TestDeployment;
 import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPackager;
 import org.jboss.arquillian.container.test.spi.client.deployment.ProtocolArchiveProcessor;
 import org.jboss.forge.arquillian.AddonDeployment;
+import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.archive.AddonArchiveBase;
+import org.jboss.forge.arquillian.archive.AddonDependencyAware;
 import org.jboss.forge.arquillian.archive.AddonDeploymentArchive;
+import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.arquillian.archive.RepositoryLocationAware;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.Filter;
@@ -28,6 +32,7 @@ public class FurnaceDeploymentPackager implements DeploymentPackager
 
    private Pattern SHRINKWRAP_DESCRIPTOR_PATTERN = Pattern.compile("/org/jboss/shrinkwrap/descriptor/.*");
 
+   @SuppressWarnings("deprecation")
    @Override
    public Archive<?> generateDeployment(TestDeployment testDeployment, Collection<ProtocolArchiveProcessor> processors)
    {
@@ -65,7 +70,8 @@ public class FurnaceDeploymentPackager implements DeploymentPackager
          /*
           * Ensure that all test harness classes are available in the addon under test.
           */
-         deployment.addPackages(true, AddonDeployment.class.getPackage());
+         deployment.addClasses(ForgeArchive.class, AddonArchive.class, AddonArchiveBase.class,
+                  RepositoryLocationAware.class, AddonDependencyAware.class);
          return deployment;
       }
       else if (applicationArchive instanceof AddonDeploymentArchive)

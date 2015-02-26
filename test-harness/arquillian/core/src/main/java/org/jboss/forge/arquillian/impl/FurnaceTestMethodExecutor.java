@@ -225,7 +225,6 @@ public class FurnaceTestMethodExecutor implements ContainerMethodExecutor
          }
          else
          {
-
             for (Addon addon : furnace.getAddonRegistry().getAddons())
             {
                try
@@ -243,8 +242,33 @@ public class FurnaceTestMethodExecutor implements ContainerMethodExecutor
                            e.getCause());
                }
             }
-            throw new IllegalStateException(
-                     "Test runner could not locate test class [" + testClassName + "] in any deployed Addon.");
+
+            for (Addon addon : furnace.getAddonRegistry().getAddons())
+            {
+               if (addon.getClassLoader() != null)
+               {
+                  try
+                  {
+                     Class<?> clazz = addon.getClassLoader().loadClass(testClassName);
+                     Object instance = clazz.newInstance();
+                  }
+                  catch (ClassNotFoundException e)
+                  {
+                     if (e.getCause() != e && e.getCause() != null)
+                     {
+                        throw new IllegalStateException("Test runner could not locate test class [" + testClassName
+                                 + "] in any deployed Addon.", e.getCause());
+                     }
+                  }
+                  catch (Exception e)
+                  {
+                     throw new IllegalStateException("Test runner could not locate test class [" + testClassName
+                              + "] in any deployed Addon.", e.getCause());
+                  }
+               }
+            }
+            throw new IllegalStateException("Test runner could not locate test class [" + testClassName
+                     + "] in any deployed Addon - Reason unknown.");
          }
       }
       catch (RuntimeException e)
