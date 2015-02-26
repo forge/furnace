@@ -17,6 +17,7 @@ import org.jboss.forge.arquillian.AddonDependency;
 import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.furnace.Furnace;
+import org.jboss.forge.furnace.StrictnessPolicies;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonStatus;
@@ -68,7 +69,7 @@ public class StrictModeEnabledByDefaultTest
    public void testDependenciesAreCorrectlyDeployedAndAssigned()
    {
       Furnace furnace = LocalServices.getFurnace(getClass().getClassLoader());
-      Assert.assertTrue(furnace.isStrictMode());
+      Assert.assertSame(StrictnessPolicies.STRICT, furnace.getStrictnessPolicy());
       Addon self = LocalServices.getAddon(getClass().getClassLoader());
 
       Set<org.jboss.forge.furnace.addons.AddonDependency> dependencies = self.getDependencies();
