@@ -250,7 +250,7 @@ public class FurnaceTestMethodExecutor implements ContainerMethodExecutor
                   try
                   {
                      Class<?> clazz = addon.getClassLoader().loadClass(testClassName);
-                     Object instance = clazz.newInstance();
+                     clazz.newInstance();
                   }
                   catch (ClassNotFoundException e)
                   {
