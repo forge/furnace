@@ -23,6 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.Furnace;
+import org.jboss.forge.furnace.addons.AddonCompatibilityStrategy;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.impl.util.Files;
 import org.jboss.forge.furnace.lock.LockManager;
@@ -30,7 +31,6 @@ import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.repositories.MutableAddonRepository;
-import org.jboss.forge.furnace.spi.StrictnessPolicy;
 import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.util.OperatingSystemUtils;
 import org.jboss.forge.furnace.util.Streams;
@@ -509,7 +509,7 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
    @Override
    public List<AddonId> listEnabled()
    {
-      final StrictnessPolicy policy = furnace.getStrictnessPolicy();
+      final AddonCompatibilityStrategy policy = furnace.getAddonCompatibilityStrategy();
       return lock.performLocked(LockMode.READ, new Callable<List<AddonId>>()
       {
          @Override

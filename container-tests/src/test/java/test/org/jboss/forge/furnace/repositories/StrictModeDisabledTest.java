@@ -16,10 +16,10 @@ import org.jboss.forge.arquillian.AddonDependency;
 import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.furnace.Furnace;
-import org.jboss.forge.furnace.StrictnessPolicies;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonStatus;
+import org.jboss.forge.furnace.util.AddonCompatibilityStrategies;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.junit.Assert;
 import org.junit.Test;
@@ -69,7 +69,7 @@ public class StrictModeDisabledTest
    public void testDependenciesAreCorrectlyDeployedAndAssigned()
    {
       Furnace furnace = LocalServices.getFurnace(getClass().getClassLoader());
-      Assert.assertSame(StrictnessPolicies.LENIENT, furnace.getStrictnessPolicy());
+      Assert.assertSame(AddonCompatibilityStrategies.LENIENT, furnace.getAddonCompatibilityStrategy());
 
       Addon self = LocalServices.getAddon(getClass().getClassLoader());
 

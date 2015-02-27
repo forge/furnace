@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.ContainerStatus;
 import org.jboss.forge.furnace.Furnace;
-import org.jboss.forge.furnace.StrictnessPolicies;
+import org.jboss.forge.furnace.addons.AddonCompatibilityStrategy;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.addons.AddonView;
 import org.jboss.forge.furnace.impl.addons.AddonLifecycleManager;
@@ -44,13 +44,15 @@ import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 import org.jboss.forge.furnace.spi.ContainerLifecycleListener;
 import org.jboss.forge.furnace.spi.ListenerRegistration;
-import org.jboss.forge.furnace.spi.StrictnessPolicy;
+import org.jboss.forge.furnace.util.AddonCompatibilityStrategies;
 import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.versions.Version;
 import org.jboss.modules.Module;
 import org.jboss.modules.log.StreamModuleLogger;
 
 /**
+ * Implementation for the {@link Furnace} interface
+ * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
 public class FurnaceImpl implements Furnace
@@ -84,7 +86,7 @@ public class FurnaceImpl implements Furnace
    boolean firedAfterStart = false;
 
    private WatchService watcher;
-   private StrictnessPolicy strictnessPolicy = StrictnessPolicies.STRICT;
+   private AddonCompatibilityStrategy addonCompatibilityStrategy = AddonCompatibilityStrategies.STRICT;
 
    public FurnaceImpl()
    {
@@ -514,9 +516,9 @@ public class FurnaceImpl implements Furnace
    }
 
    @Override
-   public void setStrictnessPolicy(final StrictnessPolicy policy)
+   public void setAddonCompatibilityStrategy(final AddonCompatibilityStrategy strategy)
    {
-      Assert.notNull(policy, "StrictnessPolicy cannot be null");
+      Assert.notNull(strategy, "AddonCompatibilityStrategy cannot be null");
       if (isAlive())
       {
          lock.performLocked(LockMode.WRITE, new Callable<Void>()
@@ -524,7 +526,7 @@ public class FurnaceImpl implements Furnace
             @Override
             public Void call() throws Exception
             {
-               FurnaceImpl.this.strictnessPolicy = policy;
+               FurnaceImpl.this.addonCompatibilityStrategy = strategy;
                reloadConfiguration();
                return null;
             }
@@ -532,14 +534,14 @@ public class FurnaceImpl implements Furnace
       }
       else
       {
-         FurnaceImpl.this.strictnessPolicy = policy;
+         FurnaceImpl.this.addonCompatibilityStrategy = strategy;
       }
    }
 
    @Override
-   public StrictnessPolicy getStrictnessPolicy()
+   public AddonCompatibilityStrategy getAddonCompatibilityStrategy()
    {
-      return this.strictnessPolicy;
+      return this.addonCompatibilityStrategy;
    }
 
    /*

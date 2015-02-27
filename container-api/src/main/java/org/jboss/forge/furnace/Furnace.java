@@ -11,13 +11,14 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 import org.jboss.forge.furnace.addons.Addon;
+import org.jboss.forge.furnace.addons.AddonCompatibilityStrategy;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 import org.jboss.forge.furnace.spi.ContainerLifecycleListener;
 import org.jboss.forge.furnace.spi.ListenerRegistration;
-import org.jboss.forge.furnace.spi.StrictnessPolicy;
+import org.jboss.forge.furnace.util.AddonCompatibilityStrategies;
 import org.jboss.forge.furnace.versions.Version;
 
 /**
@@ -139,15 +140,15 @@ public interface Furnace
    public boolean isTestMode();
 
    /**
-    * Sets the {@link StrictnessPolicy} for this {@link Furnace} instance. This policy is used to determine version compatibility when loading addons.
+    * Sets the {@link AddonCompatibilityStrategy} for this {@link Furnace} instance. This policy is used to determine version compatibility when loading addons.
     * 
-    * Default is {@link StrictnessPolicies#STRICT}
+    * Default is {@link AddonCompatibilityStrategies#STRICT}
     */
-   public void setStrictnessPolicy(StrictnessPolicy policy);
+   public void setAddonCompatibilityStrategy(AddonCompatibilityStrategy policy);
 
    /**
-    * Returns the current {@link StrictnessPolicy} for this {@link Furnace} instance.
+    * Returns the current {@link AddonCompatibilityStrategy} for this {@link Furnace} instance.
     */
-   public StrictnessPolicy getStrictnessPolicy();
+   public AddonCompatibilityStrategy getAddonCompatibilityStrategy();
 
 }

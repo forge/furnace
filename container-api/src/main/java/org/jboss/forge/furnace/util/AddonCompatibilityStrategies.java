@@ -5,18 +5,19 @@
  * http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.jboss.forge.furnace;
+package org.jboss.forge.furnace.util;
 
+import org.jboss.forge.furnace.Furnace;
+import org.jboss.forge.furnace.addons.AddonCompatibilityStrategy;
 import org.jboss.forge.furnace.addons.AddonId;
-import org.jboss.forge.furnace.spi.StrictnessPolicy;
 import org.jboss.forge.furnace.versions.Versions;
 
 /**
- * The available {@link StrictnessPolicy} implementations
+ * The available {@link AddonCompatibilityStrategy} implementations
  * 
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  */
-public enum StrictnessPolicies implements StrictnessPolicy
+public enum AddonCompatibilityStrategies implements AddonCompatibilityStrategy
 {
    /**
     * A strict policy allows an addon to be loaded only when the {@link AddonId#getApiVersion()} is compatible with
