@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.ContainerStatus;
 import org.jboss.forge.furnace.Furnace;
+import org.jboss.forge.furnace.StrictnessPolicies;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.addons.AddonView;
 import org.jboss.forge.furnace.impl.addons.AddonLifecycleManager;
@@ -43,6 +44,7 @@ import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 import org.jboss.forge.furnace.spi.ContainerLifecycleListener;
 import org.jboss.forge.furnace.spi.ListenerRegistration;
+import org.jboss.forge.furnace.spi.StrictnessPolicy;
 import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.versions.Version;
 import org.jboss.modules.Module;
@@ -82,7 +84,7 @@ public class FurnaceImpl implements Furnace
    boolean firedAfterStart = false;
 
    private WatchService watcher;
-   protected boolean strictMode = true;
+   private StrictnessPolicy strictnessPolicy = StrictnessPolicies.STRICT;
 
    public FurnaceImpl()
    {
@@ -512,8 +514,9 @@ public class FurnaceImpl implements Furnace
    }
 
    @Override
-   public void setStrictMode(final boolean strict)
+   public void setStrictnessPolicy(final StrictnessPolicy policy)
    {
+      Assert.notNull(policy, "StrictnessPolicy cannot be null");
       if (isAlive())
       {
          lock.performLocked(LockMode.WRITE, new Callable<Void>()
@@ -521,7 +524,7 @@ public class FurnaceImpl implements Furnace
             @Override
             public Void call() throws Exception
             {
-               FurnaceImpl.this.strictMode = strict;
+               FurnaceImpl.this.strictnessPolicy = policy;
                reloadConfiguration();
                return null;
             }
@@ -529,14 +532,14 @@ public class FurnaceImpl implements Furnace
       }
       else
       {
-         FurnaceImpl.this.strictMode = strict;
+         FurnaceImpl.this.strictnessPolicy = policy;
       }
    }
 
    @Override
-   public boolean isStrictMode()
+   public StrictnessPolicy getStrictnessPolicy()
    {
-      return this.strictMode;
+      return this.strictnessPolicy;
    }
 
    /*

@@ -17,6 +17,7 @@ import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 import org.jboss.forge.furnace.spi.ContainerLifecycleListener;
 import org.jboss.forge.furnace.spi.ListenerRegistration;
+import org.jboss.forge.furnace.spi.StrictnessPolicy;
 import org.jboss.forge.furnace.versions.Version;
 
 /**
@@ -138,16 +139,15 @@ public interface Furnace
    public boolean isTestMode();
 
    /**
-    * Set this {@link Furnace} instance to use strict {@link Version} checking when loading addons. If enabled, addons
-    * with an {@link Furnace} API version higher than the current {@link Furnace} runtime version will not be loaded. If
-    * disabled, addons will be loaded regardless of the {@link Furnace} runtime version on which they depend. (Defaults
-    * to <code>true</code>.)
+    * Sets for this {@link Furnace} instance the {@link StrictnessPolicy} used when loading addons.
+    * 
+    * Default is {@link StrictnessPolicies#STRICT}
     */
-   public void setStrictMode(boolean strict);
+   public void setStrictnessPolicy(StrictnessPolicy policy);
 
    /**
-    * Return <code>true</code> if this {@link Furnace} instance is using strict {@link Version} checking.
+    * Returns the {@link StrictnessPolicy} set for this {@link Furnace} instance.
     */
-   public boolean isStrictMode();
+   public StrictnessPolicy getStrictnessPolicy();
 
 }

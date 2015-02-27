@@ -30,6 +30,7 @@ import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.repositories.MutableAddonRepository;
+import org.jboss.forge.furnace.spi.StrictnessPolicy;
 import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.util.OperatingSystemUtils;
 import org.jboss.forge.furnace.util.Streams;
@@ -508,10 +509,25 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
    @Override
    public List<AddonId> listEnabled()
    {
-      if (furnace.isStrictMode())
-         return listEnabledCompatibleWithVersion(getRuntimeAPIVersion());
-      else
-         return listEnabledCompatibleWithVersion(null);
+      final StrictnessPolicy policy = furnace.getStrictnessPolicy();
+      return lock.performLocked(LockMode.READ, new Callable<List<AddonId>>()
+      {
+         @Override
+         public List<AddonId> call() throws Exception
+         {
+            List<AddonId> list = listAll();
+            List<AddonId> result = new ArrayList<>();
+            for (AddonId entry : list)
+            {
+               if (policy.isCompatible(furnace, entry))
+               {
+                  result.add(entry);
+               }
+            }
+            return result;
+         }
+      });
+
    }
 
    @Override
@@ -523,9 +539,7 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
          public List<AddonId> call() throws Exception
          {
             List<AddonId> list = listAll();
-            List<AddonId> result = list;
-
-            result = new ArrayList<AddonId>();
+            List<AddonId> result = new ArrayList<>();
             for (AddonId entry : list)
             {
                if (version == null || entry.getApiVersion() == null

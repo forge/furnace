@@ -2,6 +2,7 @@ package test.org.jboss.forge.furnace.util;
 
 import org.jboss.forge.arquillian.DeploymentListener;
 import org.jboss.forge.furnace.Furnace;
+import org.jboss.forge.furnace.StrictnessPolicies;
 import org.jboss.shrinkwrap.api.Archive;
 
 /**
@@ -14,7 +15,7 @@ public class FurnaceDisableStrictModeDeploymentListener implements DeploymentLis
    @Override
    public void preDeploy(Furnace furnace, Archive<?> archive) throws Exception
    {
-      furnace.setStrictMode(false);
+      furnace.setStrictnessPolicy(StrictnessPolicies.LENIENT);
    }
 
    @Override
@@ -30,6 +31,6 @@ public class FurnaceDisableStrictModeDeploymentListener implements DeploymentLis
    @Override
    public void postUndeploy(Furnace furnace, Archive<?> archive) throws Exception
    {
-      furnace.setStrictMode(true);
+      furnace.setStrictnessPolicy(StrictnessPolicies.STRICT);
    }
 }
