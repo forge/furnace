@@ -74,7 +74,7 @@ public @interface AddonDeployment
    /**
     * Set the {@link DeploymentListener} for this {@link AddonDeployment}.
     */
-   Class<? extends DeploymentListener>[] listener() default DeploymentListener.class;
+   Class<? extends DeploymentListener>[] listener() default {};
 
    /**
     * Set the expected deployment exception for this {@link AddonDependency}
