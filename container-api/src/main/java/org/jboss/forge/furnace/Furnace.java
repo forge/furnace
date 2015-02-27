@@ -139,14 +139,14 @@ public interface Furnace
    public boolean isTestMode();
 
    /**
-    * Sets for this {@link Furnace} instance the {@link StrictnessPolicy} used when loading addons.
+    * Sets the {@link StrictnessPolicy} for this {@link Furnace} instance. This policy is used to determine version compatibility when loading addons.
     * 
     * Default is {@link StrictnessPolicies#STRICT}
     */
    public void setStrictnessPolicy(StrictnessPolicy policy);
 
    /**
-    * Returns the {@link StrictnessPolicy} set for this {@link Furnace} instance.
+    * Returns the current {@link StrictnessPolicy} for this {@link Furnace} instance.
     */
    public StrictnessPolicy getStrictnessPolicy();
 
