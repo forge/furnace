@@ -16,7 +16,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 
 /**
  * Contains multiple {@link AddonDeployment} instances that must be deployed before this {@link Deployment} may be
- * performed. (May be used to establish dependencies as shorthand notation for
+ * performed.
  * 
  * @author <a href="lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
