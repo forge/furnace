@@ -46,6 +46,7 @@ import org.jboss.forge.furnace.spi.ContainerLifecycleListener;
 import org.jboss.forge.furnace.spi.ListenerRegistration;
 import org.jboss.forge.furnace.util.AddonCompatibilityStrategies;
 import org.jboss.forge.furnace.util.Assert;
+import org.jboss.forge.furnace.util.Strings;
 import org.jboss.forge.furnace.versions.Version;
 import org.jboss.modules.Module;
 import org.jboss.modules.log.StreamModuleLogger;
@@ -57,6 +58,7 @@ import org.jboss.modules.log.StreamModuleLogger;
  */
 public class FurnaceImpl implements Furnace
 {
+   public static final String FURNACE_ADDON_COMPATIBILITY_PROPERTY = "furnace.addons.compatibility";
    public static final String FURNACE_LOGGING_LEAK_CLASSLOADERS_PROPERTY = "furnace.logging.leak";
    public static final String FURNACE_DEBUG_PROPERTY = "furnace.debug";
    public static final String TEST_MODE_PROPERTY = "furnace.test.mode";
@@ -94,6 +96,39 @@ public class FurnaceImpl implements Furnace
       {
          logger.warning("Could not detect Furnace runtime version - " +
                   "loading all addons, but failures may occur if versions are not compatible.");
+      }
+
+      String addonCompatibilityValue = System.getProperty(FURNACE_ADDON_COMPATIBILITY_PROPERTY);
+      if (!Strings.isNullOrEmpty(addonCompatibilityValue))
+      {
+         AddonCompatibilityStrategy strategy = null;
+         try
+         {
+            strategy = AddonCompatibilityStrategies.valueOf(addonCompatibilityValue);
+         }
+         catch (IllegalArgumentException iae)
+         {
+            // It's not an enum value, must be a fully qualified class name
+            try
+            {
+               strategy = (AddonCompatibilityStrategy) Class.forName(addonCompatibilityValue).newInstance();
+            }
+            catch (Exception e)
+            {
+               logger.log(Level.SEVERE, "Error while loading class " + addonCompatibilityValue, e);
+            }
+         }
+         if (strategy == null)
+         {
+            logger.warning("'" + addonCompatibilityValue + "' is not a valid value for the '"
+                     + FURNACE_ADDON_COMPATIBILITY_PROPERTY + "' property. Possible values are: "
+                     + Arrays.toString(AddonCompatibilityStrategies.values())
+                     + " or a fully qualified class name. Assuming default value.");
+         }
+         else
+         {
+            setAddonCompatibilityStrategy(strategy);
+         }
       }
 
       if (!Boolean.getBoolean(FURNACE_LOGGING_LEAK_CLASSLOADERS_PROPERTY))
