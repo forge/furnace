@@ -108,14 +108,14 @@ public class FurnaceImpl implements Furnace
          }
          catch (IllegalArgumentException iae)
          {
-            // It's not an enum value, must be a fully qualified class name
             try
             {
                strategy = (AddonCompatibilityStrategy) Class.forName(addonCompatibilityValue).newInstance();
             }
             catch (Exception e)
             {
-               logger.log(Level.SEVERE, "Error while loading class " + addonCompatibilityValue, e);
+               logger.log(Level.SEVERE, "Error loading [" + addonCompatibilityValue 
+                     + "] defined by system property `" + FURNACE_ADDON_COMPATIBILITY_PROPERTY + "` ", e);
             }
          }
          if (strategy == null)
