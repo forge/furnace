@@ -509,7 +509,7 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
    @Override
    public List<AddonId> listEnabled()
    {
-      final AddonCompatibilityStrategy policy = furnace.getAddonCompatibilityStrategy();
+      final AddonCompatibilityStrategy strategy = furnace.getAddonCompatibilityStrategy();
       return lock.performLocked(LockMode.READ, new Callable<List<AddonId>>()
       {
          @Override
@@ -519,7 +519,7 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
             List<AddonId> result = new ArrayList<>();
             for (AddonId entry : list)
             {
-               if (policy.isCompatible(furnace, entry))
+               if (strategy.isCompatible(furnace, entry))
                {
                   result.add(entry);
                }
