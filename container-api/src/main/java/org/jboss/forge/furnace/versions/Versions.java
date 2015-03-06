@@ -247,4 +247,23 @@ public class Versions
    {
       return version.toString().endsWith(SNAPSHOT_SUFFIX);
    }
+
+   /**
+    * Returns the Implementation version for the given {@link Class}
+    * 
+    * @param type the {@link Class} with the corresponding package
+    * @return {@link Version} representation from the {@link Package#getImplementationVersion()} returned from
+    *         {@link Class#getPackage()}
+    */
+   public static Version getImplementationVersionFor(Class<?> type)
+   {
+      String version = type.getPackage().getImplementationVersion();
+      if (version != null)
+      {
+         return new SingleVersion(version);
+      }
+
+      return EmptyVersion.getInstance();
+   }
+
 }

@@ -86,15 +86,7 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
       {
          return new SingleVersion(versionOverride);
       }
-
-      String version = AddonRepository.class.getPackage()
-               .getImplementationVersion();
-      if (version != null)
-      {
-         return new SingleVersion(version);
-      }
-
-      return EmptyVersion.getInstance();
+      return Versions.getImplementationVersionFor(AddonRepository.class);
    }
 
    public static boolean hasRuntimeAPIVersion()
