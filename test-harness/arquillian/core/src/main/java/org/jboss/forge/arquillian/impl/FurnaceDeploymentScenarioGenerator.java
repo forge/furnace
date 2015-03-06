@@ -38,6 +38,7 @@ import org.jboss.forge.arquillian.Dependencies;
 import org.jboss.forge.arquillian.DeployToRepository;
 import org.jboss.forge.arquillian.DeploymentListener;
 import org.jboss.forge.arquillian.archive.AddonArchive;
+import org.jboss.forge.arquillian.archive.AddonArchiveBase;
 import org.jboss.forge.arquillian.archive.AddonDeploymentArchive;
 import org.jboss.forge.arquillian.archive.RepositoryLocationAware;
 import org.jboss.forge.arquillian.maven.ProjectHelper;
@@ -229,7 +230,7 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
       {
          AddonDependencyEntry dependency =
                   AddonDependencyEntry.create(addonName, addonVersion, exported, optional);
-         ((AddonArchive) primaryDeployment.getArchive()).addAsAddonDependencies(dependency);
+         ((AddonArchiveBase<?>) primaryDeployment.getArchive()).addAsAddonDependencies(dependency);
       }
 
       /*
