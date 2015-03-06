@@ -63,7 +63,7 @@
             <activeByDefault>true</activeByDefault>
          </activation>
          <modules>
-
+            <module>bom</module>
             <module>container</module>
             <module>container-api</module>
             <module>container-tests</module>
