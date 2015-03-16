@@ -14,6 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jboss.forge.furnace.util.Assert;
+import org.jboss.forge.furnace.util.Strings;
 
 /**
  * Utility for interacting with {@link Version} instances.
@@ -249,6 +250,23 @@ public class Versions
    }
 
    /**
+    * Returns the Specification version for the given {@link Class}
+    * 
+    * @param type the {@link Class} with the corresponding package
+    * @return {@link Version} representation from the {@link Package#getSpecificationVersion()} returned from
+    *         {@link Class#getPackage()}
+    */
+   public static Version getSpecificationVersionFor(Class<?> type)
+   {
+      String version = type.getPackage().getSpecificationVersion();
+      if (Strings.isNullOrEmpty(version))
+      {
+         return EmptyVersion.getInstance();
+      }
+      return new SingleVersion(version);
+   }
+
+   /**
     * Returns the Implementation version for the given {@link Class}
     * 
     * @param type the {@link Class} with the corresponding package
@@ -258,12 +276,11 @@ public class Versions
    public static Version getImplementationVersionFor(Class<?> type)
    {
       String version = type.getPackage().getImplementationVersion();
-      if (version != null)
+      if (Strings.isNullOrEmpty(version))
       {
-         return new SingleVersion(version);
+         return EmptyVersion.getInstance();
       }
-
-      return EmptyVersion.getInstance();
+      return new SingleVersion(version);
    }
 
 }
