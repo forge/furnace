@@ -258,12 +258,25 @@ public class Versions
     */
    public static Version getSpecificationVersionFor(Class<?> type)
    {
-      String version = type.getPackage().getSpecificationVersion();
-      if (Strings.isNullOrEmpty(version))
+      final Version result;
+      Package pkg = type.getPackage();
+      if (pkg == null)
       {
-         return EmptyVersion.getInstance();
+         result = EmptyVersion.getInstance();
       }
-      return new SingleVersion(version);
+      else
+      {
+         String version = pkg.getSpecificationVersion();
+         if (Strings.isNullOrEmpty(version))
+         {
+            result = EmptyVersion.getInstance();
+         }
+         else
+         {
+            result = new SingleVersion(version);
+         }
+      }
+      return result;
    }
 
    /**
@@ -275,12 +288,25 @@ public class Versions
     */
    public static Version getImplementationVersionFor(Class<?> type)
    {
-      String version = type.getPackage().getImplementationVersion();
-      if (Strings.isNullOrEmpty(version))
+      final Version result;
+      Package pkg = type.getPackage();
+      if (pkg == null)
       {
-         return EmptyVersion.getInstance();
+         result = EmptyVersion.getInstance();
       }
-      return new SingleVersion(version);
+      else
+      {
+         String version = pkg.getImplementationVersion();
+         if (Strings.isNullOrEmpty(version))
+         {
+            result = EmptyVersion.getInstance();
+         }
+         else
+         {
+            result = new SingleVersion(version);
+         }
+      }
+      return result;
    }
 
 }
