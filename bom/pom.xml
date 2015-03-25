@@ -36,7 +36,7 @@
 
    <issueManagement>
       <system>jira</system>
-      <url>https://jira.jboss.org/jira/browse/FORGE</url>
+      <url>https://issues.jboss.org/browse/FURNACE</url>
    </issueManagement>
 
    <properties>
