@@ -418,7 +418,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       while (Proxies.isForgeProxy(value))
       {
          final Object handler = Proxies.getForgeProxyHandler(value);
-         if (handler.getClass().getName().equals(ClassLoaderAdapterCallback.class.getName()))
+         if (handler != null && handler.getClass().getName().equals(ClassLoaderAdapterCallback.class.getName()))
             value = Proxies.unwrapOnce(value);
          else
             break;
