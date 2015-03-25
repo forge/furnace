@@ -262,10 +262,10 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                   Object delegateObject = result;
                   if (result instanceof ForgeProxy)
                   {
-                     if ((((ForgeProxy) result).getHandler() instanceof ClassLoaderAdapterCallback))
+                     Object forgeProxy = Proxies.getForgeProxyHandler(result);
+                     if (forgeProxy instanceof ClassLoaderAdapterCallback)
                      {
-                        final ClassLoaderAdapterCallback handler = (ClassLoaderAdapterCallback) ((ForgeProxy) result)
-                                 .getHandler();
+                        final ClassLoaderAdapterCallback handler = (ClassLoaderAdapterCallback) forgeProxy;
                         if (handler.getCallingLoader().equals(getCallingLoader())
                                  && handler.getDelegateLoader().equals(getDelegateLoader()))
                         {
@@ -760,10 +760,10 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                      Object delegateObject = parameterValue;
                      if (parameterValue instanceof ForgeProxy)
                      {
-                        if ((((ForgeProxy) parameterValue).getHandler() instanceof ClassLoaderAdapterCallback))
+                        Object forgeProxy = Proxies.getForgeProxyHandler(parameterValue);
+                        if (forgeProxy instanceof ClassLoaderAdapterCallback)
                         {
-                           final ClassLoaderAdapterCallback handler = (ClassLoaderAdapterCallback) (((ForgeProxy) parameterValue)
-                                    .getHandler());
+                           final ClassLoaderAdapterCallback handler = (ClassLoaderAdapterCallback) forgeProxy;
                            if (handler.getCallingLoader().equals(getCallingLoader())
                                     && handler.getDelegateLoader().equals(getDelegateLoader())
                                     && delegateParameterType.isAssignableFrom(unwrappedValue.getClass()))
