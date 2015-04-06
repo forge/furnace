@@ -117,8 +117,9 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       for (ArtifactResult artifactResult : artifactResults)
       {
          Artifact artifact = artifactResult.getArtifact();
-         if (this.classifier.equals(artifact.getClassifier())
-                  && !addonId.getName().equals(artifact.getGroupId() + ":" + artifact.getArtifactId()))
+         if (isFurnaceAPI(artifact) || 
+                  (this.classifier.equals(artifact.getClassifier())
+                  && !addonId.getName().equals(artifact.getGroupId() + ":" + artifact.getArtifactId())))
          {
             continue;
          }
@@ -200,8 +201,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
             {
                return true;
             }
-            return (FURNACE_API_GROUP_ID.equals(artifact.getGroupId()) && FURNACE_API_ARTIFACT_ID.equals(artifact
-                     .getArtifactId()));
+            return isFurnaceAPI(artifact);
          }
 
          @Override
@@ -417,5 +417,11 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    public boolean isResolveAddonAPIVersions()
    {
       return resolveAddonAPIVersions;
+   }
+
+   private boolean isFurnaceAPI(Artifact artifact)
+   {
+      return (FURNACE_API_GROUP_ID.equals(artifact.getGroupId()) && FURNACE_API_ARTIFACT_ID.equals(artifact
+               .getArtifactId()));
    }
 }
