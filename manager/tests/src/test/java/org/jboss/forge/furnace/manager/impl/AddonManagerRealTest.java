@@ -25,6 +25,7 @@ import org.jboss.forge.furnace.manager.request.DeployRequest;
 import org.jboss.forge.furnace.manager.request.InstallRequest;
 import org.jboss.forge.furnace.manager.spi.AddonDependencyResolver;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
+import org.jboss.forge.furnace.util.OperatingSystemUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,6 +38,7 @@ import org.junit.Test;
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  * 
  */
+@SuppressWarnings("unchecked")
 public class AddonManagerRealTest
 {
 
@@ -50,11 +52,8 @@ public class AddonManagerRealTest
    {
       furnace = ServiceLoader.load(Furnace.class).iterator().next();
       resolver = new MavenAddonDependencyResolver();
-      repository = File.createTempFile("furnace-repo", ".tmp");
-      repository.delete();
-      repository.mkdir();
+      repository = OperatingSystemUtils.createTempDir();
       furnace.addRepository(AddonRepositoryMode.MUTABLE, repository);
-      System.out.println(repository);
       addonManager = new AddonManagerImpl(furnace, resolver);
    }
 
@@ -67,7 +66,6 @@ public class AddonManagerRealTest
       }
    }
 
-   @SuppressWarnings("unchecked")
    @Test
    public void testInstallAddonAddon()
    {
@@ -82,7 +80,6 @@ public class AddonManagerRealTest
    }
 
    // UI Depends on convert, facets, ui-spi, environment
-   @SuppressWarnings("unchecked")
    @Test
    public void testInstallUIAddon() throws IOException
    {
