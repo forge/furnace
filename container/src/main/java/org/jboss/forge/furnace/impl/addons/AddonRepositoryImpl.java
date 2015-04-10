@@ -11,6 +11,7 @@ import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,7 +35,6 @@ import org.jboss.forge.furnace.repositories.MutableAddonRepository;
 import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.util.OperatingSystemUtils;
 import org.jboss.forge.furnace.util.Streams;
-import org.jboss.forge.furnace.versions.EmptyVersion;
 import org.jboss.forge.furnace.versions.SingleVersion;
 import org.jboss.forge.furnace.versions.Version;
 import org.jboss.forge.furnace.versions.Versions;
@@ -439,18 +439,8 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
             {
                if (!registryFile.exists())
                {
-                  registryFile.createNewFile();
-
-                  FileOutputStream out = null;
-                  try
-                  {
-                     out = new FileOutputStream(registryFile);
-                     Streams.write(XMLParser.toXMLInputStream(XMLParser.parse("<installed></installed>")), out);
-                  }
-                  finally
-                  {
-                     Streams.closeQuietly(out);
-                  }
+                  java.nio.file.Files.write(registryFile.toPath(), "<installed/>".getBytes(),
+                           StandardOpenOption.CREATE_NEW);
                }
                return registryFile;
             }
