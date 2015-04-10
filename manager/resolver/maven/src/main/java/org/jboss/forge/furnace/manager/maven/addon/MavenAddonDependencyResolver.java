@@ -117,7 +117,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       for (ArtifactResult artifactResult : artifactResults)
       {
          Artifact artifact = artifactResult.getArtifact();
-         if (isFurnaceAPI(artifact) || 
+         if (isFurnaceAPI(artifact) ||
                   (this.classifier.equals(artifact.getClassifier())
                   && !addonId.getName().equals(artifact.getGroupId() + ":" + artifact.getArtifactId())))
          {
@@ -197,7 +197,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
          public boolean selectDependency(Dependency dependency)
          {
             Artifact artifact = dependency.getArtifact();
-            if (classifier.equals(artifact.getClassifier()))
+            if (isAddon(artifact))
             {
                return true;
             }
@@ -297,10 +297,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
             String scope = dependency.getScope();
             if (scope != null && !optional)
             {
-               if ("compile".equalsIgnoreCase(scope) || "runtime".equalsIgnoreCase(scope))
-                  exported = true;
-               else if ("provided".equalsIgnoreCase(scope))
-                  exported = false;
+               exported = isExported(scope);
             }
             DependencyNode node = traverseAddonGraph(toMavenCoords(childId), system, settings, session);
             AddonInfo addonInfo = fromNode(childId, node, system, settings, session);
@@ -423,5 +420,22 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    {
       return (FURNACE_API_GROUP_ID.equals(artifact.getGroupId()) && FURNACE_API_ARTIFACT_ID.equals(artifact
                .getArtifactId()));
+   }
+
+   /**
+    * @param scope the scope to be tested upon
+    * @return <code>true</code> if the scope indicates an exported dependency
+    */
+   private boolean isExported(String scope)
+   {
+      switch (scope)
+      {
+      case "compile":
+      case "runtime":
+         return true;
+      case "provided":
+      default:
+         return false;
+      }
    }
 }
