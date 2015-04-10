@@ -34,6 +34,7 @@ import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.resolution.DependencyResult;
 import org.eclipse.aether.resolution.VersionRangeRequest;
 import org.eclipse.aether.resolution.VersionRangeResult;
+import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.version.Version;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.manager.maven.MavenContainer;
@@ -430,10 +431,10 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    {
       switch (scope)
       {
-      case "compile":
-      case "runtime":
+      case JavaScopes.COMPILE:
+      case JavaScopes.RUNTIME:
          return true;
-      case "provided":
+      case JavaScopes.PROVIDED:
       default:
          return false;
       }
