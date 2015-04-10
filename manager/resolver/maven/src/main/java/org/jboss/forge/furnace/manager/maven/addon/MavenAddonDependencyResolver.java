@@ -11,7 +11,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import org.apache.maven.settings.Settings;
@@ -28,6 +27,9 @@ import org.eclipse.aether.collection.DependencySelector;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.ArtifactDescriptorException;
+import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
+import org.eclipse.aether.resolution.ArtifactDescriptorResult;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
@@ -45,6 +47,7 @@ import org.jboss.forge.furnace.manager.spi.AddonInfo;
 import org.jboss.forge.furnace.manager.spi.Response;
 import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.util.Strings;
+import org.jboss.forge.furnace.versions.EmptyVersion;
 import org.jboss.forge.furnace.versions.SingleVersion;
 import org.jboss.forge.furnace.versions.Versions;
 
@@ -57,6 +60,7 @@ import org.jboss.forge.furnace.versions.Versions;
 public class MavenAddonDependencyResolver implements AddonDependencyResolver
 {
    private static final String FURNACE_API_GROUP_ID = "org.jboss.forge.furnace";
+   private static final String FURNACE_CONTAINER_GROUP_ID = "org.jboss.forge.furnace.container";
    private static final String FURNACE_API_ARTIFACT_ID = "furnace-api";
 
    public static final String FORGE_ADDON_CLASSIFIER = "forge-addon";
@@ -79,13 +83,68 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    @Override
    public AddonInfo resolveAddonDependencyHierarchy(AddonId addonId)
    {
-      String coords = toMavenCoords(addonId);
-      RepositorySystem system = container.getRepositorySystem();
-      Settings settings = getSettings();
-      DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
-
-      DependencyNode dependencyNode = traverseAddonGraph(coords, system, settings, session);
-      return fromNode(addonId, dependencyNode, system, settings, session);
+      AddonInfoBuilder builder = AddonInfoBuilder.from(addonId);
+      try
+      {
+         ArtifactDescriptorResult result = readArtifactDescriptor(addonId);
+         AddonId furnaceContainerId = null;
+         for (Dependency dependency : result.getDependencies())
+         {
+            String scope = dependency.getScope();
+            // Skip test scoped dependencies
+            if (JavaScopes.TEST.equals(scope))
+               continue;
+            Artifact artifact = dependency.getArtifact();
+            // Searching for the API version
+            if (isFurnaceAPI(artifact))
+            {
+               SingleVersion apiVersion = new SingleVersion(artifact.getBaseVersion());
+               builder.setAPIVersion(apiVersion);
+            }
+            else if (isAddon(artifact))
+            {
+               AddonId childId = toAddonId(artifact);
+               if (isFurnaceContainer(artifact))
+               {
+                  furnaceContainerId = childId;
+               }
+               boolean exported = isExported(scope);
+               boolean optional = dependency.isOptional();
+               if (optional)
+               {
+                  builder.addOptionalDependency(childId, exported);
+               }
+               else
+               {
+                  builder.addRequiredDependency(childId, exported);
+               }
+            }
+         }
+         org.jboss.forge.furnace.versions.Version addonAPIVersion = builder.getAddon().getApiVersion();
+         if (resolveAddonAPIVersions && (addonAPIVersion == null || EmptyVersion.getInstance().equals(addonAPIVersion)))
+         {
+            String apiVersion = null;
+            if (furnaceContainerId != null)
+            {
+               ArtifactDescriptorResult containerDescriptor = readArtifactDescriptor(furnaceContainerId);
+               apiVersion = findDependencyVersion(containerDescriptor.getDependencies(), FURNACE_API_GROUP_ID,
+                        FURNACE_API_ARTIFACT_ID);
+            }
+            else
+            {
+               apiVersion = resolveAPIVersion(addonId).get();
+            }
+            if (apiVersion != null)
+            {
+               builder.setAPIVersion(new SingleVersion(apiVersion));
+            }
+         }
+      }
+      catch (ArtifactDescriptorException e)
+      {
+         throw new RuntimeException("Error while retrieving addon information for " + addonId, e);
+      }
+      return new LazyAddonInfo(this, builder);
    }
 
    @Override
@@ -226,6 +285,36 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       return new MavenResponseBuilder<String>(apiVersion).setExceptions(exceptions);
    }
 
+   private ArtifactDescriptorResult readArtifactDescriptor(AddonId addonId) throws ArtifactDescriptorException
+   {
+      String coords = toMavenCoords(addonId);
+      RepositorySystem system = container.getRepositorySystem();
+      Settings settings = getSettings();
+      DefaultRepositorySystemSession session = container.setupRepoSession(system, settings);
+      List<RemoteRepository> repositories = MavenRepositories.getRemoteRepositories(container, settings);
+      ArtifactDescriptorRequest request = new ArtifactDescriptorRequest();
+      request.setArtifact(new DefaultArtifact(coords));
+      request.setRepositories(repositories);
+
+      ArtifactDescriptorResult result = system.readArtifactDescriptor(session, request);
+      return result;
+   }
+
+   private String findDependencyVersion(List<Dependency> dependencies, String groupId, String artifactId)
+   {
+      for (Dependency child : dependencies)
+      {
+         Artifact childArtifact = child.getArtifact();
+
+         if (groupId.equals(childArtifact.getGroupId())
+                  && artifactId.equals(childArtifact.getArtifactId()))
+         {
+            return childArtifact.getBaseVersion();
+         }
+      }
+      return null;
+   }
+
    private String findVersion(List<DependencyNode> dependencies, String groupId, String artifactId)
    {
       for (DependencyNode child : dependencies)
@@ -281,62 +370,6 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       }
    }
 
-   private AddonInfo fromNode(AddonId id, DependencyNode dependencyNode, RepositorySystem system, Settings settings,
-            DefaultRepositorySystemSession session)
-   {
-      AddonInfoBuilder builder = AddonInfoBuilder.from(enrichAddonId(id, system, settings, session));
-      List<DependencyNode> children = dependencyNode.getChildren();
-      for (DependencyNode child : children)
-      {
-         Dependency dependency = child.getDependency();
-         Artifact artifact = dependency.getArtifact();
-         if (isAddon(artifact))
-         {
-            AddonId childId = toAddonId(artifact);
-            boolean exported = false;
-            boolean optional = dependency.isOptional();
-            String scope = dependency.getScope();
-            if (scope != null && !optional)
-            {
-               exported = isExported(scope);
-            }
-            DependencyNode node = traverseAddonGraph(toMavenCoords(childId), system, settings, session);
-            AddonInfo addonInfo = fromNode(childId, node, system, settings, session);
-            if (optional)
-            {
-               builder.addOptionalDependency(addonInfo, exported);
-            }
-            else
-            {
-               builder.addRequiredDependency(addonInfo, exported);
-            }
-         }
-      }
-      return new LazyAddonInfo(this, builder);
-   }
-
-   private DependencyNode traverseAddonGraph(String coords, RepositorySystem system, Settings settings,
-            DefaultRepositorySystemSession session)
-   {
-      session.setDependencyTraverser(new AddonDependencyTraverser(this.classifier));
-      session.setDependencySelector(new AddonDependencySelector(this.classifier));
-      Artifact queryArtifact = new DefaultArtifact(coords);
-
-      List<RemoteRepository> repositories = MavenRepositories.getRemoteRepositories(container, settings);
-      CollectRequest collectRequest = new CollectRequest(new Dependency(queryArtifact, null), repositories);
-
-      CollectResult result;
-      try
-      {
-         result = system.collectDependencies(session, collectRequest);
-      }
-      catch (Exception e)
-      {
-         throw new RuntimeException(e);
-      }
-      return result.getRoot();
-   }
-
    private String toMavenCoords(AddonId addonId)
    {
       String coords = addonId.getName() + ":jar:" + this.classifier + ":" + addonId.getVersion();
@@ -357,32 +390,36 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
       throw new IllegalArgumentException("Not a forge-addon: " + artifact);
    }
 
-   /**
-    * Adds the API version to the supplied {@link AddonId}
-    */
-   private AddonId enrichAddonId(AddonId originalAddonId, RepositorySystem system, Settings settings,
-            DefaultRepositorySystemSession session)
+   private boolean isFurnaceAPI(Artifact artifact)
    {
-      AddonId id;
-      // FORGE-1769: Add API version to requested AddonID
-      if (resolveAddonAPIVersions && Strings.isNullOrEmpty(Objects.toString(originalAddonId.getApiVersion(), null)))
-      {
-         String apiVersion = resolveAPIVersion(originalAddonId, system, settings, session).get();
+      return (FURNACE_API_GROUP_ID.equals(artifact.getGroupId()) && FURNACE_API_ARTIFACT_ID.equals(artifact
+               .getArtifactId()));
+   }
 
-         if (Strings.isNullOrEmpty(apiVersion))
-         {
-            id = originalAddonId;
-         }
-         else
-         {
-            id = AddonId.from(originalAddonId.getName(), originalAddonId.getVersion(), new SingleVersion(apiVersion));
-         }
-      }
-      else
+   /**
+    * @param scope the scope to be tested upon
+    * @return <code>true</code> if the scope indicates an exported dependency
+    */
+   private boolean isExported(String scope)
+   {
+      String artifactScope = Strings.isNullOrEmpty(scope) ? JavaScopes.COMPILE : scope;
+      switch (artifactScope)
       {
-         id = originalAddonId;
+      case JavaScopes.COMPILE:
+      case JavaScopes.RUNTIME:
+         return true;
+      case JavaScopes.PROVIDED:
+      default:
+         return false;
       }
-      return id;
+   }
+
+   /**
+    * Returns if this artifact belongs to a Furnace Container
+    */
+   private boolean isFurnaceContainer(Artifact artifact)
+   {
+      return FURNACE_CONTAINER_GROUP_ID.equals(artifact.getGroupId());
    }
 
    /**
@@ -415,28 +452,5 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    public boolean isResolveAddonAPIVersions()
    {
       return resolveAddonAPIVersions;
-   }
-
-   private boolean isFurnaceAPI(Artifact artifact)
-   {
-      return (FURNACE_API_GROUP_ID.equals(artifact.getGroupId()) && FURNACE_API_ARTIFACT_ID.equals(artifact
-               .getArtifactId()));
-   }
-
-   /**
-    * @param scope the scope to be tested upon
-    * @return <code>true</code> if the scope indicates an exported dependency
-    */
-   private boolean isExported(String scope)
-   {
-      switch (scope)
-      {
-      case JavaScopes.COMPILE:
-      case JavaScopes.RUNTIME:
-         return true;
-      case JavaScopes.PROVIDED:
-      default:
-         return false;
-      }
    }
 }

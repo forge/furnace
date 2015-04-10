@@ -29,12 +29,12 @@ public interface AddonInfo
    /**
     * @return Returns list of required addons from {@link AddonInfo#getAddon()}
     */
-   public Set<AddonInfo> getRequiredAddons();
+   public Set<AddonId> getRequiredAddons();
 
    /**
     * @return Returns list of optional addons from {@link AddonInfo#getAddon()}
     */
-   public Set<AddonInfo> getOptionalAddons();
+   public Set<AddonId> getOptionalAddons();
 
    /**
     * @return the {@link File} resources associated with this addon (Additional dependencies)

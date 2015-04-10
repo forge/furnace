@@ -41,13 +41,13 @@ class LazyAddonInfo implements AddonInfo
    }
 
    @Override
-   public Set<AddonInfo> getRequiredAddons()
+   public Set<AddonId> getRequiredAddons()
    {
       return builder.getRequiredAddons();
    }
 
    @Override
-   public Set<AddonInfo> getOptionalAddons()
+   public Set<AddonId> getOptionalAddons()
    {
       return builder.getOptionalAddons();
    }

@@ -171,30 +171,33 @@ public class GenerateDOTMojo extends AbstractMojo
       File file = new File(parent, fileName);
       getLog().info("Generating " + file);
       AddonInfo addonInfo = addonResolver.resolveAddonDependencyHierarchy(id);
-      toDOT(file, toGraph(addonInfo));
+      toDOT(file, toGraph(addonResolver, addonInfo));
       return file;
    }
 
-   DirectedGraph<AddonVertex, AddonDependencyEdge> toGraph(AddonInfo info)
+   DirectedGraph<AddonVertex, AddonDependencyEdge> toGraph(AddonDependencyResolver addonResolver, AddonInfo info)
    {
       DirectedGraph<AddonVertex, AddonDependencyEdge> graph = new DefaultDirectedGraph<AddonVertex, AddonDependencyEdge>(
                AddonDependencyEdge.class);
-      populateGraph(info, graph);
+      populateGraph(addonResolver, info, graph);
       return graph;
    }
 
-   private void populateGraph(AddonInfo info, DirectedGraph<AddonVertex, AddonDependencyEdge> graph)
+   private void populateGraph(AddonDependencyResolver addonResolver, AddonInfo info,
+            DirectedGraph<AddonVertex, AddonDependencyEdge> graph)
    {
       addGraphDependencies(info, graph);
       if (includeTransitiveAddons)
       {
-         for (AddonInfo requiredAddon : info.getRequiredAddons())
+         for (AddonId requiredAddon : info.getRequiredAddons())
          {
-            populateGraph(requiredAddon, graph);
+            AddonInfo childInfo = addonResolver.resolveAddonDependencyHierarchy(requiredAddon);
+            populateGraph(addonResolver, childInfo, graph);
          }
-         for (AddonInfo optionalAddon : info.getOptionalAddons())
+         for (AddonId optionalAddon : info.getOptionalAddons())
          {
-            populateGraph(optionalAddon, graph);
+            AddonInfo childInfo = addonResolver.resolveAddonDependencyHierarchy(optionalAddon);
+            populateGraph(addonResolver, childInfo, graph);
          }
       }
    }

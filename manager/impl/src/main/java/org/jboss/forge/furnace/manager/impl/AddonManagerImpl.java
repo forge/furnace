@@ -15,14 +15,18 @@ import static org.jboss.forge.furnace.manager.impl.request.AddonActionRequestFac
 import static org.jboss.forge.furnace.manager.impl.request.AddonActionRequestFactory.createUpdateRequest;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
 
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonId;
+import org.jboss.forge.furnace.addons.AddonView;
+import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.manager.AddonManager;
 import org.jboss.forge.furnace.manager.request.AddonActionRequest;
 import org.jboss.forge.furnace.manager.request.DeployRequest;
@@ -37,15 +41,29 @@ import org.jboss.forge.furnace.repositories.MutableAddonRepository;
 import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.versions.Versions;
 
+/**
+ * The {@link AddonManager} implementation
+ * 
+ * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
+ */
 public class AddonManagerImpl implements AddonManager
 {
    private final Furnace furnace;
    private final AddonDependencyResolver resolver;
+   private final AddonView addonView;
 
-   public AddonManagerImpl(final Furnace forge, final AddonDependencyResolver resolver)
+   public AddonManagerImpl(final Furnace furnace, final AddonDependencyResolver resolver)
+   {
+      this.furnace = furnace;
+      this.resolver = resolver;
+      this.addonView = null;
+   }
+
+   public AddonManagerImpl(final Furnace forge, final AddonDependencyResolver resolver, final AddonView addonView)
    {
       this.furnace = forge;
       this.resolver = resolver;
+      this.addonView = addonView;
    }
 
    @Override
@@ -65,10 +83,9 @@ public class AddonManagerImpl implements AddonManager
    {
       MutableAddonRepository mutableRepo = assertMutableRepository(repository);
       AddonInfo addonInfo = info(addonId);
-      List<AddonInfo> allAddons = new LinkedList<AddonInfo>();
-      collectRequiredAddons(addonInfo, allAddons);
+      List<AddonInfo> allAddons = collectRequiredAddons(addonInfo);
       Map<AddonId, AddonRepository> installedAddonIds = getInstalledAddons();
-      List<AddonActionRequest> actions = new ArrayList<AddonActionRequest>();
+      List<AddonActionRequest> actions = new ArrayList<>();
       for (AddonInfo newAddonInfo : allAddons)
       {
          AddonActionRequest request = createRequest(addonInfo, newAddonInfo, mutableRepo, installedAddonIds);
@@ -207,6 +224,20 @@ public class AddonManagerImpl implements AddonManager
       return request;
    }
 
+   private List<AddonInfo> collectRequiredAddons(final AddonInfo addonInfo)
+   {
+      return furnace.getLockManager().performLocked(LockMode.READ, new Callable<List<AddonInfo>>()
+      {
+         @Override
+         public List<AddonInfo> call() throws Exception
+         {
+            List<AddonInfo> allAddons = new LinkedList<>();
+            collectRequiredAddons(addonInfo, allAddons);
+            return allAddons;
+         }
+      });
+   }
+
    /**
     * Collect all required addons for a specific addon.
     *
@@ -217,19 +248,22 @@ public class AddonManagerImpl implements AddonManager
     */
    private void collectRequiredAddons(AddonInfo addonInfo, List<AddonInfo> addons)
    {
+      // Move this addon to the top of the list
+      addons.remove(addonInfo);
       addons.add(0, addonInfo);
-      for (AddonInfo id : addonInfo.getRequiredAddons())
+      for (AddonId addonId : addonInfo.getRequiredAddons())
       {
-         if (!addons.contains(id))
+         if (!addons.contains(addonId) && (!isDeployed(addonId) || !isEnabled(addonId)))
          {
-            collectRequiredAddons(id, addons);
+            AddonInfo childInfo = info(addonId);
+            collectRequiredAddons(childInfo, addons);
          }
       }
    }
 
    private MutableAddonRepository getDefaultRepository()
    {
-      for (AddonRepository repo : furnace.getRepositories())
+      for (AddonRepository repo : getRepositories())
       {
          if (repo instanceof MutableAddonRepository)
             return (MutableAddonRepository) repo;
@@ -252,8 +286,8 @@ public class AddonManagerImpl implements AddonManager
     */
    private Map<AddonId, AddonRepository> getInstalledAddons()
    {
-      Map<AddonId, AddonRepository> addons = new HashMap<AddonId, AddonRepository>();
-      for (AddonRepository repository : furnace.getRepositories())
+      Map<AddonId, AddonRepository> addons = new HashMap<>();
+      for (AddonRepository repository : getRepositories())
       {
          List<AddonId> listEnabled = repository.listAll();
          for (AddonId addonId : listEnabled)
@@ -262,5 +296,30 @@ public class AddonManagerImpl implements AddonManager
          }
       }
       return addons;
+   }
+
+   private boolean isDeployed(AddonId addonId)
+   {
+      for (AddonRepository repository : getRepositories())
+      {
+         if (repository.isDeployed(addonId))
+            return true;
+      }
+      return false;
+   }
+
+   private boolean isEnabled(AddonId addonId)
+   {
+      for (AddonRepository repository : getRepositories())
+      {
+         if (repository.isEnabled(addonId))
+            return true;
+      }
+      return false;
+   }
+
+   private Collection<AddonRepository> getRepositories()
+   {
+      return (addonView == null) ? furnace.getRepositories() : addonView.getRepositories();
    }
 }

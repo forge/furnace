@@ -85,7 +85,7 @@ public class AddonDependencyResolverTest
       AddonInfo info = resolver.resolveAddonDependencyHierarchy(addon);
       Assert.assertNotNull(info);
       Assert.assertEquals(1, info.getRequiredAddons().size());
-      Assert.assertEquals(addonDep, info.getRequiredAddons().iterator().next().getAddon());
+      Assert.assertEquals(addonDep, info.getRequiredAddons().iterator().next());
       Assert.assertEquals(1, info.getResources().size());
    }
 
@@ -95,12 +95,7 @@ public class AddonDependencyResolverTest
       AddonId addon = AddonId.from("test:indirect_dep", "1.0.0.Final");
       AddonInfo info = resolver.resolveAddonDependencyHierarchy(addon);
       Assert.assertNotNull(info);
-      Set<AddonId> requiredAddons = new HashSet<AddonId>();
-      for (AddonInfo ai : info.getRequiredAddons())
-      {
-         requiredAddons.add(ai.getAddon());
-      }
-
+      Set<AddonId> requiredAddons = info.getRequiredAddons();
       AddonId[] expecteds = new AddonId[] {
                AddonId.from("test:one_dep", "1.0.0.Final")
       };
@@ -120,11 +115,7 @@ public class AddonDependencyResolverTest
       AddonId addon = AddonId.from("test:two_deps", "1.0.0.Final");
       AddonInfo info = resolver.resolveAddonDependencyHierarchy(addon);
       Assert.assertNotNull(info);
-      Set<AddonId> requiredAddons = new HashSet<AddonId>();
-      for (AddonInfo ai : info.getRequiredAddons())
-      {
-         requiredAddons.add(ai.getAddon());
-      }
+      Set<AddonId> requiredAddons = info.getRequiredAddons();
       AddonId[] expecteds = new AddonId[] {
                AddonId.from("test:one_dep_a", "1.0.0.Final"),
                AddonId.from("test:one_dep", "1.0.0.Final")

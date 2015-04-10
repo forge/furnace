@@ -36,13 +36,13 @@ class ShallowAddonInfo implements AddonInfo
    }
 
    @Override
-   public Set<AddonInfo> getRequiredAddons()
+   public Set<AddonId> getRequiredAddons()
    {
       return Collections.emptySet();
    }
 
    @Override
-   public Set<AddonInfo> getOptionalAddons()
+   public Set<AddonId> getOptionalAddons()
    {
       return Collections.emptySet();
    }

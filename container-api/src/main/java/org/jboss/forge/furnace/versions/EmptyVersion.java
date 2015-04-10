@@ -8,6 +8,8 @@ package org.jboss.forge.furnace.versions;
 
 public class EmptyVersion extends SingleVersion implements Version
 {
+   private static final EmptyVersion INSTANCE = new EmptyVersion();
+   
    private EmptyVersion()
    {
       super("");
@@ -15,7 +17,7 @@ public class EmptyVersion extends SingleVersion implements Version
 
    public static Version getInstance()
    {
-      return new EmptyVersion();
+      return INSTANCE;
    }
 
 }

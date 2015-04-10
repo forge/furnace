@@ -18,6 +18,7 @@ import java.util.Set;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.manager.spi.AddonInfo;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
+import org.jboss.forge.furnace.versions.Version;
 
 /**
  * Information about an addon
@@ -27,10 +28,10 @@ import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
  */
 public class AddonInfoBuilder implements AddonInfo
 {
-   private final AddonId addon;
+   private AddonId addon;
 
-   private final Map<AddonInfo, Boolean> requiredAddons = new HashMap<AddonInfo, Boolean>();
-   private final Map<AddonInfo, Boolean> optionalAddons = new HashMap<AddonInfo, Boolean>();
+   private final Map<AddonId, Boolean> requiredAddons = new HashMap<>();
+   private final Map<AddonId, Boolean> optionalAddons = new HashMap<>();
    private final Set<File> resources = new HashSet<File>();
 
    private AddonInfoBuilder(AddonId addon)
@@ -44,15 +45,22 @@ public class AddonInfoBuilder implements AddonInfo
       return builder;
    }
 
-   public AddonInfoBuilder addRequiredDependency(AddonInfo addonInfo, boolean exported)
+   public AddonInfoBuilder setAPIVersion(Version apiVersion)
    {
-      requiredAddons.put(addonInfo, exported);
+      AddonId newId = AddonId.from(addon.getName(), addon.getVersion(), apiVersion);
+      this.addon = newId;
       return this;
    }
 
-   public AddonInfoBuilder addOptionalDependency(AddonInfo addonInfo, boolean exported)
+   public AddonInfoBuilder addRequiredDependency(AddonId addonId, boolean exported)
    {
-      optionalAddons.put(addonInfo, exported);
+      requiredAddons.put(addonId, exported);
+      return this;
+   }
+
+   public AddonInfoBuilder addOptionalDependency(AddonId addonId, boolean exported)
+   {
+      optionalAddons.put(addonId, exported);
       return this;
    }
 
@@ -72,7 +80,7 @@ public class AddonInfoBuilder implements AddonInfo
     * Returns an unmodifiable list of the required addons
     */
    @Override
-   public Set<AddonInfo> getOptionalAddons()
+   public Set<AddonId> getOptionalAddons()
    {
       return Collections.unmodifiableSet(optionalAddons.keySet());
    }
@@ -81,7 +89,7 @@ public class AddonInfoBuilder implements AddonInfo
     * Returns an unmodifiable list of the required addons
     */
    @Override
-   public Set<AddonInfo> getRequiredAddons()
+   public Set<AddonId> getRequiredAddons()
    {
       return Collections.unmodifiableSet(requiredAddons.keySet());
    }
@@ -96,15 +104,15 @@ public class AddonInfoBuilder implements AddonInfo
    public Set<AddonDependencyEntry> getDependencyEntries()
    {
       Set<AddonDependencyEntry> entries = new HashSet<AddonDependencyEntry>();
-      for (Entry<AddonInfo, Boolean> entry : requiredAddons.entrySet())
+      for (Entry<AddonId, Boolean> entry : requiredAddons.entrySet())
       {
-         AddonId key = entry.getKey().getAddon();
+         AddonId key = entry.getKey();
          Boolean exported = entry.getValue();
          entries.add(AddonDependencyEntry.create(key.getName(), key.getVersion().toString(), exported, false));
       }
-      for (Entry<AddonInfo, Boolean> entry : optionalAddons.entrySet())
+      for (Entry<AddonId, Boolean> entry : optionalAddons.entrySet())
       {
-         AddonId key = entry.getKey().getAddon();
+         AddonId key = entry.getKey();
          Boolean exported = entry.getValue();
          entries.add(AddonDependencyEntry.create(key.getName(), key.getVersion().toString(), exported, true));
       }
