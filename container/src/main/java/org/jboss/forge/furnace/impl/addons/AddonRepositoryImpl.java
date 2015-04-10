@@ -486,14 +486,7 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
          @Override
          public Boolean call() throws Exception
          {
-            List<AddonId> enabled = listEnabled();
-            for (AddonId id : enabled)
-            {
-               if (id.equals(addon))
-                  return true;
-            }
-
-            return false;
+            return listEnabled().contains(addon);
          }
       });
    }
