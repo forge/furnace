@@ -14,6 +14,7 @@ import java.lang.annotation.Target;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.forge.arquillian.archive.AddonArchive;
+import org.jboss.forge.furnace.addons.Addon;
 
 /**
  * Contains multiple {@link AddonDependency} annotations that must be deployed before this {@link Deployment} may be
@@ -30,5 +31,12 @@ public @interface AddonDependencies
    /**
     * The {@link AddonDependency} annotations.
     */
-   AddonDependency[] value();
+   AddonDependency[] value() default {};
+
+   /**
+    * If no {@link AddonDependency} entries were specified in {@link #value()} of this {@link AddonDependencies}
+    * annotation, this value controls whether or not the test case should automatically detect and assign dependencies
+    * for {@link Addon} dependencies specified in the project's POM file.
+    */
+   boolean automatic() default true;
 }

@@ -400,7 +400,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
     * @param scope the scope to be tested upon
     * @return <code>true</code> if the scope indicates an exported dependency
     */
-   private boolean isExported(String scope)
+   public static boolean isExported(String scope)
    {
       String artifactScope = Strings.isNullOrEmpty(scope) ? JavaScopes.COMPILE : scope;
       switch (artifactScope)

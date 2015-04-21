@@ -23,7 +23,6 @@ import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.Filter;
 import org.jboss.shrinkwrap.api.Node;
 
-@SuppressWarnings("deprecation")
 public class FurnaceDeploymentPackager implements DeploymentPackager
 {
    private Pattern SHRINKWRAP_DESCRIPTOR_PATTERN = Pattern.compile("/org/jboss/shrinkwrap/descriptor/.*");

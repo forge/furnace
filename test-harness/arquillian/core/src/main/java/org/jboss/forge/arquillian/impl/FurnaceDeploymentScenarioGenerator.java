@@ -14,8 +14,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.maven.model.Model;
@@ -37,13 +39,13 @@ import org.jboss.forge.arquillian.AddonDeployments;
 import org.jboss.forge.arquillian.Dependencies;
 import org.jboss.forge.arquillian.DeployToRepository;
 import org.jboss.forge.arquillian.DeploymentListener;
-import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.archive.AddonArchiveBase;
 import org.jboss.forge.arquillian.archive.AddonDeploymentArchive;
 import org.jboss.forge.arquillian.archive.RepositoryLocationAware;
 import org.jboss.forge.arquillian.maven.ProjectHelper;
 import org.jboss.forge.arquillian.protocol.FurnaceProtocolDescription;
 import org.jboss.forge.furnace.addons.AddonId;
+import org.jboss.forge.furnace.manager.maven.addon.MavenAddonDependencyResolver;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.furnace.util.Annotations;
 import org.jboss.forge.furnace.util.Strings;
@@ -61,6 +63,7 @@ import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGenerator
 {
    Map<String, String> dependencyMap;
+   Set<AddonDependencyEntry> addonSet;
 
    @Override
    public List<DeploymentDescription> generate(TestClass testClass)
@@ -130,7 +133,7 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
          else if (annotation instanceof AddonDependencies)
          {
             AddonDependencies addonDependencies = (AddonDependencies) annotation;
-            if (addonDependencies.value() != null)
+            if (addonDependencies.value().length > 0)
             {
                for (AddonDependency addonDependency : addonDependencies.value())
                {
@@ -149,6 +152,10 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
                            addonDependency.timeoutUnit(),
                            addonDependency.shouldThrowException());
                }
+            }
+            else if (addonDependencies.automatic())
+            {
+               addAutomaticDependencies(primaryDeployment, classUnderTest, deploymentMethod, deployments);
             }
          }
          else if (annotation instanceof Dependencies)
@@ -180,7 +187,38 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
       return deployments;
    }
 
-   public void createAnnotatedDeployment(DeploymentDescription primaryDeployment, Class<?> classUnderTest,
+   @SuppressWarnings("unchecked")
+   private void addAutomaticDependencies(DeploymentDescription primaryDeployment, Class<?> classUnderTest,
+            Method deploymentMethod, Collection<DeploymentDescription> deployments)
+   {
+      for (AddonDependencyEntry dependency : getAddonSet(classUnderTest))
+      {
+         createAnnotatedDeployment(primaryDeployment,
+                  classUnderTest,
+                  deploymentMethod,
+                  deployments,
+                  dependency.getName(),
+                  dependency.getVersionRange().toString(),
+                  AddonDependency.class.getSimpleName(),
+                  true,
+                  dependency.isExported(),
+                  dependency.isOptional(),
+                  new Class[0],
+                  10000,
+                  TimeUnit.MILLISECONDS,
+                  NullException.class);
+      }
+   }
+
+   private Set<AddonDependencyEntry> getAddonSet(Class<?> classUnderTest)
+   {
+      if (addonSet == null)
+         buildDependencyMaps(classUnderTest);
+
+      return addonSet;
+   }
+
+   private void createAnnotatedDeployment(DeploymentDescription primaryDeployment, Class<?> classUnderTest,
             Method deploymentMethod, Collection<DeploymentDescription> deployments, String addonName,
             String addonVersion, String annotationSimpleName, boolean imported, boolean exported, boolean optional,
             Class<? extends DeploymentListener>[] listenerClasses, int timeoutQuantity, TimeUnit timeoutUnit,
@@ -384,32 +422,47 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
    {
       if (dependencyMap == null)
       {
-         ProjectHelper projectHelper = new ProjectHelper();
-         dependencyMap = new HashMap<String, String>();
-         File pomFile = getPomFileFor(classUnderTest);
-         try
-         {
-            // Needed for single-project addons
-            Model model = projectHelper.loadPomFromFile(pomFile);
-            String thisAddonName = (model.getGroupId() == null) ? model.getParent().getGroupId() : model.getGroupId()
-                     + ":" + model.getArtifactId();
-            String thisVersion = model.getVersion();
-            dependencyMap.put(thisAddonName, thisVersion);
-            List<Dependency> dependencies = projectHelper.resolveDependenciesFromPOM(pomFile);
-            for (Dependency dependency : dependencies)
-            {
-               Artifact artifact = dependency.getArtifact();
-               String addonName = artifact.getGroupId() + ":" + artifact.getArtifactId();
-               String version = artifact.getBaseVersion();
-               dependencyMap.put(addonName, version);
-            }
-         }
-         catch (Exception e)
-         {
-            e.printStackTrace();
-         }
+         buildDependencyMaps(classUnderTest);
       }
       return dependencyMap.get(name);
+   }
+
+   private void buildDependencyMaps(Class<?> classUnderTest)
+   {
+      ProjectHelper projectHelper = new ProjectHelper();
+      addonSet = new LinkedHashSet<>();
+      dependencyMap = new HashMap<String, String>();
+      File pomFile = getPomFileFor(classUnderTest);
+      try
+      {
+         // Needed for single-project addons
+         Model model = projectHelper.loadPomFromFile(pomFile);
+         String thisAddonName = (model.getGroupId() == null) ? model.getParent().getGroupId() : model.getGroupId()
+                  + ":" + model.getArtifactId();
+         String thisVersion = model.getVersion();
+         dependencyMap.put(thisAddonName, thisVersion);
+
+         List<Dependency> dependencies = projectHelper.resolveDependenciesFromPOM(pomFile);
+         for (Dependency dependency : dependencies)
+         {
+            Artifact artifact = dependency.getArtifact();
+            String addonName = artifact.getGroupId() + ":" + artifact.getArtifactId();
+            String version = artifact.getBaseVersion();
+            String scope = dependency.getScope();
+            boolean optional = dependency.isOptional();
+
+            dependencyMap.put(addonName, version);
+            if (MavenAddonDependencyResolver.FORGE_ADDON_CLASSIFIER.equals(artifact.getClassifier()))
+            {
+               addonSet.add(AddonDependencyEntry.create(addonName, version,
+                        MavenAddonDependencyResolver.isExported(scope), optional));
+            }
+         }
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
    }
 
    private File getPomFileFor(Class<?> classUnderTest)
