@@ -15,7 +15,10 @@ import java.util.Map;
 import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequestPopulator;
+import org.apache.maven.model.Build;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginExecution;
 import org.apache.maven.model.building.DefaultModelBuilderFactory;
 import org.apache.maven.model.building.DefaultModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuilder;
@@ -32,6 +35,7 @@ import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Repository;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.graph.Dependency;
@@ -40,6 +44,7 @@ import org.eclipse.aether.util.repository.AuthenticationBuilder;
 import org.eclipse.aether.util.repository.DefaultMirrorSelector;
 import org.eclipse.aether.util.repository.DefaultProxySelector;
 import org.jboss.forge.furnace.manager.maven.MavenContainer;
+import org.jboss.forge.furnace.manager.maven.addon.MavenAddonDependencyResolver;
 
 public class ProjectHelper
 {
@@ -211,4 +216,34 @@ public class ProjectHelper
       }
       return request;
    }
+   
+   /**
+    * Returns <code>true</code> if this model is a single-project addon
+    */
+   public boolean isAddon(Model model)
+   {
+      boolean result = false;
+      Build build = model.getBuild();
+      if (build != null)
+      {
+         PLUGIN_LOOP: for (Plugin plugin : build.getPlugins())
+         {
+            if ("maven-jar-plugin".equals(plugin.getArtifactId()))
+            {
+               for (PluginExecution execution : plugin.getExecutions())
+               {
+                  Xpp3Dom config = (Xpp3Dom) execution.getConfiguration();
+                  Xpp3Dom classifierNode = config.getChild("classifier");
+                  if (MavenAddonDependencyResolver.FORGE_ADDON_CLASSIFIER.equals(classifierNode.getValue()))
+                  {
+                     result = true;
+                     break PLUGIN_LOOP;
+                  }
+               }
+            }
+         }
+      }
+      return result;
+   }
+   
 }

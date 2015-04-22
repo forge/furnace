@@ -17,12 +17,14 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.maven.model.Model;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.util.artifact.JavaScopes;
 import org.jboss.arquillian.container.spi.client.deployment.DeploymentDescription;
 import org.jboss.arquillian.container.spi.client.deployment.TargetDescription;
 import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
@@ -440,8 +442,13 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
          String thisAddonName = (model.getGroupId() == null) ? model.getParent().getGroupId() : model.getGroupId()
                   + ":" + model.getArtifactId();
          String thisVersion = model.getVersion();
+         if (projectHelper.isAddon(model))
+         {
+            addonSet.add(AddonDependencyEntry.create(thisAddonName, thisVersion, true, false));
+         }
          dependencyMap.put(thisAddonName, thisVersion);
 
+         Map<AddonDependencyEntry, String> containerScope = new HashMap<>();
          List<Dependency> dependencies = projectHelper.resolveDependenciesFromPOM(pomFile);
          for (Dependency dependency : dependencies)
          {
@@ -450,12 +457,29 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
             String version = artifact.getBaseVersion();
             String scope = dependency.getScope();
             boolean optional = dependency.isOptional();
-
             dependencyMap.put(addonName, version);
+
             if (MavenAddonDependencyResolver.FORGE_ADDON_CLASSIFIER.equals(artifact.getClassifier()))
             {
-               addonSet.add(AddonDependencyEntry.create(addonName, version,
-                        MavenAddonDependencyResolver.isExported(scope), optional));
+               AddonDependencyEntry entry = AddonDependencyEntry.create(addonName, version,
+                        MavenAddonDependencyResolver.isExported(scope), optional);
+               if (MavenAddonDependencyResolver.isFurnaceContainer(artifact))
+               {
+                  containerScope.put(entry, scope);
+               }
+               addonSet.add(entry);
+            }
+         }
+         // If there are more than one container set and at least one container set in test scope
+         if (containerScope.size() > 1 && containerScope.containsValue(JavaScopes.TEST))
+         {
+            // Remove non-test scoped containers
+            for (Entry<AddonDependencyEntry, String> entry : containerScope.entrySet())
+            {
+               if (!JavaScopes.TEST.equals(entry.getValue()))
+               {
+                  addonSet.remove(entry.getKey());
+               }
             }
          }
       }

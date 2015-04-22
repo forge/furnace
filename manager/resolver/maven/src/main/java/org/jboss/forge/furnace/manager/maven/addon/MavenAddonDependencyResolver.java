@@ -417,7 +417,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
    /**
     * Returns if this artifact belongs to a Furnace Container
     */
-   private boolean isFurnaceContainer(Artifact artifact)
+   public static boolean isFurnaceContainer(Artifact artifact)
    {
       return FURNACE_CONTAINER_GROUP_ID.equals(artifact.getGroupId());
    }
