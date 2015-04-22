@@ -8,6 +8,7 @@
 package org.jboss.forge.furnace.manager.maven;
 
 import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -20,12 +21,12 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.codehaus.plexus.util.xml.Xpp3DomBuilder;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.repository.WorkspaceReader;
 import org.eclipse.aether.repository.WorkspaceRepository;
-import org.jboss.forge.parser.xml.Node;
-import org.jboss.forge.parser.xml.XMLParser;
 
 /**
  * {@link WorkspaceReader} implementation capable of reading from the ClassPath
@@ -161,9 +162,6 @@ public class ClasspathWorkspaceReader implements WorkspaceReader
                               && foundArtifact.getBaseVersion().equals(artifact.getBaseVersion()))
                      {
 
-                        // System.out
-                        // .println("BUILD: ################################# Artifact: " + artifact + " POM: "
-                        // + pomFile);
                         return pomFile;
                      }
                   }
@@ -344,17 +342,22 @@ public class ClasspathWorkspaceReader implements WorkspaceReader
          {
             log.fine("Processing " + pomFile.getAbsolutePath() + " for classpath artifact resolution");
          }
-
-         final Node pom = XMLParser.parse(pomFile);
-
-         String groupId = pom.getTextValueForPatternName("groupId");
-         String artifactId = pom.getTextValueForPatternName("artifactId");
-         String type = pom.getTextValueForPatternName("packaging");
-         String version = pom.getTextValueForPatternName("version");
+         Xpp3Dom dom = null;
+         try (FileReader reader = new FileReader(pomFile))
+         {
+            dom = Xpp3DomBuilder.build(reader);
+         }
+         Xpp3Dom groupIdNode = dom.getChild("groupId");
+         String groupId = (groupIdNode == null) ? null : groupIdNode.getValue();
+         String artifactId = dom.getChild("artifactId").getValue();
+         Xpp3Dom packaging = dom.getChild("packaging");
+         String type = (packaging == null) ? "jar" : packaging.getValue();
+         Xpp3Dom versionNode = dom.getChild("version");
+         String version = (versionNode == null) ? null : versionNode.getValue();
 
          if (groupId == null || groupId.isEmpty())
          {
-            groupId = pom.getTextValueForPatternName("parent/groupId");
+            groupId = dom.getChild("parent").getChild("groupId").getValue();
          }
          if (type == null || type.isEmpty())
          {
@@ -362,7 +365,7 @@ public class ClasspathWorkspaceReader implements WorkspaceReader
          }
          if (version == null || version.isEmpty())
          {
-            version = pom.getTextValueForPatternName("parent/version");
+            version = dom.getChild("parent").getChild("version").getValue();
          }
 
          final Artifact foundArtifact = new DefaultArtifact(groupId, artifactId, type, version);
@@ -395,26 +398,27 @@ public class ClasspathWorkspaceReader implements WorkspaceReader
          {
             log.fine("Processing " + pomFile.getAbsolutePath() + " for classpath module resolution");
          }
-
-         Node pom = XMLParser.parse(pomFile);
-         final List<Node> modules = pom.get("modules/module");
-         if (!modules.isEmpty())
+         Xpp3Dom dom = null;
+         try (FileReader reader = new FileReader(pomFile))
          {
-            for (Node node : modules)
+            dom = Xpp3DomBuilder.build(reader);
+         }
+         Xpp3Dom modules = dom.getChild("modules");
+         if (modules != null)
+         {
+            for (Xpp3Dom module : modules.getChildren())
             {
-               result.add(new File(pomFile.getParent(), node.getText()));
+               result.add(new File(pomFile.getParent(), module.getValue()));
             }
          }
 
          if (result.isEmpty())
          {
-            Node parent = pom.getSingle("parent");
+            Xpp3Dom parent = dom.getChild("parent");
             if (parent != null)
             {
-               String relativePath = parent.getTextValueForPatternName("relativePath");
-               if (relativePath == null)
-                  relativePath = "../pom.xml";
-
+               Xpp3Dom relativePathNode = parent.getChild("relativePath");
+               String relativePath = (relativePathNode == null) ? "../pom.xml" : relativePathNode.getValue();
                File parentPom = pomFile.getParentFile().toPath().resolve(relativePath).toFile();
                if (parentPom.isFile())
                   result = createFoundModules(parentPom);
@@ -428,5 +432,4 @@ public class ClasspathWorkspaceReader implements WorkspaceReader
          throw new RuntimeException("Could not parse pom.xml: " + pomFile, e);
       }
    }
-
 }
