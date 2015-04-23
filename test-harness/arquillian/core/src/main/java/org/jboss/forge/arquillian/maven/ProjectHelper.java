@@ -233,11 +233,14 @@ public class ProjectHelper
                for (PluginExecution execution : plugin.getExecutions())
                {
                   Xpp3Dom config = (Xpp3Dom) execution.getConfiguration();
-                  Xpp3Dom classifierNode = config.getChild("classifier");
-                  if (MavenAddonDependencyResolver.FORGE_ADDON_CLASSIFIER.equals(classifierNode.getValue()))
+                  if (config!= null)
                   {
-                     result = true;
-                     break PLUGIN_LOOP;
+                     Xpp3Dom classifierNode = config.getChild("classifier");
+                     if (classifierNode != null && MavenAddonDependencyResolver.FORGE_ADDON_CLASSIFIER.equals(classifierNode.getValue()))
+                     {
+                        result = true;
+                        break PLUGIN_LOOP;
+                     }
                   }
                }
             }
