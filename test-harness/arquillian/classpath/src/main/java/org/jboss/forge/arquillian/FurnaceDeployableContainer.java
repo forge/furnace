@@ -171,7 +171,7 @@ public class FurnaceDeployableContainer implements DeployableContainer<FurnaceCo
       else
          System.clearProperty(MavenContainer.ALT_LOCAL_REPOSITORY_LOCATION);
 
-      if (originalLocalRepository != null)
+      if (originalGlobalSettings != null)
          System.setProperty(MavenContainer.ALT_GLOBAL_SETTINGS_XML_LOCATION, originalGlobalSettings);
       else
          System.clearProperty(MavenContainer.ALT_GLOBAL_SETTINGS_XML_LOCATION);
