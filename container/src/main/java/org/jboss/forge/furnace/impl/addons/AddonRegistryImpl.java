@@ -6,6 +6,7 @@
  */
 package org.jboss.forge.furnace.impl.addons;
 
+import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -20,6 +21,8 @@ import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonFilter;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonRegistry;
+import org.jboss.forge.furnace.event.EventException;
+import org.jboss.forge.furnace.event.EventManager;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.repositories.AddonRepository;
@@ -203,6 +206,27 @@ public class AddonRegistryImpl implements AddonRegistry
    public long getVersion()
    {
       return manager.getVersion(this);
+   }
+
+   @Override
+   public void fireEvent(final Object event, final Annotation... qualifiers) throws EventException
+   {
+      lock.performLocked(LockMode.READ, new Callable<Void>()
+      {
+         @Override
+         public Void call() throws Exception
+         {
+            for (Addon addon : getAddons())
+            {
+               if (addon.getStatus().isStarted())
+               {
+                  EventManager eventManager = addon.getEventManager();
+                  eventManager.fireEvent(event, qualifiers);
+               }
+            }
+            return null;
+         }
+      });
    }
 
    @Override
