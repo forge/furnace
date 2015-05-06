@@ -17,8 +17,9 @@ import org.jboss.forge.furnace.spi.ServiceRegistry;
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class NullServiceRegistry implements ServiceRegistry
+public enum NullServiceRegistry implements ServiceRegistry
 {
+   INSTANCE;
 
    @Override
    public <T> ExportedInstance<T> getExportedInstance(Class<T> serviceType)

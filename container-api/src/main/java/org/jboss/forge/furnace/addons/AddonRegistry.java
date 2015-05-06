@@ -6,10 +6,9 @@
  */
 package org.jboss.forge.furnace.addons;
 
-import java.lang.annotation.Annotation;
 import java.util.Set;
 
-import org.jboss.forge.furnace.event.EventException;
+import org.jboss.forge.furnace.event.EventManager;
 import org.jboss.forge.furnace.event.PostStartup;
 import org.jboss.forge.furnace.event.PreShutdown;
 import org.jboss.forge.furnace.services.Imported;
@@ -59,10 +58,10 @@ public interface AddonRegistry extends AddonView
    long getVersion();
 
    /**
-    * Fire an event and notify observers within the enclosing addon.
+    * The {@link EventManager} bound to this {@link AddonRegistry}
     * 
-    * @throws EventException if exceptions are encountered during event processing.
+    * @return a composite {@link EventManager} that delegates calls to {@link Addon#getEventManager()} in
+    *         {@link AddonStatus#STARTED} state
     */
-   void fireEvent(Object event, Annotation... qualifiers) throws EventException;
-
+   EventManager getEventManager();
 }

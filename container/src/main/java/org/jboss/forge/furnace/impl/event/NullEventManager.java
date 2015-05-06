@@ -4,7 +4,7 @@
  * Licensed under the Eclipse Public License version 1.0, available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.jboss.forge.furnace.impl.addons;
+package org.jboss.forge.furnace.impl.event;
 
 import java.lang.annotation.Annotation;
 
@@ -16,8 +16,10 @@ import org.jboss.forge.furnace.event.EventManager;
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class NullEventManager implements EventManager
+public enum NullEventManager implements EventManager
 {
+   INSTANCE;
+
    @Override
    public void fireEvent(Object event, Annotation... qualifiers) throws EventException
    {

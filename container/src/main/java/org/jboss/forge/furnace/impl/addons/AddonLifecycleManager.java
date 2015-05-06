@@ -25,7 +25,9 @@ import org.jboss.forge.furnace.addons.AddonFilter;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.addons.AddonView;
+import org.jboss.forge.furnace.event.EventManager;
 import org.jboss.forge.furnace.impl.FurnaceImpl;
+import org.jboss.forge.furnace.impl.event.AddonViewEventManager;
 import org.jboss.forge.furnace.impl.graph.CompleteAddonGraph;
 import org.jboss.forge.furnace.impl.graph.MasterGraph;
 import org.jboss.forge.furnace.impl.graph.MasterGraphChangeHandler;
@@ -374,6 +376,14 @@ public class AddonLifecycleManager
    public String toGraph()
    {
       return stateManager.getCurrentGraph().toString();
+   }
+
+   /**
+    * Return an {@link EventManager} for the given {@link AddonView}
+    */
+   public EventManager getEventManager(AddonView addonView)
+   {
+      return new AddonViewEventManager(addonView, lock);
    }
 
 }
