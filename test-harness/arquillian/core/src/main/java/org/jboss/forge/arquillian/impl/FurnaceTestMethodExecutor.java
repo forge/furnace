@@ -10,6 +10,7 @@ import java.io.PrintStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 import org.jboss.arquillian.container.test.spi.ContainerMethodExecutor;
@@ -145,7 +146,8 @@ public class FurnaceTestMethodExecutor implements ContainerMethodExecutor
                            Throwable rootCause = getRootCause(e);
                            if (rootCause != null
                                     && Proxies.isForgeProxy(rootCause)
-                                    && "org.junit.internal.AssumptionViolatedException".equals(Proxies
+                                    && Arrays.asList("org.junit.AssumptionViolatedException",
+                                             "org.junit.internal.AssumptionViolatedException").contains(Proxies
                                              .unwrap(rootCause).getClass()
                                              .getName()))
                            {
