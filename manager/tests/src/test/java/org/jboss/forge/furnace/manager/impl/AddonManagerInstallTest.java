@@ -32,6 +32,7 @@ import org.jboss.forge.furnace.manager.request.UpdateRequest;
 import org.jboss.forge.furnace.manager.spi.AddonDependencyResolver;
 import org.jboss.forge.furnace.manager.spi.AddonInfo;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
+import org.jboss.forge.furnace.util.OperatingSystemUtils;
 import org.jboss.forge.furnace.versions.SingleVersion;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -94,9 +95,7 @@ public class AddonManagerInstallTest
    {
       furnace = ServiceLoader.load(Furnace.class).iterator().next();
       resolver = new MavenAddonDependencyResolver();
-      repository = File.createTempFile("furnace-repo", ".tmp");
-      repository.delete();
-      repository.mkdir();
+      repository = OperatingSystemUtils.createTempDir();
       furnace.addRepository(AddonRepositoryMode.MUTABLE, repository);
       addonManager = new AddonManagerImpl(furnace, resolver);
    }
