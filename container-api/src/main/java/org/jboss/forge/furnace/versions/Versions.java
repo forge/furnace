@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.util.Strings;
@@ -23,7 +21,6 @@ import org.jboss.forge.furnace.util.Strings;
  */
 public class Versions
 {
-   private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(\\.|-)(.*)");
    private static final String SNAPSHOT_SUFFIX = "-SNAPSHOT";
 
    /**
@@ -44,25 +41,11 @@ public class Versions
                || runtimeVersion == null || runtimeVersion.toString().length() == 0)
          return true;
 
-      Matcher runtimeMatcher = VERSION_PATTERN.matcher(runtimeVersion.toString());
-      if (runtimeMatcher.matches())
-      {
-         int runtimeMajorVersion = Integer.parseInt(runtimeMatcher.group(1));
-         int runtimeMinorVersion = Integer.parseInt(runtimeMatcher.group(2));
-
-         Matcher addonApiMatcher = VERSION_PATTERN.matcher(addonApiVersion.toString());
-         if (addonApiMatcher.matches())
-         {
-            int addonApiMajorVersion = Integer.parseInt(addonApiMatcher.group(1));
-            int addonApiMinorVersion = Integer.parseInt(addonApiMatcher.group(2));
-
-            if (addonApiMajorVersion == runtimeMajorVersion && addonApiMinorVersion <= runtimeMinorVersion)
-            {
-               return true;
-            }
-         }
-      }
-      return false;
+      int runtimeMajorVersion = runtimeVersion.getMajorVersion();
+      int runtimeMinorVersion = runtimeVersion.getMinorVersion();
+      int addonApiMajorVersion = addonApiVersion.getMajorVersion();
+      int addonApiMinorVersion = addonApiVersion.getMinorVersion();
+      return (addonApiMajorVersion == runtimeMajorVersion && addonApiMinorVersion <= runtimeMinorVersion);
    }
 
    /**
