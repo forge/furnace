@@ -18,7 +18,9 @@
  */
 package org.jboss.forge.furnace.versions;
 
-import java.util.StringTokenizer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.jboss.forge.furnace.util.Assert;
 
@@ -30,14 +32,11 @@ import org.jboss.forge.furnace.util.Assert;
  */
 public class SingleVersion implements Version
 {
+   private String version;
    private Integer majorVersion;
-
    private Integer minorVersion;
-
    private Integer incrementalVersion;
-
    private Integer buildNumber;
-
    private String qualifier;
 
    private ComparableVersion comparable;
@@ -115,143 +114,54 @@ public class SingleVersion implements Version
       return qualifier;
    }
 
-   public final void parseVersion(String version)
+   private final void parseVersion(String version)
    {
       Assert.notNull(version, "Version must not be null.");
+      this.version = version.trim();
       comparable = new ComparableVersion(version);
 
-      int index = version.indexOf("-");
+      List<String> parts = new ArrayList<>(Arrays.asList(version.split("[\\._-]")));
 
-      String part1;
-      String part2 = null;
-
-      if (index < 0)
+      try
       {
-         part1 = version;
-      }
-      else
-      {
-         part1 = version.substring(0, index);
-         part2 = version.substring(index + 1);
-      }
-
-      if (part2 != null)
-      {
-         try
+         this.majorVersion = Integer.valueOf(parts.remove(0));
+         if (!parts.isEmpty())
+            minorVersion = Integer.valueOf(parts.remove(0));
+         if (!parts.isEmpty())
+            incrementalVersion = Integer.valueOf(parts.remove(0));
+         if (!parts.isEmpty())
          {
-            if ((part2.length() == 1) || !part2.startsWith("0"))
+            qualifier = parts.remove(0);
+            try
             {
-               buildNumber = Integer.valueOf(part2);
+               if (parts.isEmpty())
+               {
+                  buildNumber = Integer.valueOf(qualifier);
+                  qualifier = null;
+               }
             }
-            else
+            catch (NumberFormatException e)
             {
-               qualifier = part2;
+               // qualifier is not a build number, carry on.
             }
          }
-         catch (NumberFormatException e)
-         {
-            qualifier = part2;
-         }
+         if (!parts.isEmpty())
+            buildNumber = Integer.valueOf(parts.remove(0));
       }
-
-      if ((part1.indexOf(".") < 0) && !part1.startsWith("0"))
+      catch (NumberFormatException e)
       {
-         try
-         {
-            majorVersion = Integer.valueOf(part1);
-         }
-         catch (NumberFormatException e)
-         {
-            // qualifier is the whole version, including "-"
-            qualifier = version;
-            buildNumber = null;
-         }
+         // It's probably just a literal version, so... give up and use it "as is."
+         majorVersion = 0;
+         minorVersion = 0;
+         incrementalVersion = 0;
+         buildNumber = 0;
+         qualifier = null;
       }
-      else
-      {
-         boolean fallback = false;
-
-         StringTokenizer tok = new StringTokenizer(part1, ".");
-         try
-         {
-            majorVersion = getNextIntegerToken(tok);
-            if (tok.hasMoreTokens())
-            {
-               minorVersion = getNextIntegerToken(tok);
-            }
-            if (tok.hasMoreTokens())
-            {
-               incrementalVersion = getNextIntegerToken(tok);
-            }
-            if (tok.hasMoreTokens())
-            {
-               fallback = true;
-            }
-
-            // string tokenzier won't detect these and ignores them
-            if (part1.indexOf("..") >= 0 || part1.startsWith(".") || part1.endsWith("."))
-            {
-               fallback = true;
-            }
-         }
-         catch (NumberFormatException e)
-         {
-            fallback = true;
-         }
-
-         if (fallback)
-         {
-            // qualifier is the whole version, including "-"
-            qualifier = version;
-            majorVersion = null;
-            minorVersion = null;
-            incrementalVersion = null;
-            buildNumber = null;
-         }
-      }
-   }
-
-   private static Integer getNextIntegerToken(StringTokenizer tok)
-   {
-      String s = tok.nextToken();
-      if ((s.length() > 1) && s.startsWith("0"))
-      {
-         throw new NumberFormatException("Number part has a leading 0: '" + s + "'");
-      }
-      return Integer.valueOf(s);
    }
 
    @Override
    public String toString()
    {
-      StringBuilder buf = new StringBuilder();
-      if (majorVersion != null)
-      {
-         buf.append(majorVersion);
-      }
-      if (minorVersion != null)
-      {
-         buf.append(".");
-         buf.append(minorVersion);
-      }
-      if (incrementalVersion != null)
-      {
-         buf.append(".");
-         buf.append(incrementalVersion);
-      }
-      if (buildNumber != null)
-      {
-         buf.append("-");
-         buf.append(buildNumber);
-      }
-      else if (qualifier != null)
-      {
-         if (buf.length() > 0)
-         {
-            buf.append("-");
-         }
-         buf.append(qualifier);
-      }
-      return buf.toString();
+      return version;
    }
 }

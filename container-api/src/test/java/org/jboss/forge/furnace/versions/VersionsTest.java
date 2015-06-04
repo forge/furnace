@@ -67,6 +67,23 @@ public class VersionsTest
       Version snapshot = new SingleVersion("2.1.2-SNAPSHOT");
       Assert.assertTrue(nonSnapshot.compareTo(snapshot) >= 0);
       Assert.assertTrue(snapshot.compareTo(nonSnapshot) < 0);
+   }
 
+   @Test
+   public void testIsApiCompatible0() throws Exception
+   {
+      Assert.assertTrue(Versions.isApiCompatible(
+               new SingleVersion("2.18.2-SNAPSHOT"),
+               new SingleVersion("2.16.1.Final"))
+               );
+   }
+
+   @Test
+   public void testIsApiCompatible1() throws Exception
+   {
+      Assert.assertTrue(Versions.isApiCompatible(
+               new SingleVersion("2.18.2.Final"),
+               new SingleVersion("2.16.1.Final"))
+               );
    }
 }

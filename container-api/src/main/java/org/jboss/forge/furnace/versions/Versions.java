@@ -57,6 +57,72 @@ public class Versions
     * <li><code>[1.0,2.0)</code> Versions 1.0 (included) to 2.0 (not included)</li>
     * <li><code>[1.0,2.0]</code> Versions 1.0 to 2.0 (both included)</li>
     * <li><code>[1.5,)</code> Versions 1.5 and higher</li>
+    * </ul>
+    * 
+    * @param range string representation of a version or version range
+    * @return a new {@link VersionRange} object that represents the specification
+    * @throws VersionException
+    */
+   public static VersionRange parseVersionRange(String range) throws VersionException
+   {
+      Assert.notNull(range, "Version range must not be null.");
+      boolean lowerBoundInclusive = range.startsWith("[");
+      boolean upperBoundInclusive = range.endsWith("]");
+
+      String process = range.substring(1, range.length() - 1).trim();
+
+      VersionRange result;
+      int index = process.indexOf(",");
+      if (index < 0)
+      {
+         if (!lowerBoundInclusive || !upperBoundInclusive)
+         {
+            throw new VersionException("Single version must be surrounded by []: " + range);
+         }
+
+         Version version = new SingleVersion(process);
+         result = new DefaultVersionRange(version, lowerBoundInclusive, version, upperBoundInclusive);
+      }
+      else
+      {
+         String lowerBound = process.substring(0, index).trim();
+         String upperBound = process.substring(index + 1).trim();
+         if (lowerBound.equals(upperBound))
+         {
+            throw new VersionException("Range cannot have identical boundaries: " + range);
+         }
+
+         Version lowerVersion = null;
+         if (lowerBound.length() > 0)
+         {
+            lowerVersion = new SingleVersion(lowerBound);
+         }
+         Version upperVersion = null;
+         if (upperBound.length() > 0)
+         {
+            upperVersion = new SingleVersion(upperBound);
+         }
+
+         if (upperVersion != null && lowerVersion != null && upperVersion.compareTo(lowerVersion) < 0)
+         {
+            throw new VersionException("Range defies version ordering: " + range);
+         }
+
+         result = new DefaultVersionRange(lowerVersion, lowerBoundInclusive, upperVersion, upperBoundInclusive);
+      }
+
+      return result;
+   }
+
+   /**
+    * Create a version range from a string representation
+    * <p/>
+    * For example:
+    * <ul>
+    * <li><code>1.0</code> Version 1.0</li>
+    * <li><code>[1.0,2.0)</code> Versions 1.0 (included) to 2.0 (not included)</li>
+    * <li><code>[1.0,2.0]</code> Versions 1.0 to 2.0 (both included)</li>
+    * <li><code>[1.5,)</code> Versions 1.5 and higher</li>
     * <li><code>(,1.0],[1.2,)</code> Versions up to 1.0 (included) and 1.2 or higher</li>
     * </ul>
     * 
@@ -66,7 +132,7 @@ public class Versions
     */
    public static MultipleVersionRange parseMultipleVersionRange(String intersection) throws VersionException
    {
-      Assert.notNull(intersection, "Version range string must not be null.");
+      Assert.notNull(intersection, "Version range must not be null.");
 
       List<VersionRange> ranges = new ArrayList<VersionRange>();
       String process = intersection;
@@ -142,63 +208,26 @@ public class Versions
       return new MultipleVersionRange(ranges);
    }
 
-   public static VersionRange parseVersionRange(String range) throws VersionException
-   {
-      boolean lowerBoundInclusive = range.startsWith("[");
-      boolean upperBoundInclusive = range.endsWith("]");
-
-      String process = range.substring(1, range.length() - 1).trim();
-
-      VersionRange result;
-      int index = process.indexOf(",");
-      if (index < 0)
-      {
-         if (!lowerBoundInclusive || !upperBoundInclusive)
-         {
-            throw new VersionException("Single version must be surrounded by []: " + range);
-         }
-
-         Version version = new SingleVersion(process);
-         result = new DefaultVersionRange(version, lowerBoundInclusive, version, upperBoundInclusive);
-      }
-      else
-      {
-         String lowerBound = process.substring(0, index).trim();
-         String upperBound = process.substring(index + 1).trim();
-         if (lowerBound.equals(upperBound))
-         {
-            throw new VersionException("Range cannot have identical boundaries: " + range);
-         }
-
-         Version lowerVersion = null;
-         if (lowerBound.length() > 0)
-         {
-            lowerVersion = new SingleVersion(lowerBound);
-         }
-         Version upperVersion = null;
-         if (upperBound.length() > 0)
-         {
-            upperVersion = new SingleVersion(upperBound);
-         }
-
-         if (upperVersion != null && lowerVersion != null && upperVersion.compareTo(lowerVersion) < 0)
-         {
-            throw new VersionException("Range defies version ordering: " + range);
-         }
-
-         result = new DefaultVersionRange(lowerVersion, lowerBoundInclusive, upperVersion, upperBoundInclusive);
-      }
-
-      return result;
-   }
-
+   /**
+    * Calculate the intersection of one or more {@link VersionRange} instances, returning a single {@link VersionRange}
+    * as the result.
+    */
    public static VersionRange intersection(VersionRange... ranges)
    {
+      Assert.notNull(ranges, "Version ranges must not be null.");
+      Assert.isTrue(ranges.length >= 1, "Version ranges must not be empty.");
       return intersection(Arrays.asList(ranges));
    }
 
+   /**
+    * Calculate the intersection of one or more {@link VersionRange} instances, returning a single {@link VersionRange}
+    * as the result.
+    */
    public static VersionRange intersection(Collection<VersionRange> ranges)
    {
+      Assert.notNull(ranges, "Version ranges must not be null.");
+      Assert.isTrue(ranges.size() >= 1, "Version ranges must not be empty.");
+
       Version min = null;
       Version max = null;
       boolean minInclusive = false;
@@ -229,6 +258,7 @@ public class Versions
     */
    public static boolean isSnapshot(Version version)
    {
+      Assert.notNull(version, "Version must not be null.");
       return version.toString().endsWith(SNAPSHOT_SUFFIX);
    }
 
@@ -241,6 +271,7 @@ public class Versions
     */
    public static Version getSpecificationVersionFor(Class<?> type)
    {
+      Assert.notNull(type, "Type must not be null.");
       final Version result;
       Package pkg = type.getPackage();
       if (pkg == null)
@@ -271,6 +302,7 @@ public class Versions
     */
    public static Version getImplementationVersionFor(Class<?> type)
    {
+      Assert.notNull(type, "Type must not be null.");
       final Version result;
       Package pkg = type.getPackage();
       if (pkg == null)
