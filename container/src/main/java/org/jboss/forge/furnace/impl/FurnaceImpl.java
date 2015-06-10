@@ -625,6 +625,18 @@ public class FurnaceImpl implements Furnace
       loader = null;
       manager.dispose();
       manager = null;
+      if(watcher!=null)
+      {
+         try
+         {
+            watcher.close();
+         }
+         catch (IOException e)
+         {
+            logger.log(Level.SEVERE, "Error occurred.", e);
+         }
+         watcher = null;
+      }
       repositories.clear();
       executor.shutdownNow();
       firedAfterStart = false;
