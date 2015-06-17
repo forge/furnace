@@ -4,7 +4,7 @@
 
 The Furnace Maven Plugin provides a clean Maven integration with Furnace.
 
-NOTE: due to https://issues.jboss.org/browse/FORGE-1034, this plugin only runs in Maven 3.1.0
+NOTE: due to https://issues.jboss.org/browse/FORGE-1034, this plugin only runs in Maven 3.1.0+
 
 === Features 
 
