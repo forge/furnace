@@ -18,6 +18,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -37,6 +38,7 @@ import org.jboss.arquillian.test.spi.TestClass;
 import org.jboss.forge.arquillian.AddonDependencies;
 import org.jboss.forge.arquillian.AddonDependency;
 import org.jboss.forge.arquillian.AddonDeployment;
+import org.jboss.forge.arquillian.AddonDeploymentScenarioEnhancer;
 import org.jboss.forge.arquillian.AddonDeployments;
 import org.jboss.forge.arquillian.Dependencies;
 import org.jboss.forge.arquillian.DeployToRepository;
@@ -50,6 +52,7 @@ import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.manager.maven.addon.MavenAddonDependencyResolver;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.furnace.util.Annotations;
+import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.util.Strings;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -58,7 +61,7 @@ import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 /**
  * Creates {@link DeploymentDescription} instances from annotated test cases - handles {@link AddonDeployments} and
  * {@link AddonDependencies}.
- * 
+ *
  * @author <a href="lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
 @SuppressWarnings("deprecation")
@@ -95,6 +98,13 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
          }
 
          deployments.add(primaryDeployment);
+      }
+      for (AddonDeploymentScenarioEnhancer enhancer : ServiceLoader.load(AddonDeploymentScenarioEnhancer.class))
+      {
+         deployments = enhancer.enhance(testClass, deployments);
+         Assert.notNull(deployments,
+                  String.format("Cannot return a null deployment. Check %s for more details",
+                           enhancer.getClass()));
       }
 
       return deployments;
@@ -268,8 +278,7 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
        */
       if (imported)
       {
-         AddonDependencyEntry dependency =
-                  AddonDependencyEntry.create(addonName, addonVersion, exported, optional);
+         AddonDependencyEntry dependency = AddonDependencyEntry.create(addonName, addonVersion, exported, optional);
          ((AddonArchiveBase<?>) primaryDeployment.getArchive()).addAsAddonDependencies(dependency);
       }
 
