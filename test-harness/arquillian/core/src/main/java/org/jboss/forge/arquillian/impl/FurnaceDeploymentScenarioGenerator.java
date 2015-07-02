@@ -12,14 +12,14 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.LinkedHashSet;
 
 import org.apache.maven.model.Model;
 import org.eclipse.aether.artifact.Artifact;
@@ -33,6 +33,7 @@ import org.jboss.arquillian.container.test.api.OverProtocol;
 import org.jboss.arquillian.container.test.api.ShouldThrowException;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentScenarioGenerator;
+import org.jboss.arquillian.container.test.spi.util.ServiceLoader;
 import org.jboss.arquillian.test.spi.TestClass;
 import org.jboss.forge.arquillian.AddonDependencies;
 import org.jboss.forge.arquillian.AddonDependency;
@@ -46,6 +47,7 @@ import org.jboss.forge.arquillian.archive.AddonDeploymentArchive;
 import org.jboss.forge.arquillian.archive.RepositoryLocationAware;
 import org.jboss.forge.arquillian.maven.ProjectHelper;
 import org.jboss.forge.arquillian.protocol.FurnaceProtocolDescription;
+import org.jboss.forge.arquillian.services.FurnaceAddonDeploymentEnhancer;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.manager.maven.addon.MavenAddonDependencyResolver;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
@@ -58,7 +60,7 @@ import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 /**
  * Creates {@link DeploymentDescription} instances from annotated test cases - handles {@link AddonDeployments} and
  * {@link AddonDependencies}.
- * 
+ *
  * @author <a href="lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
 @SuppressWarnings("deprecation")
@@ -96,6 +98,11 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
 
          deployments.add(primaryDeployment);
       }
+       ServiceLoader<FurnaceAddonDeploymentEnhancer> loader = ServiceLoader.load(FurnaceAddonDeploymentEnhancer.class);
+       for (FurnaceAddonDeploymentEnhancer furnaceAddonDeploymentEnhancer : loader)
+       {
+           deployments =furnaceAddonDeploymentEnhancer.enhanceDeployment(deployments);
+       }
 
       return deployments;
    }
