@@ -1,4 +1,4 @@
-package org.jboss.forge.arquillian;
+package org.jboss.forge.arquillian.spi;
 
 import java.util.List;
 
