@@ -6,7 +6,6 @@
  */
 package org.jboss.forge.furnace.proxy;
 
-import org.jboss.forge.furnace.proxy.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -12,7 +12,6 @@ import static org.hamcrest.CoreMatchers.hasItems;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.forge.furnace.addons.AddonId;

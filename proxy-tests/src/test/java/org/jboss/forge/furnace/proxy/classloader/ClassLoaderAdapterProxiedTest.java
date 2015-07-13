@@ -6,15 +6,15 @@
  */
 package org.jboss.forge.furnace.proxy.classloader;
 
-import net.sf.cglib.proxy.Enhancer;
-import net.sf.cglib.proxy.LazyLoader;
-
 import org.jboss.forge.classloader.mock.MockService;
 import org.jboss.forge.classloader.mock.Result;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
 import org.jboss.forge.furnace.proxy.Proxies;
 import org.junit.Assert;
 import org.junit.Test;
+
+import net.sf.cglib.proxy.Enhancer;
+import net.sf.cglib.proxy.LazyLoader;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
