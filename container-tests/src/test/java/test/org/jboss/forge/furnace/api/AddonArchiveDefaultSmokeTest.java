@@ -10,7 +10,6 @@ package test.org.jboss.forge.furnace.api;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.DeployAsLocalService;
 import org.jboss.forge.arquillian.services.LocalServices;
 import org.jboss.forge.furnace.Furnace;
 import org.junit.Assert;
@@ -22,7 +21,6 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  */
 @RunWith(Arquillian.class)
-@DeployAsLocalService
 public class AddonArchiveDefaultSmokeTest
 {
    @Test

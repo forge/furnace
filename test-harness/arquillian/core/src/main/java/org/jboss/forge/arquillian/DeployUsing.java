@@ -13,20 +13,24 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.forge.arquillian.archive.AddonArchive;
-import org.jboss.forge.arquillian.impl.FurnaceDeploymentScenarioGenerator;
+import org.jboss.forge.arquillian.spi.AddonServiceRegistrationStrategy;
 
 /**
- * Deploy this addon as a local service.
+ * Deploy this addon as a service.
  * 
- * It basically calls {@link AddonArchive#addAsLocalServices(Class...)} for the class under test in
- * {@link FurnaceDeploymentScenarioGenerator} when no {@link Deployment} methods are found
+ * It basically declares a strategy for deploying this class as a service when no {@link Deployment} methods are
+ * defined.
  * 
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  */
 @Documented
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface DeployAsLocalService
+public @interface DeployUsing
 {
+   /**
+    * The strategy to use. Valid values are <code>cdi</code>,<code>simple</code>,<code>local</code> or a fully-qualified
+    * class name that implements the {@link AddonServiceRegistrationStrategy} interface
+    */
+   String value();
 }

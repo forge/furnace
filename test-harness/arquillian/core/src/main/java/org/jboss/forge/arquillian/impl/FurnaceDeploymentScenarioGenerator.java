@@ -21,6 +21,7 @@ import java.util.Map.Entry;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 import org.apache.maven.model.Model;
 import org.eclipse.aether.artifact.Artifact;
@@ -40,8 +41,8 @@ import org.jboss.forge.arquillian.AddonDependency;
 import org.jboss.forge.arquillian.AddonDeployment;
 import org.jboss.forge.arquillian.AddonDeployments;
 import org.jboss.forge.arquillian.Dependencies;
-import org.jboss.forge.arquillian.DeployAsLocalService;
 import org.jboss.forge.arquillian.DeployToRepository;
+import org.jboss.forge.arquillian.DeployUsing;
 import org.jboss.forge.arquillian.DeploymentListener;
 import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.archive.AddonArchiveBase;
@@ -50,6 +51,7 @@ import org.jboss.forge.arquillian.archive.RepositoryLocationAware;
 import org.jboss.forge.arquillian.maven.ProjectHelper;
 import org.jboss.forge.arquillian.protocol.FurnaceProtocolDescription;
 import org.jboss.forge.arquillian.spi.AddonDeploymentScenarioEnhancer;
+import org.jboss.forge.arquillian.spi.AddonServiceRegistrationStrategy;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.manager.maven.addon.MavenAddonDependencyResolver;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
@@ -72,6 +74,8 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
    Map<String, String> dependencyMap;
    Set<AddonDependencyEntry> addonSet;
 
+   private static Logger log = Logger.getLogger(FurnaceDeploymentScenarioGenerator.class.getName());
+
    @Override
    public List<DeploymentDescription> generate(TestClass testClass)
    {
@@ -80,7 +84,7 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
       if (deploymentMethods.length == 0)
       {
          // FURNACE-58: Add a default deployment if no deployment is specified
-         addDefaultDeployments(testClass.getJavaClass(), deployments);
+         addDefaultDeployments(testClass, deployments);
       }
       else
       {
@@ -122,25 +126,67 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
    /**
     * Adds a default deployment to the list
     */
-   private void addDefaultDeployments(Class<?> classUnderTest, List<DeploymentDescription> deployments)
+   private void addDefaultDeployments(TestClass testClass, List<DeploymentDescription> deployments)
    {
       try
       {
          Method deploymentMethod = getClass().getMethod("getDefaultDeployment");
+         Class<?> classUnderTest = testClass.getJavaClass();
          DeploymentDescription primaryDeployment = generateDeployment(deploymentMethod);
-         if (classUnderTest.isAnnotationPresent(DeployAsLocalService.class))
-         {
-            AddonArchive archive = (AddonArchive) primaryDeployment.getArchive();
-            archive.addAsLocalServices(classUnderTest);
-         }
          Collection<DeploymentDescription> generatedDeployments = generateAnnotatedDeployments(primaryDeployment,
                   classUnderTest, deploymentMethod);
+         registerClassUnderTestAsService(testClass, (AddonArchive) primaryDeployment.getArchive());
          deployments.add(primaryDeployment);
          deployments.addAll(generatedDeployments);
       }
       catch (Exception e)
       {
          throw new RuntimeException("Could not generate a default deployment", e);
+      }
+   }
+
+   private void registerClassUnderTestAsService(TestClass testClass, AddonArchive addonArchive)
+   {
+      AddonServiceRegistrationStrategy strategy = AddonServiceRegistrationStrategies.LOCAL;
+      try
+      {
+         Class<?> classUnderTest = testClass.getJavaClass();
+         if (classUnderTest.isAnnotationPresent(DeployUsing.class))
+         {
+            strategy = AddonServiceRegistrationStrategies
+                     .create(classUnderTest.getAnnotation(DeployUsing.class).value());
+         }
+         else
+         {
+            // Try to find the container
+            String containerGroupId = "org.jboss.forge.furnace.container";
+            for (AddonDependencyEntry entry : addonArchive.getAddonDependencies())
+            {
+               if (entry.getName().startsWith(containerGroupId))
+               {
+                  strategy = AddonServiceRegistrationStrategies
+                           .create(entry.getName().substring(containerGroupId.length() + 1).toUpperCase());
+                  if (strategy != null)
+                  {
+                     break;
+                  }
+
+               }
+            }
+         }
+      }
+      catch (Exception e)
+      {
+         throw new RuntimeException("Error while trying to resolve the addon service registration strategy", e);
+      }
+      if (strategy != null)
+      {
+         strategy.registerAsService(testClass, addonArchive);
+      }
+      else
+      {
+         log.warning("No valid " + AddonServiceRegistrationStrategy.class.getName() + " class found for "
+                  + testClass.getJavaClass() + ". Have your declared a Furnace container in your test's pom.xml?");
       }
    }
 
@@ -293,7 +339,7 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
       AddonDeploymentArchive archive = ShrinkWrap.create(AddonDeploymentArchive.class).setAddonId(id);
 
       /*
-       * Configure deploymenet timeout
+       * Configure deployment timeout
        */
       archive.setDeploymentTimeoutUnit(timeoutUnit);
       archive.setDeploymentTimeoutQuantity(timeoutQuantity);
@@ -568,6 +614,6 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
    @AddonDependencies
    public static AddonArchive getDefaultDeployment()
    {
-      return ShrinkWrap.create(AddonArchive.class).addBeansXML();
+      return ShrinkWrap.create(AddonArchive.class);
    }
 }
