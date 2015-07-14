@@ -9,7 +9,6 @@ package org.jboss.forge.furnace.mock;
 
 public interface MockInterface
 {
-   @MockAnnotation
    @MockMethodAnnotation
    public void method();
 }

@@ -6,15 +6,14 @@
  */
 package org.jboss.forge.furnace.util;
 
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 
 import org.jboss.forge.furnace.mock.InheritsRemote;
 import org.jboss.forge.furnace.mock.InheritsRemoteFromExtendedInterface;
 import org.jboss.forge.furnace.mock.InheritsRemoteFromSuperClassInheriting;
 import org.jboss.forge.furnace.mock.MockAnnotation;
-import org.jboss.forge.furnace.mock.MockMethodAnnotation;
-import org.jboss.forge.furnace.mock.SuperClassAnnotatedWithRemote;
 import org.jboss.forge.furnace.mock.MockInterface;
+import org.jboss.forge.furnace.mock.SuperClassAnnotatedWithRemote;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -23,12 +22,13 @@ import org.junit.Test;
  */
 public class AnnotationsTest
 {
+
    @Test
    public void testMethodAnnotation() throws Exception
    {
-      MockMethodAnnotation annotation = Annotations.getAnnotation(MockInterface.class.getMethod("method"),
-               MockMethodAnnotation.class);
-      Assert.assertThat(annotation, notNullValue());
+      MockAnnotation annotation = Annotations.getAnnotation(MockInterface.class.getMethod("method"),
+               MockAnnotation.class);
+      Assert.assertThat(annotation, nullValue());
    }
 
    @Test

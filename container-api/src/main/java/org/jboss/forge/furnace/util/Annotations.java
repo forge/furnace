@@ -185,30 +185,32 @@ public class Annotations
    public static <A extends Annotation> A getAnnotation(final Class<?> c, final Class<A> type)
    {
       A result = null;
-      result = getAnnotationFromType(c, type);
-      if (result == null)
+      if (c != null)
       {
-         Class<?> superclass = c.getSuperclass();
-         while (superclass != null)
+         result = getAnnotationFromType(c, type);
+         if (result == null)
          {
-            result = getAnnotation(superclass, type);
-            if (result != null)
-               break;
-            superclass = superclass.getSuperclass();
+            Class<?> superclass = c.getSuperclass();
+            while (superclass != null)
+            {
+               result = getAnnotation(superclass, type);
+               if (result != null)
+                  break;
+               superclass = superclass.getSuperclass();
+            }
+         }
+
+         if (result == null)
+         {
+            Class<?>[] interfaces = c.getInterfaces();
+            for (Class<?> i : interfaces)
+            {
+               result = getAnnotation(i, type);
+               if (result != null)
+                  break;
+            }
          }
       }
-
-      if (result == null)
-      {
-         Class<?>[] interfaces = c.getInterfaces();
-         for (Class<?> i : interfaces)
-         {
-            result = getAnnotation(i, type);
-            if (result != null)
-               break;
-         }
-      }
-
       return result;
    }
 
