@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Utility class for common @{@link Annotation} operations.
+ * Utility class for common {@link Annotation} operations.
  * <p/>
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com>Lincoln Baxter, III</a>
@@ -175,8 +175,8 @@ public class Annotations
    }
 
    /**
-    * Inspect class <b>c</b> for a specific <b>type</b> of annotation. This also discovers annotations defined through a @
-    * {@link Stereotype}.
+    * Inspect class <b>c</b> for a specific <b>type</b> of annotation. This also discovers annotations defined through
+    * a @ {@link Stereotype}.
     * 
     * @param c The class to inspect.
     * @param type The targeted annotation class

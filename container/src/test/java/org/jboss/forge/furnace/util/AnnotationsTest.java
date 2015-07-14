@@ -6,8 +6,12 @@
  */
 package org.jboss.forge.furnace.util;
 
+import static org.hamcrest.CoreMatchers.notNullValue;
+
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -21,6 +25,28 @@ public class AnnotationsTest
    public @interface MockAnnotation
    {
 
+   }
+
+   @Retention(RetentionPolicy.RUNTIME)
+   @Target(ElementType.METHOD)
+   public @interface MockMethodAnnotation
+   {
+
+   }
+
+   public interface NestedInterface
+   {
+      @MockAnnotation
+      @MockMethodAnnotation
+      public void method();
+   }
+
+   @Test
+   public void testMethodAnnotation() throws Exception
+   {
+      MockMethodAnnotation annotation = Annotations.getAnnotation(NestedInterface.class.getMethod("method"),
+               MockMethodAnnotation.class);
+      Assert.assertThat(annotation, notNullValue());
    }
 
    @Test
