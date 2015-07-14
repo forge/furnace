@@ -40,6 +40,7 @@ import org.jboss.forge.arquillian.AddonDependency;
 import org.jboss.forge.arquillian.AddonDeployment;
 import org.jboss.forge.arquillian.AddonDeployments;
 import org.jboss.forge.arquillian.Dependencies;
+import org.jboss.forge.arquillian.DeployAsLocalService;
 import org.jboss.forge.arquillian.DeployToRepository;
 import org.jboss.forge.arquillian.DeploymentListener;
 import org.jboss.forge.arquillian.archive.AddonArchive;
@@ -127,11 +128,14 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
       {
          Method deploymentMethod = getClass().getMethod("getDefaultDeployment");
          DeploymentDescription primaryDeployment = generateDeployment(deploymentMethod);
-         AddonArchive archive = (AddonArchive) primaryDeployment.getArchive();
-         archive.addAsLocalServices(classUnderTest);
-         deployments.add(primaryDeployment);
+         if (classUnderTest.isAnnotationPresent(DeployAsLocalService.class))
+         {
+            AddonArchive archive = (AddonArchive) primaryDeployment.getArchive();
+            archive.addAsLocalServices(classUnderTest);
+         }
          Collection<DeploymentDescription> generatedDeployments = generateAnnotatedDeployments(primaryDeployment,
                   classUnderTest, deploymentMethod);
+         deployments.add(primaryDeployment);
          deployments.addAll(generatedDeployments);
       }
       catch (Exception e)

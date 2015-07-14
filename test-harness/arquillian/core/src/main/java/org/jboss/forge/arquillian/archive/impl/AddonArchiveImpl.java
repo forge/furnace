@@ -22,7 +22,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.services.LocalServices;
@@ -38,14 +37,11 @@ import org.jboss.shrinkwrap.impl.base.container.ContainerBase;
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class AddonArchiveImpl extends ContainerBase<AddonArchive> implements AddonArchive
+public class AddonArchiveImpl extends ContainerBase<AddonArchive>implements AddonArchive
 {
    // -------------------------------------------------------------------------------------||
    // Class Members ----------------------------------------------------------------------||
    // -------------------------------------------------------------------------------------||
-
-   @SuppressWarnings("unused")
-   private static final Logger log = Logger.getLogger(AddonArchiveImpl.class.getName());
 
    /**
     * Path to the web inside of the Archive.
