@@ -8,11 +8,13 @@ package org.jboss.forge.furnace.util;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
+import org.jboss.forge.furnace.mock.InheritsRemote;
+import org.jboss.forge.furnace.mock.InheritsRemoteFromExtendedInterface;
+import org.jboss.forge.furnace.mock.InheritsRemoteFromSuperClassInheriting;
+import org.jboss.forge.furnace.mock.MockAnnotation;
+import org.jboss.forge.furnace.mock.MockMethodAnnotation;
+import org.jboss.forge.furnace.mock.SuperClassAnnotatedWithRemote;
+import org.jboss.forge.furnace.mock.MockInterface;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -21,30 +23,10 @@ import org.junit.Test;
  */
 public class AnnotationsTest
 {
-   @Retention(RetentionPolicy.RUNTIME)
-   public @interface MockAnnotation
-   {
-
-   }
-
-   @Retention(RetentionPolicy.RUNTIME)
-   @Target(ElementType.METHOD)
-   public @interface MockMethodAnnotation
-   {
-
-   }
-
-   public interface NestedInterface
-   {
-      @MockAnnotation
-      @MockMethodAnnotation
-      public void method();
-   }
-
    @Test
    public void testMethodAnnotation() throws Exception
    {
-      MockMethodAnnotation annotation = Annotations.getAnnotation(NestedInterface.class.getMethod("method"),
+      MockMethodAnnotation annotation = Annotations.getAnnotation(MockInterface.class.getMethod("method"),
                MockMethodAnnotation.class);
       Assert.assertThat(annotation, notNullValue());
    }
@@ -73,42 +55,5 @@ public class AnnotationsTest
    {
       Assert.assertTrue(Annotations.isAnnotationPresent(InheritsRemoteFromSuperClassInheriting.class,
                MockAnnotation.class));
-   }
-
-   public class InheritsRemote implements AnnotatedWithRemote
-   {
-
-   }
-
-   @MockAnnotation
-   public interface AnnotatedWithRemote
-   {
-
-   }
-
-   public class InheritsRemoteFromExtendedInterface implements ExtendsRemoteInterface
-   {
-
-   }
-
-   public interface ExtendsRemoteInterface extends AnnotatedWithRemote
-   {
-
-   }
-
-   @MockAnnotation
-   public class SuperClassAnnotatedWithRemote
-   {
-
-   }
-
-   public class InheritsRemoteFromSuperClassInheriting extends SuperClassInheritsFromInterface
-   {
-
-   }
-
-   public class SuperClassInheritsFromInterface implements AnnotatedWithRemote
-   {
-
    }
 }
