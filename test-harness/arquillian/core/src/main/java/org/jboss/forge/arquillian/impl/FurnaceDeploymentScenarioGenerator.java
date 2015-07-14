@@ -42,6 +42,7 @@ import org.jboss.forge.arquillian.AddonDeployments;
 import org.jboss.forge.arquillian.Dependencies;
 import org.jboss.forge.arquillian.DeployToRepository;
 import org.jboss.forge.arquillian.DeploymentListener;
+import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.archive.AddonArchiveBase;
 import org.jboss.forge.arquillian.archive.AddonDeploymentArchive;
 import org.jboss.forge.arquillian.archive.RepositoryLocationAware;
@@ -75,29 +76,37 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
    {
       List<DeploymentDescription> deployments = new ArrayList<DeploymentDescription>();
       Method[] deploymentMethods = testClass.getMethods(Deployment.class);
-      for (Method deploymentMethod : deploymentMethods)
+      if (deploymentMethods.length == 0)
       {
-         validate(deploymentMethod);
-         DeploymentDescription primaryDeployment = null;
-         try
+         // FURNACE-58: Add a default deployment if no deployment is specified
+         addDefaultDeployments(testClass.getJavaClass(), deployments);
+      }
+      else
+      {
+         for (Method deploymentMethod : deploymentMethods)
          {
-            primaryDeployment = generateDeployment(deploymentMethod);
-
-            if (deploymentMethod.isAnnotationPresent(AddonDeployments.class)
-                     || deploymentMethod.isAnnotationPresent(AddonDependencies.class)
-                     || deploymentMethod.isAnnotationPresent(Dependencies.class))
+            validate(deploymentMethod);
+            DeploymentDescription primaryDeployment = null;
+            try
             {
-               deployments.addAll(generateAnnotatedDeployments(primaryDeployment, testClass.getJavaClass(),
-                        deploymentMethod));
-            }
-         }
-         catch (Exception e)
-         {
-            throw new RuntimeException("Could not generate @Deployment for " + testClass.getName() + "."
-                     + deploymentMethod.getName() + "()", e);
-         }
+               primaryDeployment = generateDeployment(deploymentMethod);
 
-         deployments.add(primaryDeployment);
+               if (deploymentMethod.isAnnotationPresent(AddonDeployments.class)
+                        || deploymentMethod.isAnnotationPresent(AddonDependencies.class)
+                        || deploymentMethod.isAnnotationPresent(Dependencies.class))
+               {
+                  deployments.addAll(generateAnnotatedDeployments(primaryDeployment, testClass.getJavaClass(),
+                           deploymentMethod));
+               }
+            }
+            catch (Exception e)
+            {
+               throw new RuntimeException("Could not generate @Deployment for " + testClass.getName() + "."
+                        + deploymentMethod.getName() + "()", e);
+            }
+
+            deployments.add(primaryDeployment);
+         }
       }
       for (AddonDeploymentScenarioEnhancer enhancer : ServiceLoader.load(AddonDeploymentScenarioEnhancer.class))
       {
@@ -106,8 +115,29 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
                   String.format("Cannot return a null deployment. Check %s for more details",
                            enhancer.getClass()));
       }
-
       return deployments;
+   }
+
+   /**
+    * Adds a default deployment to the list
+    */
+   private void addDefaultDeployments(Class<?> classUnderTest, List<DeploymentDescription> deployments)
+   {
+      try
+      {
+         Method deploymentMethod = getClass().getMethod("getDefaultDeployment");
+         DeploymentDescription primaryDeployment = generateDeployment(deploymentMethod);
+         AddonArchive archive = (AddonArchive) primaryDeployment.getArchive();
+         archive.addAsLocalServices(classUnderTest);
+         deployments.add(primaryDeployment);
+         Collection<DeploymentDescription> generatedDeployments = generateAnnotatedDeployments(primaryDeployment,
+                  classUnderTest, deploymentMethod);
+         deployments.addAll(generatedDeployments);
+      }
+      catch (Exception e)
+      {
+         throw new RuntimeException("Could not generate a default deployment", e);
+      }
    }
 
    private Collection<DeploymentDescription> generateAnnotatedDeployments(DeploymentDescription primaryDeployment,
@@ -525,5 +555,15 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
          dir = dir.getParentFile();
       }
       return pom;
+   }
+
+   /**
+    * Used in {@link FurnaceDeploymentScenarioGenerator#addDefaultDeployments(TestClass, List)}
+    */
+   @Deployment
+   @AddonDependencies
+   public static AddonArchive getDefaultDeployment()
+   {
+      return ShrinkWrap.create(AddonArchive.class).addBeansXML();
    }
 }
