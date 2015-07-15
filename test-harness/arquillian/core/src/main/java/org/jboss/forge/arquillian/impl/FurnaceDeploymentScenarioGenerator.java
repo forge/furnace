@@ -186,7 +186,7 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
       else
       {
          log.warning("No valid " + AddonServiceRegistrationStrategy.class.getName() + " class found for "
-                  + testClass.getJavaClass() + ". Have your declared a Furnace container in your test's pom.xml?");
+                  + testClass.getJavaClass() + ". Have you declared a Furnace container in your test's pom.xml?");
       }
    }
 
