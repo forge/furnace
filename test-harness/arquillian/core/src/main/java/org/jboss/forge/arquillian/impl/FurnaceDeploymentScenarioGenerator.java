@@ -42,8 +42,8 @@ import org.jboss.forge.arquillian.AddonDeployment;
 import org.jboss.forge.arquillian.AddonDeployments;
 import org.jboss.forge.arquillian.Dependencies;
 import org.jboss.forge.arquillian.DeployToRepository;
-import org.jboss.forge.arquillian.DeployUsing;
 import org.jboss.forge.arquillian.DeploymentListener;
+import org.jboss.forge.arquillian.ServiceRegistrationType;
 import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.archive.AddonArchiveBase;
 import org.jboss.forge.arquillian.archive.AddonDeploymentArchive;
@@ -151,10 +151,10 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
       try
       {
          Class<?> classUnderTest = testClass.getJavaClass();
-         if (classUnderTest.isAnnotationPresent(DeployUsing.class))
+         if (Annotations.isAnnotationPresent(classUnderTest, ServiceRegistrationType.class))
          {
             strategy = AddonServiceRegistrationStrategies
-                     .create(classUnderTest.getAnnotation(DeployUsing.class).value());
+                     .create(Annotations.getAnnotation(classUnderTest, ServiceRegistrationType.class).value());
          }
          else
          {

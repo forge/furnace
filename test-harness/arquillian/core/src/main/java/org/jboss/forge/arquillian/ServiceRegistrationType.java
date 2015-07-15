@@ -16,7 +16,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.forge.arquillian.spi.AddonServiceRegistrationStrategy;
 
 /**
- * Deploy this addon as a service.
+ * Deploy this test class as a service.
  * 
  * It basically declares a strategy for deploying this class as a service when no {@link Deployment} methods are
  * defined.
@@ -26,7 +26,7 @@ import org.jboss.forge.arquillian.spi.AddonServiceRegistrationStrategy;
 @Documented
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface DeployUsing
+public @interface ServiceRegistrationType
 {
    /**
     * The strategy to use. Valid values are <code>cdi</code>,<code>simple</code>,<code>local</code> or a fully-qualified
