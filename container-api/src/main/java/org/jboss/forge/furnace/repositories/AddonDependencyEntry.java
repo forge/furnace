@@ -19,10 +19,20 @@ import org.jboss.forge.furnace.versions.Versions;
  */
 public class AddonDependencyEntry
 {
+   private static final String FURNACE_CONTAINER_GROUP_ID = "org.jboss.forge.furnace.container";
+
    private String name;
    private VersionRange version;
    private boolean exported;
    private boolean optional;
+
+   /**
+    * Return <code>true</code> if this dependency represents a Furnace container
+    */
+   public boolean isFurnaceContainer()
+   {
+      return name.startsWith(FURNACE_CONTAINER_GROUP_ID);
+   }
 
    /**
     * Return <code>true</code> if this dependency is optional.

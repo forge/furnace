@@ -21,6 +21,7 @@ import java.util.Map.Entry;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.maven.model.Model;
@@ -43,7 +44,6 @@ import org.jboss.forge.arquillian.AddonDeployments;
 import org.jboss.forge.arquillian.Dependencies;
 import org.jboss.forge.arquillian.DeployToRepository;
 import org.jboss.forge.arquillian.DeploymentListener;
-import org.jboss.forge.arquillian.ServiceRegistrationType;
 import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.archive.AddonArchiveBase;
 import org.jboss.forge.arquillian.archive.AddonDeploymentArchive;
@@ -51,7 +51,7 @@ import org.jboss.forge.arquillian.archive.RepositoryLocationAware;
 import org.jboss.forge.arquillian.maven.ProjectHelper;
 import org.jboss.forge.arquillian.protocol.FurnaceProtocolDescription;
 import org.jboss.forge.arquillian.spi.AddonDeploymentScenarioEnhancer;
-import org.jboss.forge.arquillian.spi.AddonServiceRegistrationStrategy;
+import org.jboss.forge.arquillian.spi.TestClassRegistrationStrategy;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.manager.maven.addon.MavenAddonDependencyResolver;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
@@ -135,59 +135,43 @@ public class FurnaceDeploymentScenarioGenerator implements DeploymentScenarioGen
          DeploymentDescription primaryDeployment = generateDeployment(deploymentMethod);
          Collection<DeploymentDescription> generatedDeployments = generateAnnotatedDeployments(primaryDeployment,
                   classUnderTest, deploymentMethod);
-         registerClassUnderTestAsService(testClass, (AddonArchive) primaryDeployment.getArchive());
+         AddonArchive addonArchive = (AddonArchive) primaryDeployment.getArchive();
+         boolean registered = false;
+         for (TestClassRegistrationStrategy strategy : ServiceLoader.load(TestClassRegistrationStrategy.class))
+         {
+            try
+            {
+               if (strategy.handles(testClass, addonArchive))
+               {
+                  registered = true;
+                  strategy.register(testClass, addonArchive);
+                  break;
+               }
+            }
+            catch (Exception e)
+            {
+               log.log(Level.SEVERE, "Error while trying to resolve/register the addon service registration strategy",
+                        e);
+            }
+         }
+         if (!registered)
+         {
+            log.warning("No valid " + TestClassRegistrationStrategy.class.getName() + " class found for "
+                     + testClass.getJavaClass()
+                     + ". Have you declared a Furnace container in your test's pom.xml? Registering as a local service");
+            addonArchive.addAsLocalServices(testClass.getJavaClass());
+         }
          deployments.add(primaryDeployment);
          deployments.addAll(generatedDeployments);
       }
-      catch (Exception e)
+      catch (
+
+      Exception e)
+
       {
          throw new RuntimeException("Could not generate a default deployment", e);
       }
-   }
 
-   private void registerClassUnderTestAsService(TestClass testClass, AddonArchive addonArchive)
-   {
-      AddonServiceRegistrationStrategy strategy = AddonServiceRegistrationStrategies.LOCAL;
-      try
-      {
-         Class<?> classUnderTest = testClass.getJavaClass();
-         if (Annotations.isAnnotationPresent(classUnderTest, ServiceRegistrationType.class))
-         {
-            strategy = AddonServiceRegistrationStrategies
-                     .create(Annotations.getAnnotation(classUnderTest, ServiceRegistrationType.class).value());
-         }
-         else
-         {
-            // Try to find the container
-            String containerGroupId = "org.jboss.forge.furnace.container";
-            for (AddonDependencyEntry entry : addonArchive.getAddonDependencies())
-            {
-               if (entry.getName().startsWith(containerGroupId))
-               {
-                  strategy = AddonServiceRegistrationStrategies
-                           .create(entry.getName().substring(containerGroupId.length() + 1).toUpperCase());
-                  if (strategy != null)
-                  {
-                     break;
-                  }
-
-               }
-            }
-         }
-      }
-      catch (Exception e)
-      {
-         throw new RuntimeException("Error while trying to resolve the addon service registration strategy", e);
-      }
-      if (strategy != null)
-      {
-         strategy.registerAsService(testClass, addonArchive);
-      }
-      else
-      {
-         log.warning("No valid " + AddonServiceRegistrationStrategy.class.getName() + " class found for "
-                  + testClass.getJavaClass() + ". Have you declared a Furnace container in your test's pom.xml?");
-      }
    }
 
    private Collection<DeploymentDescription> generateAnnotatedDeployments(DeploymentDescription primaryDeployment,
