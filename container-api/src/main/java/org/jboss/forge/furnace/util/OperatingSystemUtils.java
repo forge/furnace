@@ -7,6 +7,8 @@
 package org.jboss.forge.furnace.util;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 /**
  * Utility for dealing with the inconsistencies between common operating systems.
@@ -125,27 +127,20 @@ public final class OperatingSystemUtils
       return result;
    }
 
-   private static final int TEMP_DIR_ATTEMPTS = 10000;
-
    /**
     * Create a temporary directory.
     */
    public static File createTempDir() throws IllegalStateException
    {
       File baseDir = getTempDirectory();
-      String baseName = System.currentTimeMillis() + "-";
-
-      for (int counter = 0; counter < TEMP_DIR_ATTEMPTS; counter++)
+      try
       {
-         File tempDir = new File(baseDir, baseName + counter);
-         if (tempDir.mkdir())
-         {
-            return tempDir;
-         }
+         return Files.createTempDirectory(baseDir.toPath(), "tmpdir").toFile();
       }
-      throw new IllegalStateException("Failed to create directory within "
-               + TEMP_DIR_ATTEMPTS + " attempts (tried "
-               + baseName + "0 to " + baseName + (TEMP_DIR_ATTEMPTS - 1) + ')');
+      catch (IOException e)
+      {
+         throw new IllegalStateException("Error while creating temporary directory", e);
+      }
    }
 
    /**
