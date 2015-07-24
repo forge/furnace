@@ -26,6 +26,7 @@ import org.jboss.forge.furnace.impl.addons.AddonStateManager;
 import org.jboss.forge.furnace.impl.modules.providers.CORBAClasspathSpec;
 import org.jboss.forge.furnace.impl.modules.providers.FurnaceContainerSpec;
 import org.jboss.forge.furnace.impl.modules.providers.JAXBJDKClasspathSpec;
+import org.jboss.forge.furnace.impl.modules.providers.JavaFXClasspathSpec;
 import org.jboss.forge.furnace.impl.modules.providers.NashornJDKClasspathSpec;
 import org.jboss.forge.furnace.impl.modules.providers.SunJDKClasspathSpec;
 import org.jboss.forge.furnace.impl.modules.providers.SystemClasspathSpec;
@@ -167,6 +168,7 @@ public class AddonModuleLoader extends ModuleLoader
                   builder.addDependency(DependencySpec.createModuleDependencySpec(CORBAClasspathSpec.ID));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(SunJDKClasspathSpec.ID));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(NashornJDKClasspathSpec.ID));
+                  builder.addDependency(DependencySpec.createModuleDependencySpec(JavaFXClasspathSpec.ID));
 
                   ClassLoader parent = ClassLoader.getSystemClassLoader().getParent();
                   if (parent != null)
