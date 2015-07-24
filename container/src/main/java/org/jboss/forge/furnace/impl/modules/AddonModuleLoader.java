@@ -26,6 +26,7 @@ import org.jboss.forge.furnace.impl.addons.AddonStateManager;
 import org.jboss.forge.furnace.impl.modules.providers.CORBAClasspathSpec;
 import org.jboss.forge.furnace.impl.modules.providers.FurnaceContainerSpec;
 import org.jboss.forge.furnace.impl.modules.providers.JAXBJDKClasspathSpec;
+import org.jboss.forge.furnace.impl.modules.providers.NashornJDKClasspathSpec;
 import org.jboss.forge.furnace.impl.modules.providers.SunJDKClasspathSpec;
 import org.jboss.forge.furnace.impl.modules.providers.SystemClasspathSpec;
 import org.jboss.forge.furnace.impl.modules.providers.XATransactionJDKClasspathSpec;
@@ -165,6 +166,7 @@ public class AddonModuleLoader extends ModuleLoader
                   builder.addDependency(DependencySpec.createModuleDependencySpec(JAXBJDKClasspathSpec.ID));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(CORBAClasspathSpec.ID));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(SunJDKClasspathSpec.ID));
+                  builder.addDependency(DependencySpec.createModuleDependencySpec(NashornJDKClasspathSpec.ID));
 
                   ClassLoader parent = ClassLoader.getSystemClassLoader().getParent();
                   if (parent != null)
@@ -222,8 +224,7 @@ public class AddonModuleLoader extends ModuleLoader
                builder.addResourceRoot(
                         ResourceLoaderSpec.createResourceLoaderSpec(
                                  ResourceLoaders.createFileResourceLoader(file.getName(), file),
-                                 PathFilters.acceptAll())
-                        );
+                                 PathFilters.acceptAll()));
             }
             else if (file.length() > 0)
             {
@@ -232,8 +233,7 @@ public class AddonModuleLoader extends ModuleLoader
                builder.addResourceRoot(
                         ResourceLoaderSpec.createResourceLoaderSpec(
                                  ResourceLoaders.createJarResourceLoader(file.getName(), jarFile),
-                                 PathFilters.acceptAll())
-                        );
+                                 PathFilters.acceptAll()));
             }
          }
          catch (IOException e)
@@ -245,7 +245,7 @@ public class AddonModuleLoader extends ModuleLoader
 
    private void addContainerDependencies(Set<AddonView> views, AddonRepository repository, AddonId found,
             Builder builder)
-            throws ContainerException
+                     throws ContainerException
    {
       Set<AddonDependencyEntry> addons = repository.getAddonDependencies(found);
       for (AddonDependencyEntry dependency : addons)
@@ -269,7 +269,8 @@ public class AddonModuleLoader extends ModuleLoader
       }
    }
 
-   private void addAddonDependency(Set<AddonView> views, AddonId found, Builder builder, AddonDependencyEntry dependency)
+   private void addAddonDependency(Set<AddonView> views, AddonId found, Builder builder,
+            AddonDependencyEntry dependency)
    {
       AddonId addonId = stateManager.resolveAddonId(views, dependency.getName());
       ModuleIdentifier moduleId = null;
