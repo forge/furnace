@@ -11,7 +11,7 @@ import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.util.Assert;
 
 /**
- * Fired by the container to signal that the current addon should begin its work.
+ * This event is fired by the container when a specific addon has started.
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * 
