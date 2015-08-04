@@ -8,8 +8,8 @@
    <artifactId>furnace-manager-resolver-maven</artifactId>
    <name>Furnace - Manager Maven Resolver</name>
    <properties>
-      <aether.version>1.0.0.v20140518</aether.version>
-      <maven.version>3.2.5</maven.version>
+      <aether.version>1.0.2.v20150114</aether.version>
+      <maven.version>3.3.3</maven.version>
    </properties>
 
    <dependencies>
