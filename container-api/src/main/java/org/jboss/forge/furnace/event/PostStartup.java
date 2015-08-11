@@ -34,7 +34,7 @@ public final class PostStartup
    @Override
    public String toString()
    {
-      return addon.toString();
+      return "PostStartup [addon=" + addon + "]";
    }
 
 }

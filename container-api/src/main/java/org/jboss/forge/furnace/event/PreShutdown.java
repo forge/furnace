@@ -34,6 +34,6 @@ public final class PreShutdown
    @Override
    public String toString()
    {
-      return addon.toString();
+      return "PreShutdown [addon=" + addon + "]";
    }
 }
