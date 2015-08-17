@@ -115,4 +115,12 @@ public class CachedServiceRegistry implements ServiceRegistry
       return delegate;
    }
 
+   @Override
+   public void close() throws Exception
+   {
+      delegate.close();
+      instanceCache.clear();
+      instancesCache.clear();
+   }
+
 }

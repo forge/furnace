@@ -15,7 +15,7 @@ import java.util.Set;
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public interface ServiceRegistry
+public interface ServiceRegistry extends AutoCloseable
 {
    /**
     * Get the set of currently available services of the given {@link Class} type. Return {@link Collections#EMPTY_SET}

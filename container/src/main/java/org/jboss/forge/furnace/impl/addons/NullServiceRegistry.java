@@ -77,4 +77,10 @@ public enum NullServiceRegistry implements ServiceRegistry
       return Collections.emptySet();
    }
 
+   @Override
+   public void close() throws Exception
+   {
+      // no-op
+   }
+
 }

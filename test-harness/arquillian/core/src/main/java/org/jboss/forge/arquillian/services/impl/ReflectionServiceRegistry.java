@@ -128,4 +128,11 @@ public class ReflectionServiceRegistry implements ServiceRegistry
       return false;
    }
 
+   @Override
+   public void close() throws Exception
+   {
+      if (serviceTypes != null)
+         serviceTypes.clear();
+   }
+
 }
