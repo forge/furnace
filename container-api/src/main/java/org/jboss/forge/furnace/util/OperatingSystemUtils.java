@@ -66,11 +66,12 @@ public final class OperatingSystemUtils
    }
 
    /**
-    * Get the FORGE_HOME directory as a {@link File}.
+    * Get the FORGE_HOME directory as a {@link File}. Returns <code>null</code> if it is not defined.
     */
    public static File getForgeHomeDir()
    {
-      return new File(System.getProperty("forge.home")).getAbsoluteFile();
+      String property = System.getProperty("forge.home");
+      return property == null ? null : new File(property).getAbsoluteFile();
    }
 
    /**
