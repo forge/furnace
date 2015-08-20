@@ -29,14 +29,15 @@ import org.jboss.forge.furnace.util.Assert;
  * 
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
+ * @author <a href="mailto:gegastaldi@gmail.com">George Gastaldi</a>
  */
 public class SingleVersion implements Version
 {
    private String version;
-   private Integer majorVersion;
-   private Integer minorVersion;
-   private Integer incrementalVersion;
-   private Integer buildNumber;
+   private int majorVersion;
+   private int minorVersion;
+   private int incrementalVersion;
+   private int buildNumber;
    private String qualifier;
 
    private ComparableVersion comparable;
@@ -118,17 +119,17 @@ public class SingleVersion implements Version
    {
       Assert.notNull(version, "Version must not be null.");
       this.version = version.trim();
-      comparable = new ComparableVersion(version);
+      comparable = new ComparableVersion(this.version);
 
-      List<String> parts = new ArrayList<>(Arrays.asList(version.split("[\\._-]")));
+      List<String> parts = new ArrayList<>(Arrays.asList(this.version.split("[\\._-]")));
 
       try
       {
-         this.majorVersion = Integer.valueOf(parts.remove(0));
+         this.majorVersion = Integer.parseInt(parts.remove(0));
          if (!parts.isEmpty())
-            minorVersion = Integer.valueOf(parts.remove(0));
+            minorVersion = Integer.parseInt(parts.remove(0));
          if (!parts.isEmpty())
-            incrementalVersion = Integer.valueOf(parts.remove(0));
+            incrementalVersion = Integer.parseInt(parts.remove(0));
          if (!parts.isEmpty())
          {
             qualifier = parts.remove(0);
@@ -136,7 +137,7 @@ public class SingleVersion implements Version
             {
                if (parts.isEmpty())
                {
-                  buildNumber = Integer.valueOf(qualifier);
+                  buildNumber = Integer.parseInt(qualifier);
                   qualifier = null;
                }
             }
@@ -146,7 +147,7 @@ public class SingleVersion implements Version
             }
          }
          if (!parts.isEmpty())
-            buildNumber = Integer.valueOf(parts.remove(0));
+            buildNumber = Integer.parseInt(parts.remove(0));
       }
       catch (NumberFormatException e)
       {
