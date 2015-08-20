@@ -88,25 +88,25 @@ public class SingleVersion implements Version
    @Override
    public int getMajorVersion()
    {
-      return majorVersion != null ? majorVersion : 0;
+      return majorVersion;
    }
 
    @Override
    public int getMinorVersion()
    {
-      return minorVersion != null ? minorVersion : 0;
+      return minorVersion;
    }
 
    @Override
    public int getIncrementalVersion()
    {
-      return incrementalVersion != null ? incrementalVersion : 0;
+      return incrementalVersion;
    }
 
    @Override
    public int getBuildNumber()
    {
-      return buildNumber != null ? buildNumber : 0;
+      return buildNumber;
    }
 
    @Override
