@@ -237,7 +237,7 @@ public final class AddonRunnable implements Runnable
                      {
                         result = new AddonLifecycleProviderEntry(addon, provider);
                      }
-                     if (ControlType.SELF.equals(controlType))
+                     else if (ControlType.SELF.equals(controlType))
                      {
                         result = new AddonLifecycleProviderEntry(addon, provider);
                      }
@@ -292,7 +292,7 @@ public final class AddonRunnable implements Runnable
                   {
                      result = new AddonLifecycleProviderEntry(dependency, provider);
                   }
-                  if (ControlType.DEPENDENTS.equals(provider.getControlType()))
+                  else if (ControlType.DEPENDENTS.equals(provider.getControlType()))
                   {
                      result = new AddonLifecycleProviderEntry(dependency, provider);
                   }
