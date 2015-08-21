@@ -155,11 +155,11 @@ public class AddonId implements Comparable<AddonId>
       AddonId id = new AddonId();
 
       id.name = name;
-      id.version = new SingleVersion(version);
+      id.version = SingleVersion.valueOf(version);
       if (apiVersion == null || apiVersion.trim().isEmpty())
          id.apiVersion = EmptyVersion.getInstance();
       else
-         id.apiVersion = new SingleVersion(apiVersion);
+         id.apiVersion = SingleVersion.valueOf(apiVersion);
 
       return id;
 

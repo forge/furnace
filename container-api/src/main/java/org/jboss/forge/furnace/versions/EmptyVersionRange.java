@@ -29,13 +29,13 @@ public class EmptyVersionRange implements VersionRange
    @Override
    public Version getMin()
    {
-      return new SingleVersion("");
+      return EmptyVersion.getInstance();
    }
 
    @Override
    public Version getMax()
    {
-      return new SingleVersion("");
+      return EmptyVersion.getInstance();
    }
 
    @Override

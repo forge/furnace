@@ -27,18 +27,18 @@ public class AddonRepositoryImplTest
    public void testMinorVersionCompatible() throws Exception
    {
       AddonId entry = AddonId.fromCoordinates("com.example.plugin,40,1.0.0-SNAPSHOT");
-      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(new SingleVersion("1.0.1.Final"), entry));
-      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(new SingleVersion("1.0.2.Final"), entry));
-      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(new SingleVersion("1.0.2000.Final"), entry));
-      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(new SingleVersion("1.0.2-SNAPSHOT"), entry));
-      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(new SingleVersion("1.0.1000-SNAPSHOT"), entry));
-      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(new SingleVersion("1.0.1000-adsfasfsd"), entry));
-      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(new SingleVersion("1.1.0.Final"), entry));
-      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(new SingleVersion("1.1.1.Final"), entry));
-      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(new SingleVersion("1.2.0.Final"), entry));
-      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(new SingleVersion("1.2.1.Final"), entry));
-      Assert.assertFalse(AddonRepositoryImpl.isApiCompatible(new SingleVersion("2.0.0.Final"), entry));
-      Assert.assertFalse(AddonRepositoryImpl.isApiCompatible(new SingleVersion("s1.0.0.Final"), entry));
+      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("1.0.1.Final"), entry));
+      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("1.0.2.Final"), entry));
+      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("1.0.2000.Final"), entry));
+      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("1.0.2-SNAPSHOT"), entry));
+      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("1.0.1000-SNAPSHOT"), entry));
+      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("1.0.1000-adsfasfsd"), entry));
+      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("1.1.0.Final"), entry));
+      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("1.1.1.Final"), entry));
+      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("1.2.0.Final"), entry));
+      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("1.2.1.Final"), entry));
+      Assert.assertFalse(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("2.0.0.Final"), entry));
+      Assert.assertFalse(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("s1.0.0.Final"), entry));
       Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(null, entry));
    }
 
@@ -46,19 +46,19 @@ public class AddonRepositoryImplTest
    public void testMinorVersionCompatibleBackwards() throws Exception
    {
       AddonId entry = AddonId.fromCoordinates("com.example.plugin,20.0i,1.1.0-SNAPSHOT");
-      Assert.assertFalse(AddonRepositoryImpl.isApiCompatible(new SingleVersion("1.0.1.Final"), entry));
-      Assert.assertFalse(AddonRepositoryImpl.isApiCompatible(new SingleVersion("1.0.2.Final"), entry));
-      Assert.assertFalse(AddonRepositoryImpl.isApiCompatible(new SingleVersion("1.0.2000.Final"), entry));
-      Assert.assertFalse(AddonRepositoryImpl.isApiCompatible(new SingleVersion("1.0.2-SNAPSHOT"), entry));
-      Assert.assertFalse(AddonRepositoryImpl.isApiCompatible(new SingleVersion("1.0.1000-SNAPSHOT"), entry));
-      Assert.assertFalse(AddonRepositoryImpl.isApiCompatible(new SingleVersion("1.0.1000-adsfasfsd"), entry));
-      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(new SingleVersion("1.1.0.Final"), entry));
-      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(new SingleVersion("1.1.1.Final"), entry));
-      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(new SingleVersion("1.2.0.Final"), entry));
-      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(new SingleVersion("1.2.1.Final"), entry));
-      Assert.assertFalse(AddonRepositoryImpl.isApiCompatible(new SingleVersion("2.0.0.Final"), entry));
-      Assert.assertFalse(AddonRepositoryImpl.isApiCompatible(new SingleVersion("s1.0.0.Final"), entry));
-      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(new SingleVersion(""), entry));
+      Assert.assertFalse(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("1.0.1.Final"), entry));
+      Assert.assertFalse(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("1.0.2.Final"), entry));
+      Assert.assertFalse(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("1.0.2000.Final"), entry));
+      Assert.assertFalse(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("1.0.2-SNAPSHOT"), entry));
+      Assert.assertFalse(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("1.0.1000-SNAPSHOT"), entry));
+      Assert.assertFalse(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("1.0.1000-adsfasfsd"), entry));
+      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("1.1.0.Final"), entry));
+      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("1.1.1.Final"), entry));
+      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("1.2.0.Final"), entry));
+      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("1.2.1.Final"), entry));
+      Assert.assertFalse(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("2.0.0.Final"), entry));
+      Assert.assertFalse(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf("s1.0.0.Final"), entry));
+      Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(SingleVersion.valueOf(""), entry));
       Assert.assertTrue(AddonRepositoryImpl.isApiCompatible(null, entry));
    }
 

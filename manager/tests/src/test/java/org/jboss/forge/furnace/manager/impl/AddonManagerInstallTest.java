@@ -184,7 +184,7 @@ public class AddonManagerInstallTest
       List<? extends AddonActionRequest> actions = install.getActions();
       Assert.assertEquals(1, actions.size());
       Assert.assertThat(actions.get(0), instanceOf(DeployRequest.class));
-      Assert.assertEquals(new SingleVersion("2.4.1.Final"), actions.get(0).getRequestedAddonInfo().getAddon()
+      Assert.assertEquals(SingleVersion.valueOf("2.4.1.Final"), actions.get(0).getRequestedAddonInfo().getAddon()
                .getApiVersion());
    }
 

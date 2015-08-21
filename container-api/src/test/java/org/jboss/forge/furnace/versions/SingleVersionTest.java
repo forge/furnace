@@ -17,13 +17,13 @@ public class SingleVersionTest
    @Test(expected = IllegalArgumentException.class)
    public void testVersionMustNotBeNull()
    {
-      new SingleVersion(null);
+      SingleVersion.valueOf(null);
    }
 
    @Test
    public void testIrregularVersion()
    {
-      Version version = new SingleVersion("asdfa[23()_2345");
+      Version version = SingleVersion.valueOf("asdfa[23()_2345");
       Assert.assertEquals(0, version.getMajorVersion());
       Assert.assertEquals(0, version.getMinorVersion());
       Assert.assertEquals(0, version.getIncrementalVersion());
@@ -35,7 +35,7 @@ public class SingleVersionTest
    @Test
    public void testIrregularVersion2()
    {
-      Version version = new SingleVersion("2.16.asdf.4.adsf");
+      Version version = SingleVersion.valueOf("2.16.asdf.4.adsf");
       Assert.assertEquals(0, version.getMajorVersion());
       Assert.assertEquals(0, version.getMinorVersion());
       Assert.assertEquals(0, version.getIncrementalVersion());
@@ -47,7 +47,7 @@ public class SingleVersionTest
    @Test
    public void testSnapshot() throws Exception
    {
-      Version version = new SingleVersion("2.18.2-SNAPSHOT");
+      Version version = SingleVersion.valueOf("2.18.2-SNAPSHOT");
       Assert.assertEquals(2, version.getMajorVersion());
       Assert.assertEquals(18, version.getMinorVersion());
       Assert.assertEquals(2, version.getIncrementalVersion());
@@ -59,7 +59,7 @@ public class SingleVersionTest
    @Test
    public void testSnapshotBuildNumber() throws Exception
    {
-      Version version = new SingleVersion("2.18.2-SNAPSHOT-2");
+      Version version = SingleVersion.valueOf("2.18.2-SNAPSHOT-2");
       Assert.assertEquals(2, version.getMajorVersion());
       Assert.assertEquals(18, version.getMinorVersion());
       Assert.assertEquals(2, version.getIncrementalVersion());
@@ -71,7 +71,7 @@ public class SingleVersionTest
    @Test
    public void testFinal() throws Exception
    {
-      Version version = new SingleVersion("2.18.2.Final");
+      Version version = SingleVersion.valueOf("2.18.2.Final");
       Assert.assertEquals(2, version.getMajorVersion());
       Assert.assertEquals(18, version.getMinorVersion());
       Assert.assertEquals(2, version.getIncrementalVersion());
@@ -83,7 +83,7 @@ public class SingleVersionTest
    @Test
    public void testFinalBuildNumber() throws Exception
    {
-      Version version = new SingleVersion("2.18.2.Final-01");
+      Version version = SingleVersion.valueOf("2.18.2.Final-01");
       Assert.assertEquals(2, version.getMajorVersion());
       Assert.assertEquals(18, version.getMinorVersion());
       Assert.assertEquals(2, version.getIncrementalVersion());
@@ -95,7 +95,7 @@ public class SingleVersionTest
    @Test
    public void testBare() throws Exception
    {
-      Version version = new SingleVersion("2.18.2");
+      Version version = SingleVersion.valueOf("2.18.2");
       Assert.assertEquals(2, version.getMajorVersion());
       Assert.assertEquals(18, version.getMinorVersion());
       Assert.assertEquals(2, version.getIncrementalVersion());
@@ -107,7 +107,7 @@ public class SingleVersionTest
    @Test
    public void testBareBuildNumber() throws Exception
    {
-      Version version = new SingleVersion("2.18.2-4");
+      Version version = SingleVersion.valueOf("2.18.2-4");
       Assert.assertEquals(2, version.getMajorVersion());
       Assert.assertEquals(18, version.getMinorVersion());
       Assert.assertEquals(2, version.getIncrementalVersion());

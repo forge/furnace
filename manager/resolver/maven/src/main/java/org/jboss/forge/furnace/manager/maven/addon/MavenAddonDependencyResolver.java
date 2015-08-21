@@ -98,7 +98,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
             // Searching for the API version
             if (isFurnaceAPI(artifact))
             {
-               SingleVersion apiVersion = new SingleVersion(artifact.getBaseVersion());
+               SingleVersion apiVersion = SingleVersion.valueOf(artifact.getBaseVersion());
                builder.setAPIVersion(apiVersion);
             }
             else if (isAddon(artifact))
@@ -136,7 +136,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
             }
             if (apiVersion != null)
             {
-               builder.setAPIVersion(new SingleVersion(apiVersion));
+               builder.setAPIVersion(SingleVersion.valueOf(apiVersion));
             }
          }
       }
@@ -179,7 +179,7 @@ public class MavenAddonDependencyResolver implements AddonDependencyResolver
          Artifact artifact = artifactResult.getArtifact();
          if (isFurnaceAPI(artifact) ||
                   (this.classifier.equals(artifact.getClassifier())
-                  && !addonId.getName().equals(artifact.getGroupId() + ":" + artifact.getArtifactId())))
+                           && !addonId.getName().equals(artifact.getGroupId() + ":" + artifact.getArtifactId())))
          {
             continue;
          }

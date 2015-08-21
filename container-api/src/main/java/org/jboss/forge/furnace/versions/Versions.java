@@ -80,7 +80,7 @@ public class Versions
             throw new VersionException("Single version must be surrounded by []: " + range);
          }
 
-         Version version = new SingleVersion(process);
+         Version version = SingleVersion.valueOf(process);
          result = new DefaultVersionRange(version, lowerBoundInclusive, version, upperBoundInclusive);
       }
       else
@@ -95,12 +95,12 @@ public class Versions
          Version lowerVersion = null;
          if (lowerBound.length() > 0)
          {
-            lowerVersion = new SingleVersion(lowerBound);
+            lowerVersion = SingleVersion.valueOf(lowerBound);
          }
          Version upperVersion = null;
          if (upperBound.length() > 0)
          {
-            upperVersion = new SingleVersion(upperBound);
+            upperVersion = SingleVersion.valueOf(upperBound);
          }
 
          if (upperVersion != null && lowerVersion != null && upperVersion.compareTo(lowerVersion) < 0)
@@ -196,12 +196,12 @@ public class Versions
                if (version.startsWith("[") || version.startsWith("("))
                   ranges.add(parseVersionRange(version));
                else
-                  ranges.add(new SingleVersionRange(new SingleVersion(version)));
+                  ranges.add(new SingleVersionRange(SingleVersion.valueOf(version)));
             }
          }
          else
          {
-            ranges.add(new SingleVersionRange(new SingleVersion(process)));
+            ranges.add(new SingleVersionRange(SingleVersion.valueOf(process)));
          }
       }
 
@@ -287,7 +287,7 @@ public class Versions
          }
          else
          {
-            result = new SingleVersion(version);
+            result = SingleVersion.valueOf(version);
          }
       }
       return result;
@@ -318,7 +318,7 @@ public class Versions
          }
          else
          {
-            result = new SingleVersion(version);
+            result = SingleVersion.valueOf(version);
          }
       }
       return result;

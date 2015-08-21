@@ -21,7 +21,7 @@ public class AddonIdTest
       AddonId addon = AddonId.fromCoordinates("org.jboss.forge.addon:resources,2.0.0-SNAPSHOT");
       Assert.assertEquals(EmptyVersion.getInstance(), addon.getApiVersion());
       Assert.assertEquals("org.jboss.forge.addon:resources", addon.getName());
-      Assert.assertEquals(new SingleVersion("2.0.0-SNAPSHOT"), addon.getVersion());
+      Assert.assertEquals(SingleVersion.valueOf("2.0.0-SNAPSHOT"), addon.getVersion());
    }
 
    @Test

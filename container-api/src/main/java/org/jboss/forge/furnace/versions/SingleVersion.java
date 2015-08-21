@@ -20,7 +20,10 @@ package org.jboss.forge.furnace.versions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import org.jboss.forge.furnace.util.Assert;
 
@@ -42,6 +45,24 @@ public class SingleVersion implements Version
 
    private ComparableVersion comparable;
 
+   private static final Map<String, SingleVersion> CACHE = Collections
+            .<String, SingleVersion> synchronizedMap(new WeakHashMap<String, SingleVersion>());
+
+   public static final SingleVersion valueOf(String version)
+   {
+      SingleVersion singleVersion = CACHE.get(version);
+      if (singleVersion == null)
+      {
+         singleVersion = new SingleVersion(version);
+         CACHE.put(version, singleVersion);
+      }
+      return singleVersion;
+   }
+
+   /**
+    * @deprecated use {@link SingleVersion#valueOf(String)} instead
+    */
+   @Deprecated
    public SingleVersion(String version)
    {
       parseVersion(version);

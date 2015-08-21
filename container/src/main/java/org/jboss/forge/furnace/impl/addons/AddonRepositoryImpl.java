@@ -84,7 +84,7 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
       String versionOverride = System.getProperty("furnace.version.override");
       if (versionOverride != null)
       {
-         return new SingleVersion(versionOverride);
+         return SingleVersion.valueOf(versionOverride);
       }
       return Versions.getImplementationVersionFor(AddonRepository.class);
    }
@@ -312,8 +312,7 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
                               child.getAttribute(ATTR_NAME),
                               Versions.parseMultipleVersionRange(child.getAttribute(ATTR_VERSION)),
                               Boolean.valueOf(child.getAttribute(ATTR_EXPORT)),
-                              Boolean.valueOf(child.getAttribute(ATTR_OPTIONAL)))
-                              );
+                              Boolean.valueOf(child.getAttribute(ATTR_OPTIONAL))));
                   }
                }
             }

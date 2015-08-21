@@ -19,21 +19,21 @@ public class VersionsTest
    @Test
    public void testAreEqual()
    {
-      Assert.assertEquals(new SingleVersion("1"), new SingleVersion("1"));
-      Assert.assertEquals(new SingleVersion("1.1"), new SingleVersion("1.1"));
-      Assert.assertEquals(new SingleVersion("1.1.1"), new SingleVersion("1.1.1"));
-      Assert.assertEquals(new SingleVersion("1.1.1-SNAPSHOT"), new SingleVersion("1.1.1-SNAPSHOT"));
-      Assert.assertNotEquals(new SingleVersion("1"), new SingleVersion("2"));
-      Assert.assertNotEquals(new SingleVersion("1.1"), new SingleVersion("1.1.1"));
-      Assert.assertNotEquals(new SingleVersion("1.1.1-SNAPSHOT"), new SingleVersion("1.1.1"));
+      Assert.assertEquals(SingleVersion.valueOf("1"), SingleVersion.valueOf("1"));
+      Assert.assertEquals(SingleVersion.valueOf("1.1"), SingleVersion.valueOf("1.1"));
+      Assert.assertEquals(SingleVersion.valueOf("1.1.1"), SingleVersion.valueOf("1.1.1"));
+      Assert.assertEquals(SingleVersion.valueOf("1.1.1-SNAPSHOT"), SingleVersion.valueOf("1.1.1-SNAPSHOT"));
+      Assert.assertNotEquals(SingleVersion.valueOf("1"), SingleVersion.valueOf("2"));
+      Assert.assertNotEquals(SingleVersion.valueOf("1.1"), SingleVersion.valueOf("1.1.1"));
+      Assert.assertNotEquals(SingleVersion.valueOf("1.1.1-SNAPSHOT"), SingleVersion.valueOf("1.1.1"));
    }
 
    @Test
    public void testParseVersionRange() throws Exception
    {
       VersionRange range = Versions.parseVersionRange("[0,15]");
-      Assert.assertEquals(new SingleVersion("0"), range.getMin());
-      Assert.assertEquals(new SingleVersion("15"), range.getMax());
+      Assert.assertEquals(SingleVersion.valueOf("0"), range.getMin());
+      Assert.assertEquals(SingleVersion.valueOf("15"), range.getMax());
       Assert.assertTrue(range.isMinInclusive());
       Assert.assertTrue(range.isMaxInclusive());
    }
@@ -45,8 +45,8 @@ public class VersionsTest
       VersionRange subset = Versions.parseVersionRange("[3,7)");
 
       VersionRange intersection = Versions.intersection(set, subset);
-      Assert.assertEquals(new SingleVersion("3"), intersection.getMin());
-      Assert.assertEquals(new SingleVersion("7"), intersection.getMax());
+      Assert.assertEquals(SingleVersion.valueOf("3"), intersection.getMin());
+      Assert.assertEquals(SingleVersion.valueOf("7"), intersection.getMax());
       Assert.assertTrue(intersection.isMinInclusive());
       Assert.assertFalse(intersection.isMaxInclusive());
    }
@@ -54,17 +54,17 @@ public class VersionsTest
    @Test
    public void testVersionSnapshot() throws Exception
    {
-      Version nonSnapshot = new SingleVersion("1.1.1");
+      Version nonSnapshot = SingleVersion.valueOf("1.1.1");
       Assert.assertFalse(Versions.isSnapshot(nonSnapshot));
-      Version snapshot = new SingleVersion("1.1.1-SNAPSHOT");
+      Version snapshot = SingleVersion.valueOf("1.1.1-SNAPSHOT");
       Assert.assertTrue(Versions.isSnapshot(snapshot));
    }
 
    @Test
    public void testSnapshotLowerThanRelease() throws Exception
    {
-      Version nonSnapshot = new SingleVersion("2.2.0-Final");
-      Version snapshot = new SingleVersion("2.1.2-SNAPSHOT");
+      Version nonSnapshot = SingleVersion.valueOf("2.2.0-Final");
+      Version snapshot = SingleVersion.valueOf("2.1.2-SNAPSHOT");
       Assert.assertTrue(nonSnapshot.compareTo(snapshot) >= 0);
       Assert.assertTrue(snapshot.compareTo(nonSnapshot) < 0);
    }
@@ -73,17 +73,15 @@ public class VersionsTest
    public void testIsApiCompatible0() throws Exception
    {
       Assert.assertTrue(Versions.isApiCompatible(
-               new SingleVersion("2.18.2-SNAPSHOT"),
-               new SingleVersion("2.16.1.Final"))
-               );
+               SingleVersion.valueOf("2.18.2-SNAPSHOT"),
+               SingleVersion.valueOf("2.16.1.Final")));
    }
 
    @Test
    public void testIsApiCompatible1() throws Exception
    {
       Assert.assertTrue(Versions.isApiCompatible(
-               new SingleVersion("2.18.2.Final"),
-               new SingleVersion("2.16.1.Final"))
-               );
+               SingleVersion.valueOf("2.18.2.Final"),
+               SingleVersion.valueOf("2.16.1.Final")));
    }
 }

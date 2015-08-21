@@ -9,7 +9,8 @@ package org.jboss.forge.furnace.versions;
 public class EmptyVersion extends SingleVersion implements Version
 {
    private static final EmptyVersion INSTANCE = new EmptyVersion();
-   
+
+   @SuppressWarnings("deprecation")
    private EmptyVersion()
    {
       super("");
