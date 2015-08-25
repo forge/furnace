@@ -127,7 +127,7 @@ public final class AddonRunnable implements Runnable
    protected AddonRepository[] getRepositories()
    {
       Set<AddonRepository> repositories = stateManager.getViewsOf(addon).iterator().next().getRepositories();
-      return repositories.toArray(new AddonRepository[] {});
+      return repositories.toArray(new AddonRepository[repositories.size()]);
    }
 
    private void firePostStartup(final AddonLifecycleProvider lifecycleProvider) throws Exception
