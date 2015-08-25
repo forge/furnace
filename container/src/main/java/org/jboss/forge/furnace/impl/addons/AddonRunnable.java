@@ -93,22 +93,10 @@ public final class AddonRunnable implements Runnable
                   stateManager.setServiceRegistry(addon, lifecycleProvider.getServiceRegistry(addon));
                   stateManager.setEventManager(addon, lifecycleProvider.getEventManager(addon));
 
-                  for (AddonDependency dependency : addon.getDependencies())
-                  {
-                     if (dependency.getDependency().getStatus().isLoaded())
-                        Addons.waitUntilStarted(dependency.getDependency());
-                  }
-
-                  lifecycleProvider.postStartup(addon);
-                  for (AddonView view : stateManager.getViewsOf(addon))
-                  {
-                     for (Addon a : view.getAddons(notThisAddonFilter))
-                     {
-                        a.getEventManager().fireEvent(new PostStartup(addon));
-                     }
-                  }
+                  firePostStartup(lifecycleProvider);
                   return null;
                }
+
             });
          }
 
@@ -140,6 +128,28 @@ public final class AddonRunnable implements Runnable
    {
       Set<AddonRepository> repositories = stateManager.getViewsOf(addon).iterator().next().getRepositories();
       return repositories.toArray(new AddonRepository[] {});
+   }
+
+   private void firePostStartup(final AddonLifecycleProvider lifecycleProvider) throws Exception
+   {
+      // Wait until all dependencies are started
+      for (AddonDependency dependency : addon.getDependencies())
+      {
+         if (dependency.getDependency().getStatus().isLoaded())
+            Addons.waitUntilStarted(dependency.getDependency());
+      }
+      // Fire PostStartup event to this addon
+      lifecycleProvider.postStartup(addon);
+
+      // Fire PostStartup event to other addons
+      PostStartup postStartup = new PostStartup(addon);
+      for (AddonView view : stateManager.getViewsOf(addon))
+      {
+         for (Addon a : view.getAddons(notThisAddonFilter))
+         {
+            a.getEventManager().fireEvent(postStartup);
+         }
+      }
    }
 
    public void shutdown()
