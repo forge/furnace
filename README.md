@@ -3,6 +3,9 @@ Furnace
 
 Lightweight Modular Service Container - Based JBoss Modules and Maven. It's easier than OSGi :)
 
+[![Build Status](https://travis-ci.org/forge/furnace.svg)](https://travis-ci.org/forge/furnace)
+[![License](http://img.shields.io/:license-EPL-blue.svg)](https://www.eclipse.org/legal/epl-v10.html)
+
 Usage
 =====
 
