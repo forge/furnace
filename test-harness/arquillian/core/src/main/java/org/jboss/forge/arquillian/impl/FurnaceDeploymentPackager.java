@@ -15,6 +15,13 @@ import java.util.regex.Pattern;
 import org.jboss.arquillian.container.test.spi.TestDeployment;
 import org.jboss.arquillian.container.test.spi.client.deployment.DeploymentPackager;
 import org.jboss.arquillian.container.test.spi.client.deployment.ProtocolArchiveProcessor;
+import org.jboss.forge.arquillian.AddonDependencies;
+import org.jboss.forge.arquillian.AddonDependency;
+import org.jboss.forge.arquillian.AddonDeployment;
+import org.jboss.forge.arquillian.AddonDeployments;
+import org.jboss.forge.arquillian.Dependencies;
+import org.jboss.forge.arquillian.DeployToRepository;
+import org.jboss.forge.arquillian.DeploymentListener;
 import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.archive.AddonArchiveBase;
 import org.jboss.forge.arquillian.archive.AddonDeploymentArchive;
@@ -64,6 +71,9 @@ public class FurnaceDeploymentPackager implements DeploymentPackager
          /*
           * Ensure that all test harness classes are available in the addon under test.
           */
+         deployment.addClasses(AddonDependencies.class, AddonDependency.class, AddonDeployments.class,
+                  AddonDeployment.class, Dependencies.class, DeploymentListener.class, DeployToRepository.class,
+                  NullException.class);
          deployment.addPackage(AddonArchive.class.getPackage());
          return deployment;
       }
