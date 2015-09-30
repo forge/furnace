@@ -262,6 +262,10 @@ public class MavenContainer
       boolean cacheTransferErrors = true;
       session.setResolutionErrorPolicy(new SimpleResolutionErrorPolicy(cacheNotFoundArtifacts, cacheTransferErrors));
       session.setWorkspaceReader(new ClasspathWorkspaceReader());
+      if (Boolean.getBoolean("org.apache.maven.log_transfer"))
+      {
+         session.setTransferListener(new JULMavenTransferListener());
+      }
       return session;
    }
 
