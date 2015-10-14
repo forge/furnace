@@ -118,7 +118,7 @@ public class AddonManagerHotswapTest
       Assert.assertEquals(1, furnace.getRepositories().size());
       Assert.assertEquals(0, furnace.getAddonRegistry().getAddons().size());
       Assert.assertEquals(0, furnace.getRepositories().get(0).listEnabled().size());
-      AddonId addon = AddonId.from("test:no_dep", "1.0.0.Final");
+      AddonId addon = AddonId.from("test:no_dep", "3.0.0.Final");
       InstallRequest install = addonManager.install(addon);
       List<? extends AddonActionRequest> actions = install.getActions();
       Assert.assertEquals(1, actions.size());
@@ -140,7 +140,7 @@ public class AddonManagerHotswapTest
       furnace2.addRepository(AddonRepositoryMode.MUTABLE, repository);
       AddonManager addonManager = new AddonManagerImpl(furnace2, resolver);
 
-      AddonId addon = AddonId.from("test:no_dep", "1.1.2-SNAPSHOT");
+      AddonId addon = AddonId.from("test:no_dep", "3.0.0.Final");
       InstallRequest install = addonManager.install(addon);
       List<? extends AddonActionRequest> actions = install.getActions();
       Assert.assertEquals(1, actions.size());

@@ -14,7 +14,13 @@ package org.jboss.forge.furnace.spi;
  *
  * @param <T>
  */
-public interface ListenerRegistration<T>
+public interface ListenerRegistration<T> extends AutoCloseable
 {
    public T removeListener();
+
+   @Override
+   default void close() throws Exception
+   {
+      removeListener();
+   }
 }
