@@ -88,7 +88,7 @@ public class FurnaceImpl implements Furnace
    boolean firedAfterStart = false;
 
    private WatchService watcher;
-   private AddonCompatibilityStrategy addonCompatibilityStrategy = AddonCompatibilityStrategies.STRICT;
+   private AddonCompatibilityStrategy addonCompatibilityStrategy = AddonCompatibilityStrategies.LENIENT;
 
    public FurnaceImpl()
    {
