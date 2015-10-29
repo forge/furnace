@@ -37,11 +37,6 @@
          <version>${maven.version}</version>
       </dependency>
       <dependency>
-         <groupId>com.google.guava</groupId>
-         <artifactId>guava</artifactId>
-         <version>18.0</version>
-      </dependency>
-      <dependency>
          <groupId>org.eclipse.aether</groupId>
          <artifactId>aether-connector-basic</artifactId>
          <version>${aether.version}</version>
