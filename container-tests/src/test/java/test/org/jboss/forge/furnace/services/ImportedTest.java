@@ -49,4 +49,15 @@ public class ImportedTest
       Assert.assertFalse(services.isUnsatisfied());
       Assert.assertTrue(services.isAmbiguous());
    }
+
+   @Test
+   public void testIsAmbiguousUsingClassName() throws Exception
+   {
+      Furnace furnace = LocalServices.getFurnace(getClass().getClassLoader());
+      AddonRegistry registry = furnace.getAddonRegistry();
+      Imported<MockInterface> services = registry.getServices(MockInterface.class.getName());
+      Assert.assertFalse(services.isUnsatisfied());
+      Assert.assertTrue(services.isAmbiguous());
+   }
+
 }

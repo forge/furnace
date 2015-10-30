@@ -36,6 +36,7 @@ public class ReflectionServiceRegistry implements ServiceRegistry
    }
 
    @Override
+   @SuppressWarnings("unchecked")
    public <T> Set<ExportedInstance<T>> getExportedInstances(Class<T> requestedType)
    {
       Set<ExportedInstance<T>> result = new HashSet<ExportedInstance<T>>();
@@ -43,7 +44,7 @@ public class ReflectionServiceRegistry implements ServiceRegistry
       {
          if (requestedType.isAssignableFrom(type))
          {
-            result.add(new ReflectionExportedInstance<T>(addon, requestedType));
+            result.add(new ReflectionExportedInstance<T>(addon, (Class<T>) type));
          }
       }
       return result;
@@ -100,6 +101,7 @@ public class ReflectionServiceRegistry implements ServiceRegistry
       return Collections.unmodifiableSet(serviceTypes);
    }
 
+   @SuppressWarnings("unchecked")
    @Override
    public <T> Set<Class<T>> getExportedTypes(Class<T> type)
    {
@@ -108,7 +110,7 @@ public class ReflectionServiceRegistry implements ServiceRegistry
       {
          if (type.isAssignableFrom(serviceType))
          {
-            result.add(type);
+            result.add((Class<T>) serviceType);
          }
       }
       return result;
