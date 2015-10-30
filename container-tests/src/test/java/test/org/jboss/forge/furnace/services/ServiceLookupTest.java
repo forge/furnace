@@ -8,7 +8,9 @@
 package test.org.jboss.forge.furnace.services;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
 
+import org.hamcrest.CoreMatchers;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.archive.AddonArchive;
@@ -41,6 +43,7 @@ public class ServiceLookupTest
                .addAsLocalServices(MockImpl1.class, MockImpl2.class, SubMockImpl1.class, ServiceLookupTest.class);
    }
 
+   @SuppressWarnings("unchecked")
    @Test
    public void shouldResolveImpls() throws Exception
    {
@@ -50,6 +53,10 @@ public class ServiceLookupTest
       Assert.assertTrue(imported.isAmbiguous());
       Assert.assertEquals(3, Iterators.asList(imported).size());
       Assert.assertThat(registry.getExportedTypes(MockInterface.class).size(), equalTo(3));
+      Assert.assertThat(imported, CoreMatchers.<MockInterface> hasItems(
+               instanceOf(MockImpl1.class),
+               instanceOf(MockImpl2.class),
+               instanceOf(SubMockImpl1.class)));
    }
 
 }
