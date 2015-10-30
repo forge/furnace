@@ -76,9 +76,20 @@ public class AddonInstallMojo extends AbstractMojo
    @Parameter(property = "furnace.addon.overwrite", defaultValue = "true")
    private boolean overwrite = true;
 
+   /**
+    * Skip this execution ?
+    */
+   @Parameter(property = "furnace.addon.skip")
+   private boolean skip;
+
    @Override
    public void execute() throws MojoExecutionException, MojoFailureException
    {
+      if (skip)
+      {
+         getLog().info("Execution skipped.");
+         return;
+      }
       Furnace forge = new FurnaceImpl();
       if (!addonRepository.exists())
       {
