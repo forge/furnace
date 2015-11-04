@@ -51,6 +51,10 @@ import org.jboss.forge.parser.xml.XMLParserException;
  */
 public final class AddonRepositoryImpl implements MutableAddonRepository
 {
+   /**
+    * Setting this system property to <code>true</code> allows Furnace to deploy addons as symlinks
+    */
+   private static final String DEPLOY_AS_SYMLINK_SYSTEM_PROPERTY = "furnace.addon.deploy_as_symlink";
 
    private static final Logger logger = Logger.getLogger(AddonRepositoryImpl.class.getName());
 
@@ -139,13 +143,31 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
                                  + resource.getParentFile().getParentFile().getName();
                         child = OperatingSystemUtils.getSafeFilename(child);
                         File target = new File(addonSlotDir, child);
-                        logger.fine("Copying " + resource + " to " + target);
-                        Files.copyDirectory(resource, target);
+                        if (Boolean.getBoolean(DEPLOY_AS_SYMLINK_SYSTEM_PROPERTY))
+                        {
+                           logger.fine("Creating symlink from " + resource + " to " + target);
+                           java.nio.file.Files.createSymbolicLink(target.toPath(), resource.toPath());
+                        }
+                        else
+                        {
+                           logger.fine("Copying " + resource + " to " + target);
+                           Files.copyDirectory(resource, target);
+                        }
                      }
                      else
                      {
-                        logger.fine("Copying " + resource + " to " + addonSlotDir);
-                        Files.copyFileToDirectory(resource, addonSlotDir);
+                        if (Boolean.getBoolean(DEPLOY_AS_SYMLINK_SYSTEM_PROPERTY))
+                        {
+                           logger.fine("Creating symlink from " + resource + " to "
+                                    + addonSlotDir.toPath().resolve(resource.getName()));
+                           java.nio.file.Files.createSymbolicLink(addonSlotDir.toPath().resolve(resource.getName()),
+                                    resource.toPath());
+                        }
+                        else
+                        {
+                           logger.fine("Copying " + resource + " to " + addonSlotDir);
+                           Files.copyFileToDirectory(resource, addonSlotDir);
+                        }
                      }
                   }
                }
@@ -180,21 +202,15 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
                   }
                }
 
-               FileOutputStream fos = null;
-               try
+               try (FileOutputStream fos = new FileOutputStream(descriptor))
                {
-                  fos = new FileOutputStream(descriptor);
                   Streams.write(XMLParser.toXMLInputStream(addonXml), fos);
-               }
-               finally
-               {
-                  Streams.closeQuietly(fos);
                }
                return true;
             }
             catch (IOException io)
             {
-               io.printStackTrace();
+               logger.log(Level.SEVERE, "Error while deploying addon " + addon, io);
                return false;
             }
          }
