@@ -131,88 +131,80 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
          {
             File addonSlotDir = getAddonBaseDir(addon);
             File descriptor = getAddonDescriptor(addon);
-            try
+            if (resources != null)
             {
-               if (resources != null)
+               for (File resource : resources)
                {
-                  for (File resource : resources)
+                  if (resource.isDirectory())
                   {
-                     if (resource.isDirectory())
+                     String child = addon.getName()
+                              + resource.getParentFile().getParentFile().getName();
+                     child = OperatingSystemUtils.getSafeFilename(child);
+                     File target = new File(addonSlotDir, child);
+                     if (Boolean.getBoolean(DEPLOY_AS_SYMLINK_SYSTEM_PROPERTY))
                      {
-                        String child = addon.getName()
-                                 + resource.getParentFile().getParentFile().getName();
-                        child = OperatingSystemUtils.getSafeFilename(child);
-                        File target = new File(addonSlotDir, child);
-                        if (Boolean.getBoolean(DEPLOY_AS_SYMLINK_SYSTEM_PROPERTY))
-                        {
-                           logger.fine("Creating symlink from " + resource + " to " + target);
-                           java.nio.file.Files.createSymbolicLink(target.toPath(), resource.toPath());
-                        }
-                        else
-                        {
-                           logger.fine("Copying " + resource + " to " + target);
-                           Files.copyDirectory(resource, target);
-                        }
+                        logger.fine("Creating symlink from " + resource + " to " + target);
+                        java.nio.file.Files.createSymbolicLink(target.toPath(), resource.toPath());
                      }
                      else
                      {
-                        if (Boolean.getBoolean(DEPLOY_AS_SYMLINK_SYSTEM_PROPERTY))
-                        {
-                           logger.fine("Creating symlink from " + resource + " to "
-                                    + addonSlotDir.toPath().resolve(resource.getName()));
-                           java.nio.file.Files.createSymbolicLink(addonSlotDir.toPath().resolve(resource.getName()),
-                                    resource.toPath());
-                        }
-                        else
-                        {
-                           logger.fine("Copying " + resource + " to " + addonSlotDir);
-                           Files.copyFileToDirectory(resource, addonSlotDir);
-                        }
+                        logger.fine("Copying " + resource + " to " + target);
+                        Files.copyDirectory(resource, target);
                      }
                   }
-               }
-               /*
-                * Write out the addon module dependency configuration
-                */
-               Node addonXml = getXmlRoot(descriptor);
-               Node dependenciesNode = addonXml.getOrCreate(DEPENDENCIES_TAG_NAME);
-
-               if (dependencies != null)
-               {
-                  for (AddonDependencyEntry dependency : dependencies)
+                  else
                   {
-                     String name = dependency.getName();
-                     Node dep = null;
-                     for (Node node : dependenciesNode.get(DEPENDENCY_TAG_NAME))
+                     if (Boolean.getBoolean(DEPLOY_AS_SYMLINK_SYSTEM_PROPERTY))
                      {
-                        if (name.equals(node.getAttribute(ATTR_NAME)))
-                        {
-                           dep = node;
-                           break;
-                        }
+                        logger.fine("Creating symlink from " + resource + " to "
+                                 + addonSlotDir.toPath().resolve(resource.getName()));
+                        java.nio.file.Files.createSymbolicLink(addonSlotDir.toPath().resolve(resource.getName()),
+                                 resource.toPath());
                      }
-                     if (dep == null)
+                     else
                      {
-                        dep = dependenciesNode.createChild(DEPENDENCY_TAG_NAME);
-                        dep.attribute(ATTR_NAME, name);
+                        logger.fine("Copying " + resource + " to " + addonSlotDir);
+                        Files.copyFileToDirectory(resource, addonSlotDir);
                      }
-                     dep.attribute(ATTR_VERSION, dependency.getVersionRange());
-                     dep.attribute(ATTR_EXPORT, dependency.isExported());
-                     dep.attribute(ATTR_OPTIONAL, dependency.isOptional());
                   }
                }
+            }
+            /*
+             * Write out the addon module dependency configuration
+             */
+            Node addonXml = getXmlRoot(descriptor);
+            Node dependenciesNode = addonXml.getOrCreate(DEPENDENCIES_TAG_NAME);
 
-               try (FileOutputStream fos = new FileOutputStream(descriptor))
-               {
-                  Streams.write(XMLParser.toXMLInputStream(addonXml), fos);
-               }
-               return true;
-            }
-            catch (IOException io)
+            if (dependencies != null)
             {
-               logger.log(Level.SEVERE, "Error while deploying addon " + addon, io);
-               return false;
+               for (AddonDependencyEntry dependency : dependencies)
+               {
+                  String name = dependency.getName();
+                  Node dep = null;
+                  for (Node node : dependenciesNode.get(DEPENDENCY_TAG_NAME))
+                  {
+                     if (name.equals(node.getAttribute(ATTR_NAME)))
+                     {
+                        dep = node;
+                        break;
+                     }
+                  }
+                  if (dep == null)
+                  {
+                     dep = dependenciesNode.createChild(DEPENDENCY_TAG_NAME);
+                     dep.attribute(ATTR_NAME, name);
+                  }
+                  dep.attribute(ATTR_VERSION, dependency.getVersionRange());
+                  dep.attribute(ATTR_EXPORT, dependency.isExported());
+                  dep.attribute(ATTR_OPTIONAL, dependency.isOptional());
+               }
             }
+
+            try (FileOutputStream fos = new FileOutputStream(descriptor))
+            {
+               Streams.write(XMLParser.toXMLInputStream(addonXml), fos);
+            }
+            return true;
          }
       });
    }
