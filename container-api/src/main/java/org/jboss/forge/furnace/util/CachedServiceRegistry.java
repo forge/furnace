@@ -20,8 +20,10 @@ import org.jboss.forge.furnace.spi.ServiceRegistry;
  * This implementation caches only {@link ExportedInstance} lookups, as this is mostly used.
  * 
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
+ * @deprecated this implementation is broken and should not be used for now
  */
 @SuppressWarnings("unchecked")
+@Deprecated
 public class CachedServiceRegistry implements ServiceRegistry
 {
    private final ServiceRegistry delegate;
