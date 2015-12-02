@@ -36,6 +36,7 @@ public class CachedServiceRegistry implements ServiceRegistry
    }
 
    @Override
+   @SuppressWarnings("rawtypes")
    public <T> Set<ExportedInstance<T>> getExportedInstances(Class<T> clazz)
    {
       Set<ExportedInstance<T>> result = (Set) instancesCache.get(clazz.getName());
@@ -48,6 +49,7 @@ public class CachedServiceRegistry implements ServiceRegistry
    }
 
    @Override
+   @SuppressWarnings("rawtypes")
    public <T> Set<ExportedInstance<T>> getExportedInstances(String clazz)
    {
       Set<ExportedInstance<T>> result = (Set) instancesCache.get(clazz);
