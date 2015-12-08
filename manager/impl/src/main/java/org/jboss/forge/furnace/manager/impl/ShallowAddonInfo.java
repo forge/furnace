@@ -58,4 +58,10 @@ class ShallowAddonInfo implements AddonInfo
    {
       return Collections.emptySet();
    }
+
+   @Override
+   public String toString()
+   {
+      return addonId.toString();
+   }
 }
