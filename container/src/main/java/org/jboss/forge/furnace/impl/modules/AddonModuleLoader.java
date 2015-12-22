@@ -23,6 +23,7 @@ import org.jboss.forge.furnace.addons.AddonView;
 import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.impl.addons.AddonLifecycleManager;
 import org.jboss.forge.furnace.impl.addons.AddonStateManager;
+import org.jboss.forge.furnace.impl.modules.providers.AppleScriptClasspathSpec;
 import org.jboss.forge.furnace.impl.modules.providers.CORBAClasspathSpec;
 import org.jboss.forge.furnace.impl.modules.providers.FurnaceContainerSpec;
 import org.jboss.forge.furnace.impl.modules.providers.JAXBJDKClasspathSpec;
@@ -169,6 +170,7 @@ public class AddonModuleLoader extends ModuleLoader
                   builder.addDependency(DependencySpec.createModuleDependencySpec(SunJDKClasspathSpec.ID));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(NashornJDKClasspathSpec.ID));
                   builder.addDependency(DependencySpec.createModuleDependencySpec(JavaFXClasspathSpec.ID));
+                  builder.addDependency(DependencySpec.createModuleDependencySpec(AppleScriptClasspathSpec.ID));
 
                   ClassLoader parent = ClassLoader.getSystemClassLoader().getParent();
                   if (parent != null)
