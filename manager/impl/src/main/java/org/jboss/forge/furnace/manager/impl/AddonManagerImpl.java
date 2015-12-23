@@ -39,6 +39,8 @@ import org.jboss.forge.furnace.manager.spi.AddonInfo;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.repositories.MutableAddonRepository;
 import org.jboss.forge.furnace.util.Assert;
+import org.jboss.forge.furnace.versions.SingleVersion;
+import org.jboss.forge.furnace.versions.Version;
 import org.jboss.forge.furnace.versions.Versions;
 
 /**
@@ -198,8 +200,11 @@ public class AddonManagerImpl implements AddonManager
          }
          if (differentVersionEntry != null)
          {
+            // Avoiding ClassCastExceptions
+            Version differentVersion = SingleVersion.valueOf(differentVersionEntry.getKey().getVersion().toString());
+            Version addonVersion = SingleVersion.valueOf(addon.getVersion().toString());
             // TODO: Review condition below
-            if (differentVersionEntry.getKey().getVersion().compareTo(addon.getVersion()) < 0)
+            if (differentVersion.compareTo(addonVersion) < 0)
             {
                if (repository.equals(differentVersionEntry.getValue()))
                {
