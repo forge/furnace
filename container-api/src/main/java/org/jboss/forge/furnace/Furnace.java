@@ -8,6 +8,7 @@ package org.jboss.forge.furnace;
 
 import java.io.File;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.concurrent.Future;
 
 import org.jboss.forge.furnace.addons.Addon;
@@ -17,6 +18,7 @@ import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
 import org.jboss.forge.furnace.spi.ContainerLifecycleListener;
+import org.jboss.forge.furnace.spi.FurnaceProvider;
 import org.jboss.forge.furnace.spi.ListenerRegistration;
 import org.jboss.forge.furnace.util.AddonCompatibilityStrategies;
 import org.jboss.forge.furnace.versions.Version;
@@ -140,7 +142,8 @@ public interface Furnace
    public boolean isTestMode();
 
    /**
-    * Sets the {@link AddonCompatibilityStrategy} for this {@link Furnace} instance. This policy is used to determine version compatibility when loading addons.
+    * Sets the {@link AddonCompatibilityStrategy} for this {@link Furnace} instance. This policy is used to determine
+    * version compatibility when loading addons.
     * 
     * Default is {@link AddonCompatibilityStrategies#STRICT}
     */
@@ -151,4 +154,18 @@ public interface Furnace
     */
    public AddonCompatibilityStrategy getAddonCompatibilityStrategy();
 
+   /**
+    * Returns the {@link Furnace} instance
+    * 
+    * @param loader
+    * @return
+    */
+   static Furnace instance(ClassLoader loader)
+   {
+      for (FurnaceProvider provider : ServiceLoader.load(FurnaceProvider.class, loader))
+      {
+         return provider.getFurnace(loader);
+      }
+      throw new IllegalArgumentException("No Furnace instance accessible through " + loader);
+   }
 }
