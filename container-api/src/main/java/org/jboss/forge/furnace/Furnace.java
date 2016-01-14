@@ -166,6 +166,8 @@ public interface Furnace
       {
          return provider.getFurnace(loader);
       }
-      throw new IllegalArgumentException("No Furnace instance accessible through " + loader);
+
+      throw new IllegalArgumentException("No Furnace container found in the  " + loader
+               + ". This method must be called within a running Furnace Addon that references a valid Furnace Container.");
    }
 }
