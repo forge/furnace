@@ -205,7 +205,8 @@ public class AddonManagerImpl implements AddonManager
             Version differentVersion = SingleVersion.valueOf(differentVersionEntry.getKey().getVersion().toString());
             Version addonVersion = SingleVersion.valueOf(addon.getVersion().toString());
             // TODO: Review condition below
-            if (differentVersion.compareTo(addonVersion) < 0)
+            // Update ONLY if it is the requested addon
+            if (differentVersion.compareTo(addonVersion) < 0 && addonInfo.equals(requestedAddonInfo))
             {
                if (repository.equals(differentVersionEntry.getValue()))
                {
