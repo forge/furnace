@@ -169,7 +169,7 @@ public class AddonManagerImpl implements AddonManager
       {
          // Already contains the installed addon. Update ONLY if the version is SNAPSHOT and if it is the requested
          // addon
-         if (Versions.isSnapshot(addonInfo.getAddon().getVersion()) && addonInfo.equals(requestedAddonInfo))
+         if (Versions.isSnapshot(addon.getVersion()) && addonInfo.equals(requestedAddonInfo))
          {
             AddonRepository addonRepository = installedAddons.get(addon);
             if (repository.equals(addonRepository))
@@ -188,6 +188,7 @@ public class AddonManagerImpl implements AddonManager
       }
       else
       {
+         // Addon is not installed or has a different version
          Entry<AddonId, AddonRepository> differentVersionEntry = null;
          for (Entry<AddonId, AddonRepository> addonEntry : installedAddons.entrySet())
          {
