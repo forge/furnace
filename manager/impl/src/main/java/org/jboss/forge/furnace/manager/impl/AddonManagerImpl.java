@@ -205,9 +205,7 @@ public class AddonManagerImpl implements AddonManager
             Version differentVersion = SingleVersion.valueOf(differentVersionEntry.getKey().getVersion().toString());
             Version addonVersion = SingleVersion.valueOf(addon.getVersion().toString());
             // TODO: Review condition below
-            boolean updateToNewerVersion = differentVersion.compareTo(addonVersion) < 0;
-            // FIXME: This explicit check for core addons should be reviewed
-            if (!isCoreAddon(differentVersionEntry.getKey()) && updateToNewerVersion)
+            if (differentVersion.compareTo(addonVersion) < 0)
             {
                if (repository.equals(differentVersionEntry.getValue()))
                {
@@ -230,11 +228,6 @@ public class AddonManagerImpl implements AddonManager
          }
       }
       return request;
-   }
-
-   private boolean isCoreAddon(AddonId addonId)
-   {
-      return addonId.getName().startsWith("org.jboss.forge.addon");
    }
 
    private List<AddonInfo> collectRequiredAddons(final AddonInfo addonInfo)
