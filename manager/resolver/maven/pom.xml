@@ -9,7 +9,7 @@
    <name>Furnace - Manager Maven Resolver</name>
    <properties>
       <aether.version>1.0.2.v20150114</aether.version>
-      <maven.version>3.3.3</maven.version>
+      <maven.version>3.3.9</maven.version>
    </properties>
 
    <dependencies>
