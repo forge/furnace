@@ -243,17 +243,17 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
          {
             result = stripClassLoaderAdapters(result);
 
-            Class<?>[] resultHierarchy = calculateResultHierarchy(result.getClass(), unwrappedResultType, callingLoader);
-            Class<?>[] returnTypeHierarchy = calculateReturnTypeHierarchy(callingLoader, returnType);
-
             if (!Modifier.isFinal(returnType.getModifiers()))
             {
+               Class<?>[] resultHierarchy = calculateResultHierarchy(result.getClass(), unwrappedResultType,
+                        callingLoader);
                if (Object.class.equals(returnType) && !Object.class.equals(result))
                {
                   result = enhance(whitelist, callingLoader, resultInstanceLoader, method, result, resultHierarchy);
                }
                else
                {
+                  Class<?>[] returnTypeHierarchy = calculateReturnTypeHierarchy(callingLoader, returnType);
                   if (returnTypeHierarchy.length == 0)
                   {
                      returnTypeHierarchy = new Class[] { returnType };
@@ -281,9 +281,18 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
             else
             {
                if (result.getClass().isEnum())
+               {
                   result = enhanceEnum(callingLoader, result);
+               }
                else
+               {
+                  Class<?>[] returnTypeHierarchy = calculateReturnTypeHierarchy(callingLoader, returnType);
+                  if (returnTypeHierarchy.length == 0)
+                  {
+                     returnTypeHierarchy = new Class[] { returnType };
+                  }
                   result = enhance(whitelist, callingLoader, resultInstanceLoader, method, returnTypeHierarchy);
+               }
             }
          }
          else
@@ -530,8 +539,8 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
    private boolean exceptionNeedsEnhancement(Exception exception)
    {
       final Class<? extends Exception> exceptionType = exception.getClass();
-      final Class<? extends Exception> unwrappedExceptionType =
-               (Class<? extends Exception>) Proxies.unwrap(exception).getClass();
+      final Class<? extends Exception> unwrappedExceptionType = (Class<? extends Exception>) Proxies.unwrap(exception)
+               .getClass();
 
       if (Proxies.isPassthroughType(unwrappedExceptionType))
       {
@@ -1013,7 +1022,8 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                            final Class<?> typeArgument = javassistLoader.loadClass(MethodHandler.class.getName());
                            final Method setHandlerMethod = javassistType.getMethod("setHandler", typeArgument);
                            setHandlerMethod.invoke(enhancedResult,
-                                    callbackConstructor.newInstance(whitelist, callingLoader, delegateLoader, delegate));
+                                    callbackConstructor.newInstance(whitelist, callingLoader, delegateLoader,
+                                             delegate));
                         }
                      }
                   }
