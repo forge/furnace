@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 import org.jboss.forge.furnace.proxy.javassist.util.proxy.MethodFilter;
 import org.jboss.forge.furnace.proxy.javassist.util.proxy.Proxy;
@@ -23,7 +24,13 @@ import org.jboss.forge.furnace.util.Assert;
  */
 public class Proxies
 {
+   private static final Pattern JAVA_PACKAGE_REGEXP = Pattern.compile("^(java\\.).*");
+   private static final Pattern JAVA_LANG_PACKAGE_REGEXP = Pattern.compile("^(java\\.lang).*");
+   private static final Pattern JAVA_IO_PACKAGE_REGEXP = Pattern.compile("^(java\\.io).*");
+   private static final Pattern JAVA_NET_PACKAGE_REGEXP = Pattern.compile("^(java\\.net).*");
+
    private static MethodFilter filter = new ForgeProxyMethodFilter();
+
    private static Map<String, Map<String, WeakReference<Class<?>>>> classCache = new ConcurrentHashMap<>();
 
    /**
@@ -99,7 +106,8 @@ public class Proxies
          throw new IllegalStateException(
                   "Could not instantiate proxy for object [" + instance + "] of type [" + type
                            + "]. For optimal proxy compatibility, ensure " +
-                           "that this type is an interface, or a class with a default constructor.", e);
+                           "that this type is an interface, or a class with a default constructor.",
+                  e);
       }
       catch (IllegalAccessException e)
       {
@@ -194,7 +202,8 @@ public class Proxies
          throw new IllegalStateException(
                   "Could not instantiate proxy for type [" + type
                            + "]. For optimal proxy compatibility, ensure " +
-                           "that this type is an interface, or a class with a default constructor.", e);
+                           "that this type is an interface, or a class with a default constructor.",
+                  e);
       }
       catch (IllegalAccessException e)
       {
@@ -454,9 +463,9 @@ public class Proxies
       Assert.notNull(type, "Type to inspect must not be null.");
 
       boolean result = type.isArray()
-               || type.getName().matches("^(java\\.lang).*")
-               || type.getName().matches("^(java\\.io).*")
-               || type.getName().matches("^(java\\.net).*")
+               || JAVA_LANG_PACKAGE_REGEXP.matcher(type.getName()).matches()
+               || JAVA_IO_PACKAGE_REGEXP.matcher(type.getName()).matches()
+               || JAVA_NET_PACKAGE_REGEXP.matcher(type.getName()).matches()
                || type.isPrimitive();
 
       result = result && !(Iterable.class.getName().equals(type.getName()));
@@ -469,7 +478,7 @@ public class Proxies
       Assert.notNull(type, "Type to inspect must not be null.");
 
       boolean result = type.isArray()
-               || type.getName().matches("^(java\\.).*")
+               || JAVA_PACKAGE_REGEXP.matcher(type.getName()).matches()
                || type.isPrimitive();
 
       return result;
