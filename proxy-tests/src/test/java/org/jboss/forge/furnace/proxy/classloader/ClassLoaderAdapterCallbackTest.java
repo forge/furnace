@@ -6,8 +6,12 @@
  */
 package org.jboss.forge.furnace.proxy.classloader;
 
-import java.lang.reflect.Method;
+import static org.hamcrest.CoreMatchers.instanceOf;
 
+import java.lang.reflect.Method;
+import java.util.Optional;
+
+import org.jboss.forge.classloader.mock.MockOptionalService;
 import org.jboss.forge.classloader.mock.MockResult;
 import org.jboss.forge.classloader.mock.MockService;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
@@ -73,5 +77,15 @@ public class ClassLoaderAdapterCallbackTest
       MockService object2 = ClassLoaderAdapterBuilder.callingLoader(loader).delegateLoader(loader)
                .enhance(object, MockService.class);
       Assert.assertNotSame(object, object2);
+   }
+
+   @Test
+   public void testJavaUtilOptionalProxy() throws Exception
+   {
+      ClassLoader loader = ClassLoaderAdapterCallbackTest.class.getClassLoader();
+      MockOptionalService original = new MockOptionalService();
+      MockOptionalService object = ClassLoaderAdapterBuilder.callingLoader(loader).delegateLoader(loader)
+               .enhance(original, MockOptionalService.class);
+      Assert.assertThat(object.getOptional(), instanceOf(Optional.class));
    }
 }

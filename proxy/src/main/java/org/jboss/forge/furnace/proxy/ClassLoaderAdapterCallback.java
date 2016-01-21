@@ -16,6 +16,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -192,7 +193,6 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       if (result != null)
       {
          final Class<?> unwrappedResultType = Proxies.unwrap(result).getClass();
-
          ClassLoader callingLoader = getCallingLoader();
          if (getCallingLoader().equals(delegateLoader))
             callingLoader = getInitialCallingLoader();
@@ -286,12 +286,30 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                }
                else
                {
-                  Class<?>[] returnTypeHierarchy = calculateReturnTypeHierarchy(callingLoader, returnType);
-                  if (returnTypeHierarchy.length == 0)
+                  // FURNACE-104
+                  if (result instanceof Optional)
                   {
-                     returnTypeHierarchy = new Class[] { returnType };
+                     Optional<?> optionalResult = ((Optional<?>) result);
+                     if (optionalResult.isPresent())
+                     {
+                        Object nestedResult = optionalResult.get();
+                        final Class<?>[] resultHierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(
+                                 getCallingLoader(),
+                                 Proxies.unwrapProxyTypes(nestedResult.getClass(), getCallingLoader(), delegateLoader,
+                                          resultInstanceLoader));
+                        result = Optional
+                                 .of(enhance(whitelist, getCallingLoader(), resultInstanceLoader, method, nestedResult,
+                                          resultHierarchy));
+                     }
                   }
-                  result = enhance(whitelist, callingLoader, resultInstanceLoader, method, returnTypeHierarchy);
+                  else
+                  {
+                     Class<?>[] returnTypeHierarchy = calculateReturnTypeHierarchy(callingLoader, returnType);
+                     if (returnTypeHierarchy.length > 0)
+                     {
+                        result = enhance(whitelist, callingLoader, resultInstanceLoader, method, returnTypeHierarchy);
+                     }
+                  }
                }
             }
          }
