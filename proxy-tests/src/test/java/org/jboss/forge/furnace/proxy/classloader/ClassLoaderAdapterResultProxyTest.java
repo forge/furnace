@@ -55,8 +55,7 @@ public class ClassLoaderAdapterResultProxyTest
                         AbstractClass.class,
                         Implementation.class,
                         InstanceFactory.class,
-                        InstanceFactoryImpl.class)
-               .addBeansXML();
+                        InstanceFactoryImpl.class);
 
       return archive;
    }
