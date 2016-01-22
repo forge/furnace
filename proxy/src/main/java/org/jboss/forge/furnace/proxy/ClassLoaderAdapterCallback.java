@@ -779,12 +779,16 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                   if (optionalResult.isPresent())
                   {
                      Object nestedResult = optionalResult.get();
-                     Class<?>[] compatibleClassHierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(
-                              delegateLoader,
-                              Proxies.unwrapProxyTypes(nestedResult.getClass(), getCallingLoader(), delegateLoader));
-                     nestedResult = enhance(whitelist, valueDelegateLoader, valueCallingLoader,
-                              nestedResult,
-                              compatibleClassHierarchy);
+                     Class<?> parameterClass = nestedResult.getClass();
+                     if (!Proxies.isPassthroughType(parameterClass) && !Proxies.isLanguageType(parameterClass))
+                     {
+                        Class<?>[] compatibleClassHierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(
+                                 delegateLoader,
+                                 Proxies.unwrapProxyTypes(parameterClass, getCallingLoader(), delegateLoader));
+                        nestedResult = enhance(whitelist, valueDelegateLoader, valueCallingLoader,
+                                 nestedResult,
+                                 compatibleClassHierarchy);
+                     }
                      return Optional.of(nestedResult);
                   }
                   else
