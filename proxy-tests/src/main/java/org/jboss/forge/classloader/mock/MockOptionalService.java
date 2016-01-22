@@ -13,7 +13,7 @@ import java.util.Optional;
  *
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  */
-public class MockOptionalService implements MockInterface1
+public class MockOptionalService
 {
    public Optional<MockParentInterface2> getOptional()
    {
