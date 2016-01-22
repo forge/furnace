@@ -19,4 +19,23 @@ public class MockOptionalService
    {
       return Optional.<MockParentInterface2> of(new MockService2(123));
    }
+
+   public Object getResult(Optional<MockParentInterface1> optional)
+   {
+      if (optional.isPresent())
+         return optional.get().getResult();
+      else
+         return null;
+   }
+
+   public Optional<String> getStringOptional()
+   {
+      return Optional.of(new MockService2(123).getResult());
+   }
+
+   public Object getStringOptional(Optional<String> result)
+   {
+      return result.orElseGet(() -> "Nothing");
+   }
+
 }

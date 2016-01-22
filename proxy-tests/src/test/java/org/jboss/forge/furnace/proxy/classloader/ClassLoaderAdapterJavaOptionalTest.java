@@ -7,7 +7,11 @@
 
 package org.jboss.forge.furnace.proxy.classloader;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+
+import java.util.Optional;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -46,7 +50,7 @@ public class ClassLoaderAdapterJavaOptionalTest
    }
 
    @Test
-   public void testOptionalProxy() throws Exception
+   public void testOptionalProxyAsResult() throws Exception
    {
       AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
                .getAddonRegistry();
@@ -59,6 +63,57 @@ public class ClassLoaderAdapterJavaOptionalTest
       Assert.assertThat(enhanced.getOptional(), notNullValue());
       MockParentInterface2 mpi = enhanced.getOptional().get();
       Assert.assertEquals("Lincoln", mpi.getResult());
+   }
 
+   @Test
+   public void testOptionalProxyAsParameter() throws Exception
+   {
+      AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
+               .getAddonRegistry();
+      ClassLoader thisLoader = ClassLoaderAdapterJavaOptionalTest.class.getClassLoader();
+      ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep", "1")).getClassLoader();
+      Class<?> loadedType = dep1Loader.loadClass(MockOptionalService.class.getName());
+      Object delegate = loadedType.newInstance();
+      MockOptionalService enhanced = (MockOptionalService) ClassLoaderAdapterBuilder.callingLoader(thisLoader)
+               .delegateLoader(dep1Loader).enhance(delegate);
+      MockParentInterface1 mpi = new MockParentInterface1()
+      {
+         @Override
+         public Object getResult()
+         {
+            return "My Result";
+         }
+      };
+      Assert.assertThat(enhanced.getResult(Optional.empty()), nullValue());
+      Assert.assertThat(enhanced.getResult(Optional.of(mpi)), equalTo("My Result"));
+   }
+
+   @Test
+   public void testOptionalStringProxyAsResult() throws Exception
+   {
+      AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
+               .getAddonRegistry();
+      ClassLoader thisLoader = ClassLoaderAdapterJavaOptionalTest.class.getClassLoader();
+      ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep", "1")).getClassLoader();
+      Class<?> loadedType = dep1Loader.loadClass(MockOptionalService.class.getName());
+      Object delegate = loadedType.newInstance();
+      MockOptionalService enhanced = (MockOptionalService) ClassLoaderAdapterBuilder.callingLoader(thisLoader)
+               .delegateLoader(dep1Loader).enhance(delegate);
+      Assert.assertThat(enhanced.getStringOptional(), notNullValue());
+      Assert.assertEquals("Lincoln", enhanced.getStringOptional().get());
+   }
+
+   @Test
+   public void testOptionalStringProxyAsParameter() throws Exception
+   {
+      AddonRegistry registry = LocalServices.getFurnace(getClass().getClassLoader())
+               .getAddonRegistry();
+      ClassLoader thisLoader = ClassLoaderAdapterJavaOptionalTest.class.getClassLoader();
+      ClassLoader dep1Loader = registry.getAddon(AddonId.from("dep", "1")).getClassLoader();
+      Class<?> loadedType = dep1Loader.loadClass(MockOptionalService.class.getName());
+      Object delegate = loadedType.newInstance();
+      MockOptionalService enhanced = (MockOptionalService) ClassLoaderAdapterBuilder.callingLoader(thisLoader)
+               .delegateLoader(dep1Loader).enhance(delegate);
+      Assert.assertEquals("My Test", enhanced.getStringOptional(Optional.of("My Test")));
    }
 }

@@ -293,13 +293,18 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                      if (optionalResult.isPresent())
                      {
                         Object nestedResult = optionalResult.get();
-                        final Class<?>[] resultHierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(
-                                 getCallingLoader(),
-                                 Proxies.unwrapProxyTypes(nestedResult.getClass(), getCallingLoader(), delegateLoader,
-                                          resultInstanceLoader));
-                        result = Optional
-                                 .of(enhance(whitelist, getCallingLoader(), resultInstanceLoader, method, nestedResult,
-                                          resultHierarchy));
+                        Class<?> resultClass = nestedResult.getClass();
+                        if (!Proxies.isPassthroughType(resultClass) && !Proxies.isLanguageType(resultClass))
+                        {
+                           final Class<?>[] resultHierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(
+                                    getCallingLoader(),
+                                    Proxies.unwrapProxyTypes(resultClass, getCallingLoader(), delegateLoader,
+                                             resultInstanceLoader));
+                           result = Optional
+                                    .of(enhance(whitelist, getCallingLoader(), resultInstanceLoader, method,
+                                             nestedResult,
+                                             resultHierarchy));
+                        }
                      }
                   }
                   else
@@ -767,6 +772,26 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
                               delegateParameterType.getComponentType(), stripClassLoaderAdapters(array[j]));
                   }
                   return delegateArray;
+               }
+               else if (delegateParameterType == Optional.class)
+               {
+                  Optional<?> optionalResult = ((Optional<?>) parameterValue);
+                  if (optionalResult.isPresent())
+                  {
+                     Object nestedResult = optionalResult.get();
+                     Class<?>[] compatibleClassHierarchy = ProxyTypeInspector.getCompatibleClassHierarchy(
+                              delegateLoader,
+                              Proxies.unwrapProxyTypes(nestedResult.getClass(), getCallingLoader(), delegateLoader));
+                     nestedResult = enhance(whitelist, valueDelegateLoader, valueCallingLoader,
+                              nestedResult,
+                              compatibleClassHierarchy);
+                     return Optional.of(nestedResult);
+                  }
+                  else
+                  {
+                     return Optional.empty();
+                  }
+
                }
                else
                {
