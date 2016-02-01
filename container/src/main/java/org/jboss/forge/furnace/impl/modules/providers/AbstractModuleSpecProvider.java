@@ -90,8 +90,7 @@ public abstract class AbstractModuleSpecProvider implements ModuleSpecProvider
             }
             else if (!file.isDirectory())
             {
-               JarFile jar = new JarFile(file);
-               try
+               try (JarFile jar = new JarFile(file))
                {
                   Enumeration<JarEntry> entries = jar.entries();
                   while (entries.hasMoreElements())
@@ -99,18 +98,9 @@ public abstract class AbstractModuleSpecProvider implements ModuleSpecProvider
                      JarEntry entry = entries.nextElement();
                      String name = entry.getName();
                      if (name.indexOf('/') != -1)
+                     {
                         result.add(name.substring(0, name.lastIndexOf('/')));
-                  }
-               }
-               finally
-               {
-                  try
-                  {
-                     jar.close();
-                  }
-                  catch (IOException e)
-                  {
-                     e.printStackTrace();
+                     }
                   }
                }
             }

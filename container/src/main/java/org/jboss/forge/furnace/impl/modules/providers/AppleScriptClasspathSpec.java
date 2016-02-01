@@ -7,7 +7,7 @@
 
 package org.jboss.forge.furnace.impl.modules.providers;
 
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Set;
 
 import org.jboss.modules.ModuleIdentifier;
@@ -20,12 +20,7 @@ public class AppleScriptClasspathSpec extends AbstractModuleSpecProvider
 {
    public static final ModuleIdentifier ID = ModuleIdentifier.create("apple.script");
 
-   public static Set<String> paths = new HashSet<String>();
-
-   static
-   {
-      paths.add("apple/applescript");
-   }
+   public static Set<String> paths = Collections.singleton("apple/applescript");
 
    @Override
    protected ModuleIdentifier getId()
