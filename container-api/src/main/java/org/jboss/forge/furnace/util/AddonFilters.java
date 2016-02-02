@@ -6,7 +6,6 @@
  */
 package org.jboss.forge.furnace.util;
 
-import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonFilter;
 
 /**
@@ -16,62 +15,26 @@ public class AddonFilters
 {
    public static AddonFilter allLoaded()
    {
-      return new AddonFilter()
-      {
-         @Override
-         public boolean accept(Addon addon)
-         {
-            return addon.getStatus().isLoaded();
-         }
-      };
+      return (addon) -> addon.getStatus().isLoaded();
    }
 
    public static AddonFilter allStarting()
    {
-      return new AddonFilter()
-      {
-         @Override
-         public boolean accept(Addon addon)
-         {
-            return !addon.getFuture().isDone();
-         }
-      };
+      return (addon) -> !addon.getFuture().isDone();
    }
 
    public static AddonFilter allStarted()
    {
-      return new AddonFilter()
-      {
-         @Override
-         public boolean accept(Addon addon)
-         {
-            return addon.getStatus().isStarted();
-         }
-      };
+      return (addon) -> addon.getStatus().isStarted();
    }
 
    public static AddonFilter allNotStarted()
    {
-      return new AddonFilter()
-      {
-         @Override
-         public boolean accept(Addon addon)
-         {
-            return !addon.getStatus().isStarted();
-         }
-      };
+      return (addon) -> !addon.getStatus().isStarted();
    }
 
    public static AddonFilter all()
    {
-      return new AddonFilter()
-      {
-         @Override
-         public boolean accept(Addon addon)
-         {
-            return true;
-         }
-      };
+      return (addon) -> true;
    }
-
 }
