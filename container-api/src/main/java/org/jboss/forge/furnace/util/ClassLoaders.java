@@ -21,7 +21,7 @@ import org.jboss.forge.furnace.exception.ContainerException;
  */
 public class ClassLoaders
 {
-   private static Logger log = Logger.getLogger(ClassLoaders.class.getName());
+   private static final Logger log = Logger.getLogger(ClassLoaders.class.getName());
 
    /**
     * Execute the given {@link Callable} in the {@link ClassLoader} provided. Return the result, if any.
@@ -40,6 +40,34 @@ public class ClassLoaders
       {
          SecurityActions.setContextClassLoader(loader);
          return task.call();
+      }
+      finally
+      {
+         SecurityActions.setContextClassLoader(original);
+         if (log.isLoggable(Level.FINE))
+         {
+            log.fine("ClassLoader [" + loader + "] task ended.");
+         }
+      }
+   }
+
+   /**
+    * Execute the given {@link Runnable} in the {@link ClassLoader} provided. Return the result, if any.
+    */
+   public static void executeIn(ClassLoader loader, Runnable task) throws Exception
+   {
+      if (task == null)
+         return;
+
+      if (log.isLoggable(Level.FINE))
+      {
+         log.fine("ClassLoader [" + loader + "] task began.");
+      }
+      ClassLoader original = SecurityActions.getContextClassLoader();
+      try
+      {
+         SecurityActions.setContextClassLoader(loader);
+         task.run();
       }
       finally
       {
