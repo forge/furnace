@@ -43,13 +43,13 @@ public class AddonInstallMojo extends AbstractMojo
    /**
     * Addon repository file location
     */
-   @Parameter(property = "forge.repository", required = true)
+   @Parameter(property = "furnace.repository", required = true)
    private File addonRepository;
 
    /**
     * Addon IDs to install
     */
-   @Parameter(property = "forge.addonIds", required = true)
+   @Parameter(property = "furnace.addonIds", required = true)
    private String[] addonIds;
 
    /**
