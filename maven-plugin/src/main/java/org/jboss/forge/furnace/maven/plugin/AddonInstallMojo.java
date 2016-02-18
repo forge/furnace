@@ -37,7 +37,7 @@ import org.jboss.forge.furnace.repositories.AddonRepositoryMode;
  *
  * @author <a href="ggastald@redhat.com">George Gastaldi</a>
  */
-@Mojo(name = "addon-install", defaultPhase = LifecyclePhase.PREPARE_PACKAGE, threadSafe = true)
+@Mojo(name = "addon-install", defaultPhase = LifecyclePhase.PREPARE_PACKAGE, threadSafe = true, requiresProject = false)
 public class AddonInstallMojo extends AbstractMojo
 {
    /**
