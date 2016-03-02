@@ -5,6 +5,7 @@ Lightweight Modular Service Container - Based JBoss Modules and Maven. It's easi
 
 [![Build Status](https://forge.ci.cloudbees.com/job/furnace/badge/icon)](https://forge.ci.cloudbees.com/job/furnace/)
 [![License](http://img.shields.io/:license-EPL-blue.svg)](https://www.eclipse.org/legal/epl-v10.html)
+[![Maven central](https://maven-badges.herokuapp.com/maven-central/org.jboss.forge.furnace/furnace-se/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.jboss.forge.furnace/furnace-se)
 
 Usage
 =====
