@@ -30,10 +30,9 @@ public abstract class Streams
    public static String toString(final InputStream stream)
    {
       StringBuilder out = new StringBuilder();
-      try
+      try (Reader in = new InputStreamReader(stream, "UTF-8"))
       {
          final char[] buffer = new char[8192];
-         Reader in = new InputStreamReader(stream, "UTF-8");
          int read;
          do
          {
@@ -62,10 +61,9 @@ public abstract class Streams
    public static String toString(final InputStream stream, Charset charset)
    {
       StringBuilder out = new StringBuilder();
-      try
+      try (Reader in = new InputStreamReader(stream, charset))
       {
          final char[] buffer = new char[8192];
-         Reader in = new InputStreamReader(stream, charset);
          int read;
          do
          {
@@ -86,13 +84,13 @@ public abstract class Streams
 
    public static void write(final InputStream source, final OutputStream destination)
    {
-      try
+      try (InputStream is = source)
       {
          final byte[] buffer = new byte[8192];
          int read;
          do
          {
-            read = source.read(buffer, 0, buffer.length);
+            read = is.read(buffer, 0, buffer.length);
             if (read > 0)
             {
                destination.write(buffer, 0, read);
