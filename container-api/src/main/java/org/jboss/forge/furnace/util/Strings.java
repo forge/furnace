@@ -44,8 +44,7 @@ public final class Strings
    /**
     * List of valid Java keywords, see The Java Language Specification Second Edition Section 3.9, 3.10.3 and 3.10.7
     */
-   private static final String[] keywords =
-   {
+   private static final String[] keywords = {
             "abstract",
             "boolean",
             "break",
@@ -103,8 +102,7 @@ public final class Strings
    /**
     * List of EJB-QL Identifiers as defined in the EJB 2.0 Specification Section 11.2.6.1
     */
-   private static final String[] ejbQlIdentifiers =
-   {
+   private static final String[] ejbQlIdentifiers = {
             "AND",
             "AS",
             "BETWEEN",
@@ -680,7 +678,7 @@ public final class Strings
     */
    public static boolean isEmpty(final String string)
    {
-      return string.equals(EMPTY);
+      return EMPTY.equals(string);
    }
 
    /**
@@ -691,7 +689,7 @@ public final class Strings
     */
    public static boolean isNullOrEmpty(final String string)
    {
-      return string == null || string.equals(EMPTY);
+      return string == null || string.isEmpty();
    }
 
    private static final Pattern URL_REGEX = Pattern
