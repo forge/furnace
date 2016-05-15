@@ -6,17 +6,21 @@
  */
 package org.jboss.forge.furnace.repositories;
 
-
 import org.jboss.forge.furnace.addons.Addon;
+import org.jboss.forge.furnace.addons.AddonId;
+
+import java.io.File;
 
 /**
- * Used to perform {@link Addon} installation/registration operations. May be obtained using CDI injection:
+ * Used to perform {@link Addon} installation operations. May be obtained using CDI injection:
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * @author <a href="mailto:koen.aers@gmail.com">Koen Aers</a>
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  */
-public interface MutableAddonRepository extends AddonRepository, MutableAddonStateRepository, MutableAddonStorageRepository
+public interface MutableAddonStorageRepository extends AddonStorageRepository
 {
+   public boolean deploy(AddonId addon, Iterable<AddonDependencyEntry> dependencies, Iterable<File> resourceJars);
 
+   public boolean undeploy(AddonId addonEntry);
 }
