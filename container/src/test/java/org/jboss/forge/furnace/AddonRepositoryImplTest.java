@@ -10,13 +10,20 @@ package org.jboss.forge.furnace;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.impl.FurnaceImpl;
-import org.jboss.forge.furnace.impl.addons.AddonRepositoryImpl;
-import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
-import org.jboss.forge.furnace.repositories.MutableAddonRepository;
+import org.jboss.forge.furnace.impl.addons.*;
+import org.jboss.forge.furnace.impl.util.Files;
+import org.jboss.forge.furnace.repositories.*;
+import org.jboss.forge.furnace.util.OperatingSystemUtils;
 import org.jboss.forge.furnace.versions.SingleVersion;
+import org.jboss.forge.furnace.versions.Version;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -148,5 +155,146 @@ public class AddonRepositoryImplTest
       Assert.assertEquals(2, repository.getAddonDependencies(addon).size());
       Assert.assertTrue(repository.getAddonDependencies(addon).contains(dependency0));
       Assert.assertTrue(repository.getAddonDependencies(addon).contains(dependency1));
+   }
+
+   @Test
+   public void testPluggableStateRepository() throws Exception
+   {
+      Furnace furnace = new FurnaceImpl();
+      File temp = OperatingSystemUtils.createTempDir();
+      MutableAddonRepositoryStorageStrategy storageRepository = new AddonRepositoryStorageStrategyImpl(furnace.getLockManager(), temp);
+
+      MutableAddonRepositoryStateStrategy stateRepository = new TestInMemoryAddonRepositoryStateStrategy();
+      MutableAddonRepository repository = new AddonRepositoryImpl(storageRepository, stateRepository, temp);
+
+      AddonId addon = TestInMemoryAddonRepositoryStateStrategy.TEST_ADDON;
+
+      repository.enable(addon);
+      Assert.assertTrue(repository.isEnabled(addon));
+
+      // Delete storage directory to demonstrate that filesystem is not used to store the state
+      Files.delete(temp, true);
+
+      // Addon still enabled state wasn't affected
+      Assert.assertTrue(repository.isEnabled(addon));
+   }
+
+   @Test
+   public void testSharedStateRepository() throws Exception
+   {
+      Furnace furnace = new FurnaceImpl();
+
+      MutableAddonRepositoryStateStrategy stateRepository = new TestInMemoryAddonRepositoryStateStrategy();
+
+      MutableAddonRepository firstRepo = createTempRepository(furnace, stateRepository);
+      MutableAddonRepository secondRepo = createTempRepository(furnace, stateRepository);
+
+      AddonId addon = TestInMemoryAddonRepositoryStateStrategy.TEST_ADDON;
+
+      Assert.assertFalse(firstRepo.isEnabled(addon));
+      Assert.assertFalse(secondRepo.isEnabled(addon));
+
+      stateRepository.enable(addon);
+
+      Assert.assertTrue(firstRepo.isEnabled(addon));
+      Assert.assertTrue(secondRepo.isEnabled(addon));
+   }
+
+   @Test
+   public void testSharedStorageRepository() throws Exception
+   {
+      Furnace furnace = new FurnaceImpl();
+
+      File temp = OperatingSystemUtils.createTempDir();
+      MutableAddonRepositoryStorageStrategy storageRepository = new AddonRepositoryStorageStrategyImpl(furnace.getLockManager(), temp);
+
+      AddonRepositoryStateStrategyImpl firstStateRepository = new AddonRepositoryStateStrategyImpl(furnace, OperatingSystemUtils.createTempDir());
+      MutableAddonRepository firstRepo = new AddonRepositoryImpl(storageRepository, firstStateRepository, temp);
+
+      AddonRepositoryStateStrategyImpl secondStateRepository = new AddonRepositoryStateStrategyImpl(furnace, OperatingSystemUtils.createTempDir());
+      MutableAddonRepository secondRepo = new AddonRepositoryImpl(storageRepository, secondStateRepository, temp);
+
+      AddonId addon = TestInMemoryAddonRepositoryStateStrategy.TEST_ADDON;
+
+      Assert.assertFalse(firstRepo.isDeployed(addon));
+      Assert.assertFalse(secondRepo.isDeployed(addon));
+
+      // Since storage is shared, addon will be deployed to both repositories
+      firstRepo.deploy(addon, Collections.emptyList(), Collections.emptyList());
+
+      Assert.assertTrue(firstRepo.isDeployed(addon));
+      Assert.assertTrue(secondRepo.isDeployed(addon));
+
+      firstRepo.enable(addon);
+
+      Assert.assertTrue(firstRepo.isEnabled(addon));
+      Assert.assertFalse(secondRepo.isEnabled(addon));
+   }
+
+   private static AddonRepositoryImpl createTempRepository(Furnace furnace, MutableAddonRepositoryStateStrategy stateRepository)
+   {
+      File temp = OperatingSystemUtils.createTempDir();
+      MutableAddonRepositoryStorageStrategy storageRepository = new AddonRepositoryStorageStrategyImpl(furnace.getLockManager(), temp);
+
+      return new AddonRepositoryImpl(storageRepository, stateRepository, temp);
+   }
+
+   private static class TestInMemoryAddonRepositoryStateStrategy implements MutableAddonRepositoryStateStrategy
+   {
+      static final AddonId TEST_ADDON = AddonId.from("com.example.addon", "1.2.3");
+
+      private final ConcurrentMap<AddonId, Boolean> state = new ConcurrentHashMap<>();
+
+      private final AtomicInteger version = new AtomicInteger(1);
+
+      @Override
+      public boolean disable(AddonId addon)
+      {
+         state.compute(addon, (key, oldValue) -> {
+            version.incrementAndGet();
+            return false;
+         });
+         return true;
+      }
+
+      @Override
+      public boolean enable(AddonId addon)
+      {
+         state.compute(addon, (key, oldValue) -> {
+            version.incrementAndGet();
+            return true;
+         });
+        return true;
+      }
+
+      @Override
+      public boolean isEnabled(AddonId addon)
+      {
+         return state.getOrDefault(addon, false);
+      }
+
+      @Override
+      public List<AddonId> listAll()
+      {
+         return Collections.singletonList(TEST_ADDON);
+      }
+
+      @Override
+      public List<AddonId> listEnabled()
+      {
+         return listAll();
+      }
+
+      @Override
+      public List<AddonId> listEnabledCompatibleWithVersion(Version version)
+      {
+         return listAll();
+      }
+
+      @Override
+      public int getVersion()
+      {
+         return version.get();
+      }
    }
 }
