@@ -7,19 +7,13 @@
 package org.jboss.forge.furnace.impl;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.StandardWatchEventKinds;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -27,6 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import org.jboss.forge.furnace.ContainerStatus;
 import org.jboss.forge.furnace.Furnace;
@@ -36,7 +31,10 @@ import org.jboss.forge.furnace.addons.AddonView;
 import org.jboss.forge.furnace.impl.addons.AddonLifecycleManager;
 import org.jboss.forge.furnace.impl.addons.AddonRegistryImpl;
 import org.jboss.forge.furnace.impl.addons.AddonRepositoryImpl;
+import org.jboss.forge.furnace.impl.addons.DirtyCheckableRepository;
+import org.jboss.forge.furnace.impl.addons.DirtyChecker;
 import org.jboss.forge.furnace.impl.addons.ImmutableAddonRepository;
+import org.jboss.forge.furnace.impl.addons.VersionDirtyChecker;
 import org.jboss.forge.furnace.impl.lock.LockManagerImpl;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.lock.LockMode;
@@ -77,8 +75,7 @@ public class FurnaceImpl implements Furnace
 
    private ClassLoader loader;
 
-   private final List<AddonRepository> repositories = new ArrayList<>();
-   private final Map<AddonRepository, Integer> lastRepoVersionSeen = new HashMap<>();
+   private final Set<RepositoryEntry> repositories = new HashSet<>();
 
    private final LockManager lock = new LockManagerImpl();
 
@@ -87,7 +84,6 @@ public class FurnaceImpl implements Furnace
    private int registryCount = 0;
    boolean firedAfterStart = false;
 
-   private WatchService watcher;
    private AddonCompatibilityStrategy addonCompatibilityStrategy = AddonCompatibilityStrategies.STRICT;
 
    public FurnaceImpl()
@@ -145,15 +141,6 @@ public class FurnaceImpl implements Furnace
           * If enabled, prints a LOT of debug logging from JBoss Modules.
           */
          enableLogging();
-      }
-
-      try
-      {
-         watcher = FileSystems.getDefault().newWatchService();
-      }
-      catch (IOException e)
-      {
-         logger.log(Level.WARNING, "File monitoring could not be started.", e);
       }
    }
 
@@ -245,30 +232,15 @@ public class FurnaceImpl implements Furnace
                   boolean dirty = false;
                   if (!getLifecycleManager().isStartingAddons())
                   {
-                     for (AddonRepository repository : repositories)
+                     for (RepositoryEntry entry : repositories)
                      {
-                        int repoVersion = repository.getVersion();
-                        if (repoVersion > lastRepoVersionSeen.get(repository))
+                        DirtyChecker dirtyChecker = entry.getDirtyChecker();
+                        if (dirtyChecker.isDirty())
                         {
-                           logger.log(Level.FINE, "Detected changes in repository [" + repository + "].");
-                           lastRepoVersionSeen.put(repository, repoVersion);
+                           logger.log(Level.FINE, "Detected changes in repository [" + entry.getRepository() + "].");
                            dirty = true;
                         }
-                     }
-
-                     WatchKey key = watcher.poll();
-                     while (key != null)
-                     {
-                        List<WatchEvent<?>> events = key.pollEvents();
-                        if (!events.isEmpty())
-                        {
-                           logger.log(Level.FINE, "Detected changes in repository ["
-                                    + events.iterator().next().context()
-                                    + "].");
-                           dirty = true;
-                        }
-                        key.reset();
-                        key = watcher.poll();
+                        dirtyChecker.resetDirtyStatus();
                      }
 
                      if (dirty)
@@ -419,7 +391,7 @@ public class FurnaceImpl implements Furnace
    @Override
    public List<AddonRepository> getRepositories()
    {
-      return Collections.unmodifiableList(repositories);
+      return repositories.stream().map(RepositoryEntry::getRepository).collect(Collectors.toList());
    }
 
    @Override
@@ -432,34 +404,6 @@ public class FurnaceImpl implements Furnace
 
       if (mode.isImmutable())
          repository = new ImmutableAddonRepository(repository);
-      else
-      {
-         try
-         {
-            if (watcher != null)
-            {
-               if ((directory.exists() && directory.isDirectory()) || directory.mkdirs())
-               {
-                  directory.toPath().register(watcher,
-                           StandardWatchEventKinds.ENTRY_MODIFY,
-                           StandardWatchEventKinds.ENTRY_CREATE,
-                           StandardWatchEventKinds.ENTRY_DELETE,
-                           StandardWatchEventKinds.OVERFLOW);
-                  logger.log(Level.FINE, "Monitoring repository [" + directory.toString() + "] for file changes.");
-               }
-               else
-               {
-                  logger.log(Level.WARNING, "Cannot monitor repository [" + directory
-                           + "] for changes because it is not a directory.");
-               }
-            }
-         }
-         catch (IOException e)
-         {
-            logger.log(Level.WARNING, "Could not monitor repository [" + directory.toString() + "] for file changes.",
-                     e);
-         }
-      }
       return addRepository(repository);
    }
 
@@ -468,11 +412,23 @@ public class FurnaceImpl implements Furnace
    {
       Assert.notNull(repository, "Addon repository must not be null.");
 
-      for (AddonRepository registeredRepo : repositories)
+      final DirtyChecker dirtyChecker;
+      if (repository instanceof DirtyCheckableRepository)
       {
-         if (registeredRepo.getRootDirectory().equals(repository.getRootDirectory()))
+         dirtyChecker = ((DirtyCheckableRepository) repository).createDirtyChecker();
+      }
+      else
+      {
+         dirtyChecker = new VersionDirtyChecker(repository::getVersion);
+      }
+
+      RepositoryEntry newEntry = new RepositoryEntry(repository, dirtyChecker);
+
+      for (RepositoryEntry entry : repositories)
+      {
+         if (entry.equals(newEntry))
          {
-            return registeredRepo;
+            return entry.getRepository();
          }
       }
 
@@ -489,8 +445,7 @@ public class FurnaceImpl implements Furnace
                AddonRegistry registry = getAddonRegistry();
                ((AddonRegistryImpl) registry).addRepository(repository);
             }
-            lastRepoVersionSeen.put(repository, 0);
-            repositories.add(repository);
+            repositories.add(newEntry);
             return null;
          }
       });
@@ -621,21 +576,19 @@ public class FurnaceImpl implements Furnace
          registation.removeListener();
       }
       registeredListeners.clear();
-      lastRepoVersionSeen.clear();
       loader = null;
       manager.dispose();
       manager = null;
-      if(watcher!=null)
+      for (RepositoryEntry entry : repositories)
       {
          try
          {
-            watcher.close();
+            entry.getDirtyChecker().close();
          }
-         catch (IOException e)
+         catch (Exception e)
          {
             logger.log(Level.SEVERE, "Error occurred.", e);
          }
-         watcher = null;
       }
       repositories.clear();
       executor.shutdownNow();
@@ -687,6 +640,46 @@ public class FurnaceImpl implements Furnace
       for (ContainerLifecycleListener listener : registeredListeners)
       {
          listener.afterStop(this);
+      }
+   }
+
+   private static class RepositoryEntry
+   {
+      private final AddonRepository repository;
+
+      private final DirtyChecker dirtyChecker;
+
+      public RepositoryEntry(AddonRepository repository, DirtyChecker dirtyChecker)
+      {
+         this.repository = repository;
+         this.dirtyChecker = dirtyChecker;
+      }
+
+      public AddonRepository getRepository()
+      {
+         return repository;
+      }
+
+      public DirtyChecker getDirtyChecker()
+      {
+         return dirtyChecker;
+      }
+
+      @Override
+      public boolean equals(Object o)
+      {
+         if (this == o) return true;
+         if (o == null || getClass() != o.getClass()) return false;
+
+         RepositoryEntry that = (RepositoryEntry) o;
+
+         return repository.getRootDirectory().equals(that.repository.getRootDirectory());
+      }
+
+      @Override
+      public int hashCode()
+      {
+         return repository.hashCode();
       }
    }
 }

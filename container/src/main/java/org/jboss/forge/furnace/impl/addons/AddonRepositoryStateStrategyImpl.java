@@ -290,4 +290,9 @@ public final class AddonRepositoryStateStrategyImpl extends AbstractFileSystemAd
    {
       version++;
    }
+
+   @Override
+   public DirtyChecker createDirtyChecker() {
+      return new VersionDirtyChecker(this::getVersion);
+   }
 }

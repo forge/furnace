@@ -19,7 +19,7 @@ import java.io.File;
  * @author <a href="mailto:koen.aers@gmail.com">Koen Aers</a>
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  */
-public interface MutableAddonRepositoryStorageStrategy extends AddonRepositoryStorageStrategy
+public interface MutableAddonRepositoryStorageStrategy extends AddonRepositoryStorageStrategy, DirtyCheckableRepository
 {
    public boolean deploy(AddonId addon, Iterable<AddonDependencyEntry> dependencies, Iterable<File> resourceJars);
 

@@ -325,4 +325,9 @@ public final class AddonRepositoryStorageStrategyImpl extends AbstractFileSystem
 
       return installed;
    }
+
+   @Override
+   public DirtyChecker createDirtyChecker() {
+      return new FileSystemDirtyChecker(addonDir);
+   }
 }

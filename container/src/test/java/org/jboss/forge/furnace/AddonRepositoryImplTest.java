@@ -296,5 +296,11 @@ public class AddonRepositoryImplTest
       {
          return version.get();
       }
+
+      @Override
+      public DirtyChecker createDirtyChecker()
+      {
+         return new VersionDirtyChecker(this::getVersion);
+      }
    }
 }

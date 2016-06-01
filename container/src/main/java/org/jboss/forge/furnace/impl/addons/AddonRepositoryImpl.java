@@ -28,7 +28,7 @@ import org.jboss.forge.furnace.versions.Versions;
  * @author <a href="mailto:koen.aers@gmail.com">Koen Aers</a>
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  */
-public final class AddonRepositoryImpl implements MutableAddonRepository
+public final class AddonRepositoryImpl implements MutableAddonRepository, DirtyCheckableRepository
 {
 
    private static final String DEFAULT_ADDON_DIR = ".forge/addons";
@@ -216,5 +216,11 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
    public Date getLastModified()
    {
       return new Date(addonDir.lastModified());
+   }
+
+   @Override
+   public DirtyChecker createDirtyChecker()
+   {
+      return new CompositeDirtyChecker(storageRepository.createDirtyChecker(), stateRepository.createDirtyChecker());
    }
 }

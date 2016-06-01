@@ -16,7 +16,7 @@ import org.jboss.forge.furnace.addons.AddonId;
  * @author <a href="mailto:koen.aers@gmail.com">Koen Aers</a>
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  */
-public interface MutableAddonRepositoryStateStrategy extends AddonRepositoryStateStrategy
+public interface MutableAddonRepositoryStateStrategy extends AddonRepositoryStateStrategy, DirtyCheckableRepository
 {
    public boolean disable(final AddonId addon);
 
