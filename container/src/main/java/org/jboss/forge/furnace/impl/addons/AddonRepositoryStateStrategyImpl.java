@@ -1,10 +1,22 @@
 /*
- * Copyright 2012 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2016 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Eclipse Public License version 1.0, available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.jboss.forge.furnace.impl.addons;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonCompatibilityStrategy;
@@ -17,13 +29,6 @@ import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.parser.xml.XMLParserException;
 
-import java.io.*;
-import java.nio.file.StandardOpenOption;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  * Used to perform Addon registration operations.
  *
@@ -31,7 +36,8 @@ import java.util.logging.Logger;
  * @author <a href="mailto:koen.aers@gmail.com">Koen Aers</a>
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  */
-public final class AddonRepositoryStateStrategyImpl extends AbstractFileSystemAddonRepository implements MutableAddonRepositoryStateStrategy
+public final class AddonRepositoryStateStrategyImpl extends AbstractFileSystemAddonRepository
+         implements MutableAddonRepositoryStateStrategy
 {
 
    private static final Logger logger = Logger.getLogger(AddonRepositoryStateStrategyImpl.class.getName());

@@ -1,29 +1,28 @@
 /*
- * Copyright 2012 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2016 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Eclipse Public License version 1.0, available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.jboss.forge.furnace.impl.addons;
 
+import java.util.List;
+
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.versions.Version;
 
-import java.util.List;
-
 /**
- * Used to perform {@link Addon} registration operations.
+ * Implementations should handle the state of the installed and deployed add-ons
  * 
- * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
- * @author <a href="mailto:koen.aers@gmail.com">Koen Aers</a>
- * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
+ * @author <a href="bsideup@gmail.com">Sergei Egorov</a>
+ * @see AddonRepositoryImpl
  */
 public interface AddonRepositoryStateStrategy
 {
    /**
-    * Returns <code>true</code> if the given {@link AddonId} is enabled in this {@link AddonRepositoryStateStrategy}; otherwise,
-    * returns <code>false</code>.
+    * Returns <code>true</code> if the given {@link AddonId} is enabled in this {@link AddonRepositoryStateStrategy};
+    * otherwise, returns <code>false</code>.
     */
    public boolean isEnabled(final AddonId addon);
 

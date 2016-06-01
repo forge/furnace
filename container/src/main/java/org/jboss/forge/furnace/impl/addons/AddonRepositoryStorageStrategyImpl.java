@@ -1,10 +1,23 @@
 /*
- * Copyright 2012 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2016 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Eclipse Public License version 1.0, available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.jboss.forge.furnace.impl.addons;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.impl.util.Files;
@@ -19,20 +32,14 @@ import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.parser.xml.XMLParserException;
 
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  * Used to perform Addon installation operations.
  * 
- * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
- * @author <a href="mailto:koen.aers@gmail.com">Koen Aers</a>
- * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
+ * @author <a href="bsideup@gmail.com">Sergei Egorov</a>
+ * @see AddonRepositoryImpl
  */
-public final class AddonRepositoryStorageStrategyImpl extends AbstractFileSystemAddonRepository implements MutableAddonRepositoryStorageStrategy
+public final class AddonRepositoryStorageStrategyImpl extends AbstractFileSystemAddonRepository
+         implements MutableAddonRepositoryStorageStrategy
 {
    /**
     * Setting this system property to <code>true</code> allows Furnace to deploy addons as symlinks
@@ -51,7 +58,8 @@ public final class AddonRepositoryStorageStrategyImpl extends AbstractFileSystem
    private static final String DEPENDENCY_TAG_NAME = "dependency";
    private static final String DEPENDENCIES_TAG_NAME = "dependencies";
 
-   public AddonRepositoryStorageStrategyImpl(LockManager lock, File addonDir) {
+   public AddonRepositoryStorageStrategyImpl(LockManager lock, File addonDir)
+   {
       super(lock, addonDir);
    }
 

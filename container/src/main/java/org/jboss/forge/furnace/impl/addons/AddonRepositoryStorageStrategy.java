@@ -1,25 +1,24 @@
 /*
- * Copyright 2012 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2016 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Eclipse Public License version 1.0, available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.jboss.forge.furnace.impl.addons;
 
-import org.jboss.forge.furnace.addons.Addon;
-import org.jboss.forge.furnace.addons.AddonId;
-import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
-
 import java.io.File;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.forge.furnace.addons.Addon;
+import org.jboss.forge.furnace.addons.AddonId;
+import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
+
 /**
- * Used to perform {@link Addon} installation/registration operations.
+ * Implementations should provide a strategy for handling {@link Addon} storage of addons
  * 
- * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
- * @author <a href="mailto:koen.aers@gmail.com">Koen Aers</a>
- * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
+ * @author <a href="bsideup@gmail.com">Sergei Egorov</a>
+ * @see AddonRepositoryImpl
  */
 public interface AddonRepositoryStorageStrategy
 {
@@ -44,8 +43,8 @@ public interface AddonRepositoryStorageStrategy
    public List<File> getAddonResources(AddonId addon);
 
    /**
-    * Returns <code>true</code> if the given {@link AddonId} is deployed in this {@link AddonRepositoryStorageStrategy}; otherwise,
-    * returns <code>false</code>.
+    * Returns <code>true</code> if the given {@link AddonId} is deployed in this {@link AddonRepositoryStorageStrategy};
+    * otherwise, returns <code>false</code>.
     */
    public boolean isDeployed(AddonId addon);
 
