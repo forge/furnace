@@ -11,7 +11,7 @@ import org.jboss.forge.furnace.impl.util.Files;
 import org.jboss.forge.furnace.lock.LockManager;
 import org.jboss.forge.furnace.lock.LockMode;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
-import org.jboss.forge.furnace.repositories.MutableAddonStorageRepository;
+import org.jboss.forge.furnace.repositories.MutableAddonRepositoryStorageStrategy;
 import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.util.OperatingSystemUtils;
 import org.jboss.forge.furnace.util.Streams;
@@ -33,14 +33,14 @@ import java.util.logging.Logger;
  * @author <a href="mailto:koen.aers@gmail.com">Koen Aers</a>
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  */
-public final class AddonStorageRepositoryImpl extends AbstractFileSystemAddonRepository implements MutableAddonStorageRepository
+public final class AddonRepositoryStorageStrategyImpl extends AbstractFileSystemAddonRepository implements MutableAddonRepositoryStorageStrategy
 {
    /**
     * Setting this system property to <code>true</code> allows Furnace to deploy addons as symlinks
     */
    private static final String DEPLOY_AS_SYMLINK_SYSTEM_PROPERTY = "furnace.addon.deploy_as_symlink";
 
-   private static final Logger logger = Logger.getLogger(AddonStorageRepositoryImpl.class.getName());
+   private static final Logger logger = Logger.getLogger(AddonRepositoryStorageStrategyImpl.class.getName());
 
    private static final String ATTR_EXPORT = "export";
    private static final String ATTR_NAME = "name";
@@ -52,7 +52,7 @@ public final class AddonStorageRepositoryImpl extends AbstractFileSystemAddonRep
    private static final String DEPENDENCY_TAG_NAME = "dependency";
    private static final String DEPENDENCIES_TAG_NAME = "dependencies";
 
-   public AddonStorageRepositoryImpl(LockManager lock, File addonDir) {
+   public AddonRepositoryStorageStrategyImpl(LockManager lock, File addonDir) {
       super(lock, addonDir);
    }
 

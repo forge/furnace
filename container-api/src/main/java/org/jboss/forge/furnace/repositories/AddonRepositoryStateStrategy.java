@@ -19,10 +19,10 @@ import java.util.List;
  * @author <a href="mailto:koen.aers@gmail.com">Koen Aers</a>
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  */
-public interface AddonStateRepository
+public interface AddonRepositoryStateStrategy
 {
    /**
-    * Returns <code>true</code> if the given {@link AddonId} is enabled in this {@link AddonStateRepository}; otherwise,
+    * Returns <code>true</code> if the given {@link AddonId} is enabled in this {@link AddonRepositoryStateStrategy}; otherwise,
     * returns <code>false</code>.
     */
    public boolean isEnabled(final AddonId addon);
@@ -44,7 +44,7 @@ public interface AddonStateRepository
    public List<AddonId> listEnabledCompatibleWithVersion(final Version version);
 
    /**
-    * Returns the runtime change version of this {@link AddonStateRepository}.
+    * Returns the runtime change version of this {@link AddonRepositoryStateStrategy}.
     */
    public int getVersion();
 }

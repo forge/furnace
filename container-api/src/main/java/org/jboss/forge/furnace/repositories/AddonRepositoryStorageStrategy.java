@@ -20,7 +20,7 @@ import java.util.Set;
  * @author <a href="mailto:koen.aers@gmail.com">Koen Aers</a>
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  */
-public interface AddonStorageRepository
+public interface AddonRepositoryStorageStrategy
 {
    /**
     * Get the base installation directory of the given {@link AddonId}.
@@ -43,7 +43,7 @@ public interface AddonStorageRepository
    public List<File> getAddonResources(AddonId addon);
 
    /**
-    * Returns <code>true</code> if the given {@link AddonId} is deployed in this {@link AddonStorageRepository}; otherwise,
+    * Returns <code>true</code> if the given {@link AddonId} is deployed in this {@link AddonRepositoryStorageStrategy}; otherwise,
     * returns <code>false</code>.
     */
    public boolean isDeployed(AddonId addon);

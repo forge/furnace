@@ -18,7 +18,7 @@ import org.jboss.forge.furnace.addons.Addon;
  * @author <a href="mailto:koen.aers@gmail.com">Koen Aers</a>
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  */
-public interface AddonRepository extends AddonStorageRepository, AddonStateRepository
+public interface AddonRepository extends AddonRepositoryStorageStrategy, AddonRepositoryStateStrategy
 {
 
    /**

@@ -16,7 +16,7 @@ import org.jboss.forge.furnace.addons.Addon;
  * @author <a href="mailto:koen.aers@gmail.com">Koen Aers</a>
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  */
-public interface MutableAddonRepository extends AddonRepository, MutableAddonStateRepository, MutableAddonStorageRepository
+public interface MutableAddonRepository extends AddonRepository, MutableAddonRepositoryStateStrategy, MutableAddonRepositoryStorageStrategy
 {
 
 }

@@ -10,7 +10,7 @@ import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonCompatibilityStrategy;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.lock.LockMode;
-import org.jboss.forge.furnace.repositories.MutableAddonStateRepository;
+import org.jboss.forge.furnace.repositories.MutableAddonRepositoryStateStrategy;
 import org.jboss.forge.furnace.util.Streams;
 import org.jboss.forge.furnace.versions.Version;
 import org.jboss.forge.furnace.versions.Versions;
@@ -32,10 +32,10 @@ import java.util.logging.Logger;
  * @author <a href="mailto:koen.aers@gmail.com">Koen Aers</a>
  * @author <a href="mailto:ggastald@redhat.com">George Gastaldi</a>
  */
-public final class AddonStateRepositoryImpl extends AbstractFileSystemAddonRepository implements MutableAddonStateRepository
+public final class AddonRepositoryStateStrategyImpl extends AbstractFileSystemAddonRepository implements MutableAddonRepositoryStateStrategy
 {
 
-   private static final Logger logger = Logger.getLogger(AddonStateRepositoryImpl.class.getName());
+   private static final Logger logger = Logger.getLogger(AddonRepositoryStateStrategyImpl.class.getName());
 
    private static final String ATTR_API_VERSION = "api-version";
    private static final String ATTR_NAME = "name";
@@ -47,7 +47,7 @@ public final class AddonStateRepositoryImpl extends AbstractFileSystemAddonRepos
 
    private int version = 1;
 
-   public AddonStateRepositoryImpl(Furnace furnace, File addonDir)
+   public AddonRepositoryStateStrategyImpl(Furnace furnace, File addonDir)
    {
       super(furnace.getLockManager(), addonDir);
       this.furnace = furnace;

@@ -19,8 +19,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.impl.FurnaceImpl;
 import org.jboss.forge.furnace.impl.addons.AddonRepositoryImpl;
-import org.jboss.forge.furnace.impl.addons.AddonStateRepositoryImpl;
-import org.jboss.forge.furnace.impl.addons.AddonStorageRepositoryImpl;
+import org.jboss.forge.furnace.impl.addons.AddonRepositoryStateStrategyImpl;
+import org.jboss.forge.furnace.impl.addons.AddonRepositoryStorageStrategyImpl;
 import org.jboss.forge.furnace.impl.util.Files;
 import org.jboss.forge.furnace.repositories.*;
 import org.jboss.forge.furnace.util.OperatingSystemUtils;
@@ -164,12 +164,12 @@ public class AddonRepositoryImplTest
    {
       Furnace furnace = new FurnaceImpl();
       File temp = OperatingSystemUtils.createTempDir();
-      MutableAddonStorageRepository storageRepository = new AddonStorageRepositoryImpl(furnace.getLockManager(), temp);
+      MutableAddonRepositoryStorageStrategy storageRepository = new AddonRepositoryStorageStrategyImpl(furnace.getLockManager(), temp);
 
-      MutableAddonStateRepository stateRepository = new TestInMemoryAddonStateRepository();
+      MutableAddonRepositoryStateStrategy stateRepository = new TestInMemoryAddonRepositoryStateStrategy();
       MutableAddonRepository repository = new AddonRepositoryImpl(storageRepository, stateRepository, temp);
 
-      AddonId addon = TestInMemoryAddonStateRepository.TEST_ADDON;
+      AddonId addon = TestInMemoryAddonRepositoryStateStrategy.TEST_ADDON;
 
       repository.enable(addon);
       Assert.assertTrue(repository.isEnabled(addon));
@@ -186,12 +186,12 @@ public class AddonRepositoryImplTest
    {
       Furnace furnace = new FurnaceImpl();
 
-      MutableAddonStateRepository stateRepository = new TestInMemoryAddonStateRepository();
+      MutableAddonRepositoryStateStrategy stateRepository = new TestInMemoryAddonRepositoryStateStrategy();
 
       MutableAddonRepository firstRepo = createTempRepository(furnace, stateRepository);
       MutableAddonRepository secondRepo = createTempRepository(furnace, stateRepository);
 
-      AddonId addon = TestInMemoryAddonStateRepository.TEST_ADDON;
+      AddonId addon = TestInMemoryAddonRepositoryStateStrategy.TEST_ADDON;
 
       Assert.assertFalse(firstRepo.isEnabled(addon));
       Assert.assertFalse(secondRepo.isEnabled(addon));
@@ -208,15 +208,15 @@ public class AddonRepositoryImplTest
       Furnace furnace = new FurnaceImpl();
 
       File temp = OperatingSystemUtils.createTempDir();
-      MutableAddonStorageRepository storageRepository = new AddonStorageRepositoryImpl(furnace.getLockManager(), temp);
+      MutableAddonRepositoryStorageStrategy storageRepository = new AddonRepositoryStorageStrategyImpl(furnace.getLockManager(), temp);
 
-      AddonStateRepositoryImpl firstStateRepository = new AddonStateRepositoryImpl(furnace, OperatingSystemUtils.createTempDir());
+      AddonRepositoryStateStrategyImpl firstStateRepository = new AddonRepositoryStateStrategyImpl(furnace, OperatingSystemUtils.createTempDir());
       MutableAddonRepository firstRepo = new AddonRepositoryImpl(storageRepository, firstStateRepository, temp);
 
-      AddonStateRepositoryImpl secondStateRepository = new AddonStateRepositoryImpl(furnace, OperatingSystemUtils.createTempDir());
+      AddonRepositoryStateStrategyImpl secondStateRepository = new AddonRepositoryStateStrategyImpl(furnace, OperatingSystemUtils.createTempDir());
       MutableAddonRepository secondRepo = new AddonRepositoryImpl(storageRepository, secondStateRepository, temp);
 
-      AddonId addon = TestInMemoryAddonStateRepository.TEST_ADDON;
+      AddonId addon = TestInMemoryAddonRepositoryStateStrategy.TEST_ADDON;
 
       Assert.assertFalse(firstRepo.isDeployed(addon));
       Assert.assertFalse(secondRepo.isDeployed(addon));
@@ -233,15 +233,15 @@ public class AddonRepositoryImplTest
       Assert.assertFalse(secondRepo.isEnabled(addon));
    }
 
-   private static AddonRepositoryImpl createTempRepository(Furnace furnace, MutableAddonStateRepository stateRepository)
+   private static AddonRepositoryImpl createTempRepository(Furnace furnace, MutableAddonRepositoryStateStrategy stateRepository)
    {
       File temp = OperatingSystemUtils.createTempDir();
-      MutableAddonStorageRepository storageRepository = new AddonStorageRepositoryImpl(furnace.getLockManager(), temp);
+      MutableAddonRepositoryStorageStrategy storageRepository = new AddonRepositoryStorageStrategyImpl(furnace.getLockManager(), temp);
 
       return new AddonRepositoryImpl(storageRepository, stateRepository, temp);
    }
 
-   private static class TestInMemoryAddonStateRepository implements MutableAddonStateRepository
+   private static class TestInMemoryAddonRepositoryStateStrategy implements MutableAddonRepositoryStateStrategy
    {
       static final AddonId TEST_ADDON = AddonId.from("com.example.addon", "1.2.3");
 

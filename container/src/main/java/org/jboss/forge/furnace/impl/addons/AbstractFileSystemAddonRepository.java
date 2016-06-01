@@ -80,7 +80,7 @@ public abstract class AbstractFileSystemAddonRepository
             return false;
         if (getClass() != obj.getClass())
             return false;
-        AddonStateRepositoryImpl other = (AddonStateRepositoryImpl) obj;
+        AddonRepositoryStateStrategyImpl other = (AddonRepositoryStateStrategyImpl) obj;
         if (addonDir == null)
         {
             if (other.addonDir != null)

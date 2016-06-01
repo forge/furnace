@@ -22,7 +22,7 @@ import org.jboss.forge.furnace.versions.Versions;
 
 /**
  * An immutable {@link MutableAddonRepository} implementation that delegates to a wrapped instances of
- * {@link MutableAddonStorageRepository} and {@link MutableAddonStateRepository}.
+ * {@link MutableAddonRepositoryStorageStrategy} and {@link MutableAddonRepositoryStateStrategy}.
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * @author <a href="mailto:koen.aers@gmail.com">Koen Aers</a>
@@ -65,20 +65,20 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
       return Versions.isApiCompatible(runtimeVersion, entry.getApiVersion());
    }
 
-   private final MutableAddonStorageRepository storageRepository;
+   private final MutableAddonRepositoryStorageStrategy storageRepository;
 
-   private final MutableAddonStateRepository stateRepository;
+   private final MutableAddonRepositoryStateStrategy stateRepository;
 
    private final File addonDir;
 
    private AddonRepositoryImpl(Furnace furnace, File addonDir)
    {
-      this(new AddonStorageRepositoryImpl(furnace.getLockManager(), addonDir),
-              new AddonStateRepositoryImpl(furnace, addonDir), addonDir);
+      this(new AddonRepositoryStorageStrategyImpl(furnace.getLockManager(), addonDir),
+              new AddonRepositoryStateStrategyImpl(furnace, addonDir), addonDir);
    }
 
-   public AddonRepositoryImpl(MutableAddonStorageRepository storageRepository,
-                              MutableAddonStateRepository stateRepository, File addonDir)
+   public AddonRepositoryImpl(MutableAddonRepositoryStorageStrategy storageRepository,
+                              MutableAddonRepositoryStateStrategy stateRepository, File addonDir)
    {
       Assert.notNull(addonDir, "Addon directory must not be null.");
 
