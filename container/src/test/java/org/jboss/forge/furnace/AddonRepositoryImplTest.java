@@ -18,9 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.impl.FurnaceImpl;
-import org.jboss.forge.furnace.impl.addons.AddonRepositoryImpl;
-import org.jboss.forge.furnace.impl.addons.AddonRepositoryStateStrategyImpl;
-import org.jboss.forge.furnace.impl.addons.AddonRepositoryStorageStrategyImpl;
+import org.jboss.forge.furnace.impl.addons.*;
 import org.jboss.forge.furnace.impl.util.Files;
 import org.jboss.forge.furnace.repositories.*;
 import org.jboss.forge.furnace.util.OperatingSystemUtils;

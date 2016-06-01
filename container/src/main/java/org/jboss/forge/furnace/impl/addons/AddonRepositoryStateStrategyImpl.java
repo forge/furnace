@@ -10,7 +10,6 @@ import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.AddonCompatibilityStrategy;
 import org.jboss.forge.furnace.addons.AddonId;
 import org.jboss.forge.furnace.lock.LockMode;
-import org.jboss.forge.furnace.repositories.MutableAddonRepositoryStateStrategy;
 import org.jboss.forge.furnace.util.Streams;
 import org.jboss.forge.furnace.versions.Version;
 import org.jboss.forge.furnace.versions.Versions;
