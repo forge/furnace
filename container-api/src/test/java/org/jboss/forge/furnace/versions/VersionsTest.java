@@ -52,6 +52,17 @@ public class VersionsTest
    }
 
    @Test
+   public void testVersionRangeSame() throws Exception
+   {
+      VersionRange range = Versions.parseVersionRange("[7]");
+
+      Assert.assertEquals(SingleVersion.valueOf("7"), range.getMin());
+      Assert.assertEquals(SingleVersion.valueOf("7"), range.getMax());
+
+      Assert.assertEquals("[7]", range.toString());
+   }
+
+   @Test
    public void testVersionSnapshot() throws Exception
    {
       Version nonSnapshot = SingleVersion.valueOf("1.1.1");

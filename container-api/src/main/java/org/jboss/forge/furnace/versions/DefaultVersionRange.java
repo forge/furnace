@@ -70,7 +70,7 @@ public class DefaultVersionRange implements VersionRange
    @Override
    public VersionRange getIntersection(VersionRange... ranges)
    {
-      List<VersionRange> list = new ArrayList<VersionRange>();
+      List<VersionRange> list = new ArrayList<>();
       for (VersionRange range : ranges)
       {
          list.add(range);
@@ -207,10 +207,17 @@ public class DefaultVersionRange implements VersionRange
       {
          buf.append(getMin().toString());
       }
-      buf.append(",");
       if (getMax() != null)
       {
-         buf.append(getMax().toString());
+         if (!getMax().equals(getMin()))
+         {
+            buf.append(",");
+            buf.append(getMax().toString());
+         }
+      }
+      else
+      {
+         buf.append(",");
       }
       buf.append(isMaxInclusive() ? "]" : ")");
 
