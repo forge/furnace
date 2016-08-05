@@ -1,0 +1,85 @@
+<settings>
+
+<mirrors>
+   <mirror>
+      <id>jbt-4.0</id>
+      <mirrorOf>http://download.jboss.org/jbosstools/updates/nightly/core/4.0.juno,http://download.jboss.org/jbosstools/updates/nightly/coretests/4.0.juno</mirrorOf>
+      <url>http://jawa46.mw.lab.eng.brq.redhat.com:8081/nexus/content/groups/jbt-4.0</url>
+      <layout>p2</layout>
+      <mirrorOfLayouts>p2</mirrorOfLayouts>
+   </mirror>
+
+   <mirror>
+      <id>jbt-4.1</id>
+      <mirrorOf>http://download.jboss.org/jbosstools/updates/nightly/core/trunk,http://download.jboss.org/jbosstools/updates/nightly/coretests/trunk</mirrorOf>
+      <url>http://jawa46.mw.lab.eng.brq.redhat.com:8081/nexus/content/groups/jbt-trunk</url>
+      <layout>p2</layout>
+      <mirrorOfLayouts>p2</mirrorOfLayouts>
+   </mirror>
+
+   <mirror>
+	<id>jawa-central</id>
+	<url>http://jawa46.mw.lab.eng.brq.redhat.com:8081/nexus/content/repositories/central</url>
+	<mirrorOf>http://repo.maven.apache.org/maven2</mirrorOf>
+   </mirror>
+
+   <mirror>
+	<id>jawa-jboss-releases</id>
+	<url>http://jawa46.mw.lab.eng.brq.redhat.com:8081/nexus/content/repositories/jboss-nexus-releases</url>
+	<mirrorOf>http://repository.jboss.org/nexus/content/repositories/releases</mirrorOf>
+   </mirror>
+
+   <mirror>
+	<id>jawa-jboss-snapshots</id>
+	<url>http://jawa46.mw.lab.eng.brq.redhat.com:8081/nexus/content/repositories/jboss-nexus-snapshots</url>
+	<mirrorOf>http://repository.jboss.org/nexus/content/repositories/snapshots</mirrorOf>
+   </mirror>
+
+</mirrors>
+
+<profiles>
+
+  <profile>
+    <id>jboss-maven-repos</id>
+    <repositories>
+      <repository>
+        <id>jboss-releases</id>
+        <url>https://repository.jboss.org/nexus/content/repositories/releases</url>
+        <releases><enabled>true</enabled></releases> <!-- Default: true -->
+      </repository>
+      <repository>
+        <id>jboss-snapshots-repository</id>
+        <url>https://repository.jboss.org/nexus/content/repositories/snapshots/</url>
+        <snapshots><enabled>true</enabled></snapshots> <!-- Default: false -->
+      </repository>
+      <repository>
+        <id>jbosstools-experiments</id>
+        <url>https://repository.jboss.org/nexus/content/repositories/jbosstools-experiments/</url>
+        <releases><enabled>true</enabled></releases> <!-- Default: true -->
+        <snapshots><enabled>true</enabled></snapshots> <!-- Default: true -->
+      </repository>
+    </repositories>
+      <pluginRepositories>
+        <pluginRepository>
+          <id>jboss-public-repository</id>
+          <name>JBoss Public</name>
+          <url>https://repository.jboss.org/nexus/content/groups/public-jboss/</url>
+          <releases>
+            <enabled>true</enabled>
+            <updatePolicy>never</updatePolicy>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+            <updatePolicy>daily</updatePolicy>
+          </snapshots>
+        </pluginRepository>
+      </pluginRepositories>
+  </profile>
+</profiles>
+
+<activeProfiles>
+    <activeProfile>jboss-maven-repos</activeProfile>
+</activeProfiles>
+
+</settings>
+

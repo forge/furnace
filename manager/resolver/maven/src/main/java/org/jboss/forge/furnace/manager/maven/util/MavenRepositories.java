@@ -30,13 +30,19 @@ public class MavenRepositories
    {
       Set<RemoteRepository> remoteRepos = new HashSet<>();
       remoteRepos.addAll(container.getEnabledRepositoriesFromProfile(settings));
-      // If no remote repositories found or no mirrors found, add central
-      if (remoteRepos.isEmpty() || settings.getMirrors().isEmpty())
+      // If no remote repositories found or no mirrors to central found, add central
+      if (remoteRepos.isEmpty() || !hasCentralMirror(settings))
       {
          // Add central
          remoteRepos.add(convertToMavenRepo("central", MAVEN_CENTRAL_REPO, settings));
       }
       return new ArrayList<>(remoteRepos);
+   }
+
+   static boolean hasCentralMirror(Settings settings)
+   {
+      return settings.getMirrors().stream()
+               .anyMatch(m -> "central".equals(m.getMirrorOf()) || MAVEN_CENTRAL_REPO.equals(m.getMirrorOf()));
    }
 
    static RemoteRepository convertToMavenRepo(final String id, String url, final Settings settings)
@@ -49,7 +55,8 @@ public class MavenRepositories
                   .addPassword(activeProxy.getPassword()).build();
          remoteRepositoryBuilder.setProxy(new org.eclipse.aether.repository.Proxy(activeProxy.getProtocol(),
                   activeProxy
-                           .getHost(), activeProxy.getPort(), auth));
+                           .getHost(),
+                  activeProxy.getPort(), auth));
       }
       return remoteRepositoryBuilder.build();
    }
