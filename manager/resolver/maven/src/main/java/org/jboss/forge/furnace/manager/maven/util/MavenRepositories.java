@@ -42,7 +42,10 @@ public class MavenRepositories
    static boolean hasCentralMirror(Settings settings)
    {
       return settings.getMirrors().stream()
-               .anyMatch(m -> "central".equals(m.getMirrorOf()) || MAVEN_CENTRAL_REPO.equals(m.getMirrorOf()));
+               .anyMatch(m -> 
+                  "central".equals(m.getMirrorOf()) || 
+                  "*".equals(m.getMirrorOf()) ||
+                  MAVEN_CENTRAL_REPO.equals(m.getMirrorOf()));
    }
 
    static RemoteRepository convertToMavenRepo(final String id, String url, final Settings settings)
