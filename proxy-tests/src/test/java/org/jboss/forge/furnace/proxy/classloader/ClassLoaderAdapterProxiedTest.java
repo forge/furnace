@@ -6,6 +6,9 @@
  */
 package org.jboss.forge.furnace.proxy.classloader;
 
+import java.nio.file.Path;
+
+import org.jboss.forge.classloader.mock.JavaIOFactory;
 import org.jboss.forge.classloader.mock.MockService;
 import org.jboss.forge.classloader.mock.Result;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
@@ -171,4 +174,25 @@ public class ClassLoaderAdapterProxiedTest
       Assert.assertNull(internal.echo(null));
       Assert.assertNull(adapter.echo(null));
    }
+
+   @Test
+   public void testShouldNotProxyJavaNioPath() throws Exception
+   {
+      ClassLoader loader = JavaIOFactory.class.getClassLoader();
+      final JavaIOFactory internal = new JavaIOFactory();
+
+      JavaIOFactory delegate = (JavaIOFactory) Enhancer.create(JavaIOFactory.class, new LazyLoader()
+      {
+         @Override
+         public Object loadObject() throws Exception
+         {
+            return internal;
+         }
+      });
+      JavaIOFactory adapter = ClassLoaderAdapterBuilder.callingLoader(loader).delegateLoader(loader)
+               .enhance(delegate, JavaIOFactory.class);
+      Path path = adapter.getPath();
+      Assert.assertFalse(Proxies.isProxyType(path.getClass()));
+   }
+
 }

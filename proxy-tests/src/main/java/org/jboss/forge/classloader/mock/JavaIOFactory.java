@@ -7,6 +7,8 @@
 package org.jboss.forge.classloader.mock;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.jboss.forge.furnace.proxy.Proxies;
 
@@ -15,6 +17,12 @@ import org.jboss.forge.furnace.proxy.Proxies;
  */
 public class JavaIOFactory
 {
+
+   public Path getPath()
+   {
+      return Paths.get("/foo");
+   }
+
    public File getFile()
    {
       return new File("/foo");
