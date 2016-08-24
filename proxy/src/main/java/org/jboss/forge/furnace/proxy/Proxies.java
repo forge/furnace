@@ -26,8 +26,7 @@ public class Proxies
 {
    private static final Pattern JAVA_PACKAGE_REGEXP = Pattern.compile("^(java\\.).*");
    private static final Pattern JAVA_LANG_PACKAGE_REGEXP = Pattern.compile("^(java\\.lang).*");
-   private static final Pattern JAVA_IO_PACKAGE_REGEXP = Pattern.compile("^(java\\.n?io).*");
-   private static final Pattern SUN_IO_PACKAGE_REGEXP = Pattern.compile("^(sun\\.n?io).*");
+   private static final Pattern JAVA_IO_PACKAGE_REGEXP = Pattern.compile("^((sun|java)\\.n?io).*");
    private static final Pattern JAVA_NET_PACKAGE_REGEXP = Pattern.compile("^(java\\.net).*");
 
    private static MethodFilter filter = new ForgeProxyMethodFilter();
@@ -466,7 +465,6 @@ public class Proxies
       boolean result = type.isArray()
                || JAVA_LANG_PACKAGE_REGEXP.matcher(type.getName()).matches()
                || JAVA_IO_PACKAGE_REGEXP.matcher(type.getName()).matches()
-               || SUN_IO_PACKAGE_REGEXP.matcher(type.getName()).matches()
                || JAVA_NET_PACKAGE_REGEXP.matcher(type.getName()).matches()
                || type.isPrimitive();
 
