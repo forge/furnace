@@ -7,8 +7,10 @@
 package org.jboss.forge.furnace.proxy.classloader;
 
 import java.nio.file.Path;
+import java.util.logging.LogRecord;
 
 import org.jboss.forge.classloader.mock.JavaIOFactory;
+import org.jboss.forge.classloader.mock.JavaUtilLoggingFactory;
 import org.jboss.forge.classloader.mock.MockService;
 import org.jboss.forge.classloader.mock.Result;
 import org.jboss.forge.furnace.proxy.ClassLoaderAdapterBuilder;
@@ -195,4 +197,22 @@ public class ClassLoaderAdapterProxiedTest
       Assert.assertFalse(Proxies.isProxyType(path.getClass()));
    }
 
+   @Test
+   public void testShouldNotProxyJavaUtilLogging() throws Exception {
+      ClassLoader loader = JavaUtilLoggingFactory.class.getClassLoader();
+      final JavaUtilLoggingFactory internal = new JavaUtilLoggingFactory();
+
+      JavaUtilLoggingFactory delegate = (JavaUtilLoggingFactory) Enhancer.create(JavaUtilLoggingFactory.class, new LazyLoader() {
+         @Override
+         public Object loadObject() throws Exception {
+            return internal;
+         }
+      });
+
+      JavaUtilLoggingFactory adapter = ClassLoaderAdapterBuilder.callingLoader(loader).delegateLoader(loader)
+              .enhance(delegate, JavaUtilLoggingFactory.class);
+      LogRecord logRecord = adapter.getLogRecord();
+      Assert.assertFalse(Proxies.isProxyType(logRecord.getClass()));
+      Assert.assertFalse(Proxies.isProxyType(logRecord.getLevel().getClass()));
+   }
 }
