@@ -26,6 +26,7 @@ public class Proxies
 {
    private static final Pattern JAVA_PACKAGE_REGEXP = Pattern.compile("^(java\\.).*");
    private static final Pattern JAVA_LANG_PACKAGE_REGEXP = Pattern.compile("^(java\\.lang).*");
+   private static final Pattern JAVA_UTIL_LOGGING_PACKAGE_REGEXP = Pattern.compile("^(java\\.util\\.logging).*");
    private static final Pattern JAVA_IO_PACKAGE_REGEXP = Pattern.compile("^((sun|java)\\.n?io).*");
    private static final Pattern JAVA_NET_PACKAGE_REGEXP = Pattern.compile("^(java\\.net).*");
 
@@ -466,6 +467,7 @@ public class Proxies
                || JAVA_LANG_PACKAGE_REGEXP.matcher(type.getName()).matches()
                || JAVA_IO_PACKAGE_REGEXP.matcher(type.getName()).matches()
                || JAVA_NET_PACKAGE_REGEXP.matcher(type.getName()).matches()
+               || JAVA_UTIL_LOGGING_PACKAGE_REGEXP.matcher(type.getName()).matches()
                || type.isPrimitive();
 
       result = result && !(Iterable.class.getName().equals(type.getName()));
