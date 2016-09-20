@@ -19,12 +19,9 @@ import org.eclipse.aether.graph.Dependency;
  */
 public final class AddonDependencyTraverser implements DependencyTraverser
 {
-   @SuppressWarnings("unused")
-   private final String classifier;
-
    public AddonDependencyTraverser(String classifier)
    {
-      this.classifier = classifier;
+      // TODO: Remove this constructor in the future
    }
 
    @Override
