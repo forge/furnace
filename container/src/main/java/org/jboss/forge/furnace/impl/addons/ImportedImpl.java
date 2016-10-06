@@ -7,6 +7,7 @@
 package org.jboss.forge.furnace.impl.addons;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -30,8 +31,7 @@ import org.jboss.forge.furnace.util.Sets;
  */
 public class ImportedImpl<T> implements Imported<T>
 {
-   private final Map<T, ExportedInstance<T>> instanceMap = new WeakHashMap<>(
-            new IdentityHashMap<T, ExportedInstance<T>>());
+   private final Map<T, ExportedInstance<T>> instanceMap = Collections.synchronizedMap(new WeakHashMap<>());
 
    private final AddonRegistry addonRegistry;
    private final LockManager lock;
