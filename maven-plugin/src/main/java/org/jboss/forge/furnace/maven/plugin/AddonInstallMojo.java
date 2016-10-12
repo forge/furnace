@@ -104,6 +104,7 @@ public class AddonInstallMojo extends AbstractMojo
          }
          catch (IOException e)
          {
+            forge.close();
             throw new MojoExecutionException("Could not delete " + addonRepository, e);
          }
       }
