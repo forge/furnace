@@ -28,7 +28,7 @@ import org.jboss.forge.furnace.versions.Version;
  *
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public interface Furnace
+public interface Furnace extends AutoCloseable
 {
    /**
     * Start this {@link Furnace} instance in a new background {@link Thread}. Return a {@link Future} that can be used
@@ -153,6 +153,15 @@ public interface Furnace
     * Returns the current {@link AddonCompatibilityStrategy} for this {@link Furnace} instance.
     */
    public AddonCompatibilityStrategy getAddonCompatibilityStrategy();
+
+   /**
+    * Stops the server when closed
+    */
+   @Override
+   default void close()
+   {
+      stop();
+   }
 
    /**
     * Returns the {@link Furnace} instance
