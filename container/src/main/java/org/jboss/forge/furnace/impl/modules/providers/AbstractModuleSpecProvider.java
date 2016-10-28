@@ -52,7 +52,8 @@ public abstract class AbstractModuleSpecProvider implements ModuleSpecProvider
    {
    }
 
-   protected abstract ModuleIdentifier getId();
+   @Override
+   public abstract ModuleIdentifier getId();
 
    protected abstract Set<String> getPaths();
 

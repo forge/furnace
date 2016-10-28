@@ -23,7 +23,7 @@ public class AppleScriptClasspathSpec extends AbstractModuleSpecProvider
    public static Set<String> paths = Collections.singleton("apple/applescript");
 
    @Override
-   protected ModuleIdentifier getId()
+   public ModuleIdentifier getId()
    {
       return ID;
    }

@@ -52,7 +52,7 @@ public class CORBAClasspathSpec extends AbstractModuleSpecProvider
    }
 
    @Override
-   protected ModuleIdentifier getId()
+   public ModuleIdentifier getId()
    {
       return ID;
    }

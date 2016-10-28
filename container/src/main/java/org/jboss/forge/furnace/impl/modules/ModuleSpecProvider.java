@@ -27,4 +27,6 @@ public interface ModuleSpecProvider
     *         {@link ModuleIdentifier} does not apply to this {@link ModuleSpecProvider}
     */
    ModuleSpec get(ModuleLoader loader, ModuleIdentifier id);
+   
+   ModuleIdentifier getId();
 }
