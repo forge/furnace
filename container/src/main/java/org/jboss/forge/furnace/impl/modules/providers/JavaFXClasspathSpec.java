@@ -61,7 +61,7 @@ public class JavaFXClasspathSpec extends AbstractModuleSpecProvider
    }
 
    @Override
-   protected ModuleIdentifier getId()
+   public ModuleIdentifier getId()
    {
       return ID;
    }

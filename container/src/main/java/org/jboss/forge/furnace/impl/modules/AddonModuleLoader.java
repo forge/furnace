@@ -23,16 +23,7 @@ import org.jboss.forge.furnace.addons.AddonView;
 import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.impl.addons.AddonLifecycleManager;
 import org.jboss.forge.furnace.impl.addons.AddonStateManager;
-import org.jboss.forge.furnace.impl.modules.providers.AppleScriptClasspathSpec;
-import org.jboss.forge.furnace.impl.modules.providers.CORBAClasspathSpec;
 import org.jboss.forge.furnace.impl.modules.providers.FurnaceContainerSpec;
-import org.jboss.forge.furnace.impl.modules.providers.JAXBJDKClasspathSpec;
-import org.jboss.forge.furnace.impl.modules.providers.JavaFXClasspathSpec;
-import org.jboss.forge.furnace.impl.modules.providers.NashornJDKClasspathSpec;
-import org.jboss.forge.furnace.impl.modules.providers.SunJDKClasspathSpec;
-import org.jboss.forge.furnace.impl.modules.providers.SystemClasspathSpec;
-import org.jboss.forge.furnace.impl.modules.providers.XATransactionJDKClasspathSpec;
-import org.jboss.forge.furnace.impl.modules.providers.XPathJDKClasspathSpec;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.modules.DependencySpec;
@@ -163,14 +154,16 @@ public class AddonModuleLoader extends ModuleLoader
                {
                   Builder builder = ModuleSpec.build(id);
 
-                  builder.addDependency(DependencySpec.createModuleDependencySpec(SystemClasspathSpec.ID));
-                  builder.addDependency(DependencySpec.createModuleDependencySpec(XPathJDKClasspathSpec.ID));
-                  builder.addDependency(DependencySpec.createModuleDependencySpec(JAXBJDKClasspathSpec.ID));
-                  builder.addDependency(DependencySpec.createModuleDependencySpec(CORBAClasspathSpec.ID));
-                  builder.addDependency(DependencySpec.createModuleDependencySpec(SunJDKClasspathSpec.ID));
-                  builder.addDependency(DependencySpec.createModuleDependencySpec(NashornJDKClasspathSpec.ID));
-                  builder.addDependency(DependencySpec.createModuleDependencySpec(JavaFXClasspathSpec.ID));
-                  builder.addDependency(DependencySpec.createModuleDependencySpec(AppleScriptClasspathSpec.ID));
+                  for (ModuleSpecProvider moduleSpec : getModuleProviders())
+                  {
+                      if (moduleSpec.getId().equals(FurnaceContainerSpec.ID))
+                      {
+                          builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(), PathFilters.rejectAll(), null, FurnaceContainerSpec.ID, false));
+                      } else
+                      {
+                          builder.addDependency(DependencySpec.createModuleDependencySpec(moduleSpec.getId()));
+                      }
+                  }
 
                   ClassLoader parent = ClassLoader.getSystemClassLoader().getParent();
                   if (parent != null)
@@ -180,9 +173,6 @@ public class AddonModuleLoader extends ModuleLoader
                               PathFilters.acceptAll(), parent, Collections.singleton("META-INF/services")));
                   }
 
-                  builder.addDependency(DependencySpec.createModuleDependencySpec(XATransactionJDKClasspathSpec.ID));
-                  builder.addDependency(DependencySpec.createModuleDependencySpec(PathFilters.acceptAll(),
-                           PathFilters.rejectAll(), null, FurnaceContainerSpec.ID, false));
                   try
                   {
                      addContainerDependencies(views, repository, found, builder);
