@@ -1,7 +1,7 @@
 Furnace
 =======
 
-Lightweight Modular Service Container - Based JBoss Modules and Maven. It's easier than OSGi :)
+Lightweight Modular Service Container - Based on JBoss Modules and Maven. It's easier than OSGi :)
 
 [![Build Status](https://forge.ci.cloudbees.com/job/furnace/badge/icon)](https://forge.ci.cloudbees.com/job/furnace/)
 [![License](http://img.shields.io/:license-EPL-blue.svg)](https://www.eclipse.org/legal/epl-v10.html)
