@@ -419,9 +419,12 @@ public class ClasspathWorkspaceReader implements WorkspaceReader
             {
                Xpp3Dom relativePathNode = parent.getChild("relativePath");
                String relativePath = (relativePathNode == null) ? "../pom.xml" : relativePathNode.getValue();
-               File parentPom = pomFile.getParentFile().toPath().resolve(relativePath).toFile();
-               if (parentPom.isFile())
-                  result = createFoundModules(parentPom);
+               if (relativePath != null)
+               {
+                   File parentPom = pomFile.getParentFile().toPath().resolve(relativePath).toFile();
+                   if (parentPom.isFile())
+                       result = createFoundModules(parentPom);
+               }
             }
          }
 
