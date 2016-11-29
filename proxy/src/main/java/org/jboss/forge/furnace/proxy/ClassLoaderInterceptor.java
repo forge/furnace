@@ -18,6 +18,20 @@ import org.jboss.forge.furnace.util.ClassLoaders;
  */
 public class ClassLoaderInterceptor implements ForgeProxy
 {
+   private static final Method EQUALS_METHOD;
+
+   static
+   {
+      try
+      {
+         EQUALS_METHOD = Object.class.getMethod("equals", Object.class);
+      }
+      catch (NoSuchMethodException | SecurityException e)
+      {
+         throw new RuntimeException("Could not reflect Object.equals()", e);
+      }
+   }
+
    private static final ThreadLocal<ClassLoader> currentLoader = new ThreadLocal<>();
 
    private final ClassLoader loader;
@@ -63,9 +77,11 @@ public class ClassLoaderInterceptor implements ForgeProxy
             {
                previousLoader = setCurrentLoader(loader);
 
-               for (int i = args.length - 1; i >= 0; i--)
+               if (thisMethod.equals(EQUALS_METHOD))
                {
-                  args[i] = Proxies.unwrap(args[i]);
+                  Object object = args[0];
+                  Object unwrapped = Proxies.unwrap(object);
+                  args[0] = unwrapped;
                }
 
                result = thisMethod.invoke(delegate, args);
