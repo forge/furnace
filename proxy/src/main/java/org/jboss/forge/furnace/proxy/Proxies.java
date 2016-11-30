@@ -30,6 +30,9 @@ public class Proxies
    private static final Pattern JAVA_IO_PACKAGE_REGEXP = Pattern.compile("^((sun|java)\\.n?io).*");
    private static final Pattern JAVA_NET_PACKAGE_REGEXP = Pattern.compile("^(java\\.net).*");
 
+   private static final Pattern CGLIB_CLASSNAME_REGEXP = Pattern.compile("^(.*)\\$\\$EnhancerByCGLIB\\$\\$.*");
+   private static final Pattern JAVASSIST_CLASSNAME_REGEXP = Pattern.compile("^(.*)_\\$\\$_javassist_.*");
+
    private static MethodFilter filter = new ForgeProxyMethodFilter();
 
    private static Map<String, Map<String, WeakReference<Class<?>>>> classCache = new ConcurrentHashMap<>();
@@ -364,11 +367,11 @@ public class Proxies
       {
          if (type.getName().contains("$$EnhancerByCGLIB$$"))
          {
-            typeName = type.getName().replaceAll("^(.*)\\$\\$EnhancerByCGLIB\\$\\$.*", "$1");
+            typeName = CGLIB_CLASSNAME_REGEXP.matcher(type.getName()).replaceAll("$1");
          }
          else if (type.getName().contains("_javassist_"))
          {
-            typeName = type.getName().replaceAll("^(.*)_\\$\\$_javassist_.*", "$1");
+            typeName = JAVASSIST_CLASSNAME_REGEXP.matcher(type.getName()).replaceAll("$1");
          }
          else
          {

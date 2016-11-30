@@ -343,7 +343,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
 
    private void setCachedReturnTypeHierarchy(String key, Class<?>[] returnTypeHierarchy)
    {
-      List<WeakReference<Class<?>>> list = new ArrayList<WeakReference<Class<?>>>();
+      List<WeakReference<Class<?>>> list = new ArrayList<>();
       for (Class<?> type : returnTypeHierarchy)
       {
          list.add(new WeakReference<Class<?>>(type));
@@ -357,7 +357,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       List<WeakReference<Class<?>>> list = returnTypeHierarchyCache.get(key);
       if (list != null)
       {
-         result = new ArrayList<Class<?>>();
+         result = new ArrayList<>();
          for (WeakReference<Class<?>> ref : list)
          {
             Class<?> type = ref.get();
@@ -395,7 +395,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
 
    private void setCachedResultHierarchy(String key, Class<?>[] resultHierarchy)
    {
-      List<WeakReference<Class<?>>> list = new ArrayList<WeakReference<Class<?>>>();
+      List<WeakReference<Class<?>>> list = new ArrayList<>();
       for (Class<?> type : resultHierarchy)
       {
          list.add(new WeakReference<Class<?>>(type));
@@ -409,7 +409,7 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
       List<WeakReference<Class<?>>> list = resultHierarchyCache.get(key);
       if (list != null)
       {
-         result = new ArrayList<Class<?>>();
+         result = new ArrayList<>();
          for (WeakReference<Class<?>> ref : list)
          {
             Class<?> type = ref.get();
@@ -677,8 +677,9 @@ public class ClassLoaderAdapterCallback implements MethodHandler, ForgeProxy
          final Class<?> delegateParameterType = delegateMethod.getParameterTypes()[i];
          final Object parameterValue = args[i];
 
-         parameterValues.add(enhanceSingleParameterValue(delegateMethod, delegateParameterType,
-                  stripClassLoaderAdapters(parameterValue)));
+         final Object enhancedParameterValue = enhanceSingleParameterValue(delegateMethod, delegateParameterType,
+                  stripClassLoaderAdapters(parameterValue));
+         parameterValues.add(enhancedParameterValue);
       }
       return parameterValues;
    }
