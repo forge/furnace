@@ -38,7 +38,7 @@
    </prerequisites>
 
    <properties>
-      <version.arquillian>1.1.10.Final</version.arquillian>
+      <version.arquillian>1.1.12.Final</version.arquillian>
    </properties>
 
    <modules>

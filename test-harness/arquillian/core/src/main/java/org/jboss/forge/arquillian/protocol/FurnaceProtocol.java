@@ -56,7 +56,7 @@ public class FurnaceProtocol implements Protocol<FurnaceProtocolConfiguration>
             @Override
             public TestResult invoke(TestMethodExecutor arg0)
             {
-               return TestResult.skipped(null);
+               return TestResult.skipped();
             }
          };
       }

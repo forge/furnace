@@ -120,7 +120,7 @@ public class FurnaceTestMethodExecutor implements ContainerMethodExecutor
                   {
                      if ("org.junit.Ignore".equals(annotation.getClass().getName()))
                      {
-                        result = TestResult.skipped(null);
+                        result = TestResult.skipped();
                      }
                   }
 
@@ -148,8 +148,8 @@ public class FurnaceTestMethodExecutor implements ContainerMethodExecutor
                                     && Proxies.isForgeProxy(rootCause)
                                     && Arrays.asList("org.junit.AssumptionViolatedException",
                                              "org.junit.internal.AssumptionViolatedException").contains(Proxies
-                                             .unwrap(rootCause).getClass()
-                                             .getName()))
+                                                      .unwrap(rootCause).getClass()
+                                                      .getName()))
                            {
                               try
                               {
