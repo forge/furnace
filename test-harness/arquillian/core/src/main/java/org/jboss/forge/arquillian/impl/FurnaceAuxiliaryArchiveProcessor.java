@@ -9,6 +9,7 @@ package org.jboss.forge.arquillian.impl;
 import org.jboss.arquillian.container.test.spi.client.deployment.AuxiliaryArchiveProcessor;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.Node;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 public class FurnaceAuxiliaryArchiveProcessor implements AuxiliaryArchiveProcessor
 {
@@ -20,6 +21,8 @@ public class FurnaceAuxiliaryArchiveProcessor implements AuxiliaryArchiveProcess
          Node node = archive.get("org/jboss/shrinkwrap/descriptor");
          if (node != null)
             archive.delete(node.getPath());
+         // FURNACE-134: Add AssertJ libraries
+         archive.as(JavaArchive.class).addPackages(true, "org.assertj.core");
       }
    }
 }
