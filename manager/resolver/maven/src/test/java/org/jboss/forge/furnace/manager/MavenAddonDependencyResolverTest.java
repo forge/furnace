@@ -70,7 +70,7 @@ public class MavenAddonDependencyResolverTest
    @Test
    public void testResolutionInfo() throws Exception
    {
-      AddonId addonId = AddonId.from("org.jboss.forge.addon:core", "3.2.3.Final");
+      AddonId addonId = AddonId.from("org.jboss.forge.addon:core", "2.9.2.Final");
       Response<File[]> resources = resolver.resolveResources(addonId);
       assertThat(resources.getExceptions()).isEmpty();
       assertThat(resources.get()).isNotEmpty();
