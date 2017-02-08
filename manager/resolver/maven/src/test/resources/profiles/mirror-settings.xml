@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+   <servers>
+      <server>
+         <id>jboss-releases-repository</id>
+         <username>gastaldi</username>
+         <password>{GCnCtu0Cd2MHAxuw8pxNtvHGDoxfHUkDYiy9rzZperI=}</password>
+         <configuration>
+            <httpHeaders>
+               <property>
+                  <name>User-Agent</name>
+                  <value>Maven m2Release (java:${java.vm.version} ${env.BUILD_TAG})</value>
+               </property>
+            </httpHeaders>
+         </configuration>
+      </server>
+      <server>
+         <id>jboss-staging-repository</id>
+         <username>gastaldi</username>
+         <password>{GCnCtu0Cd2MHAxuw8pxNtvHGDoxfHUkDYiy9rzZperI=}</password>
+         <configuration>
+            <httpHeaders>
+               <property>
+                  <name>User-Agent</name>
+                  <value>Maven m2Release (java:${java.vm.version} ${env.BUILD_TAG})</value>
+               </property>
+            </httpHeaders>
+         </configuration>
+      </server>
+      <server>
+         <id>ossrh</id>
+         <username>gastaldi</username>
+         <password>{GCnCtu0Cd2MHAxuw8pxNtvHGDoxfHUkDYiy9rzZperI=}</password>
+         <configuration>
+            <httpHeaders>
+               <property>
+                  <name>User-Agent</name>
+                  <value>Maven m2Release (java:${java.vm.version} ${env.BUILD_TAG})</value>
+               </property>
+            </httpHeaders>
+         </configuration>
+      </server>
+      <server>
+         <id>jboss-snapshots-repository</id>
+         <username>gastaldi</username>
+         <password>{GCnCtu0Cd2MHAxuw8pxNtvHGDoxfHUkDYiy9rzZperI=}</password>
+      </server>
+   </servers>
+   <mirrors>
+      <mirror>
+         <id>cloudbees-central-mirror</id>
+         <mirrorOf>central</mirrorOf>
+         <name>Central Repository Mirror</name>
+         <url>http://repo.cloudbees.com/content/repositories/central/</url>
+      </mirror>
+      <mirror>
+         <id>cloudbees-jboss-mirror</id>
+         <mirrorOf>jboss-public-repository-group</mirrorOf>
+         <name>JBoss Public Repository Group Mirror</name>
+         <url>http://repo.cloudbees.com/content/groups/jboss-public-repository-group/</url>
+      </mirror>
+   </mirrors>
+   <profiles>
+      <profile>
+         <id>gpg</id>
+         <properties>
+       <!-- https://www.cloudbees.com/blog/how-do-maven-release-builds-devcloud-central -->
+            <gpg.useagent>true</gpg.useagent>
+       <gpg.keyname>355D4497</gpg.keyname>
+       <gpg.passphrase>n0th1ng</gpg.passphrase>
+       <gpg.homedir>/private/forge/.gnupg</gpg.homedir>
+       <gpg.publickeyring>/private/forge/.gnupg/pubring.gpg</gpg.publickeyring>
+       <gpg.secretkeyring>/private/forge/.gnupg/secring.gpg</gpg.secretkeyring>
+            <gpg.lockMode>never</gpg.lockMode>
+       <gpg.defaultkeyring>false</gpg.defaultkeyring>
+         </properties>
+      </profile>
+      <profile>
+         <id>cloudbees-public-repository</id>
+         <repositories>
+            <repository>
+               <id>cloudbees-public-repository</id>
+               <name>CloudBees Repository</name>
+               <url>http://repo.cloudbees.com/content/groups/public/</url>
+               <releases>
+                  <enabled>true</enabled>
+               </releases>
+               <snapshots>
+                  <enabled>false</enabled>
+               </snapshots>
+            </repository>
+            <repository>
+               <id>cloudbees-snapshots-repository</id>
+               <url>http://repo.cloudbees.com/content/groups/public/</url>
+               <layout>default</layout>
+               <releases>
+                  <enabled>false</enabled>
+               </releases>
+               <snapshots>
+                  <enabled>true</enabled>
+               </snapshots>
+            </repository>
+         </repositories>
+         <pluginRepositories>
+            <pluginRepository>
+               <id>cloudbees-public-repository</id>
+               <name>CloudBees Repository</name>
+               <url>http://repo.cloudbees.com/content/groups/public/</url>
+               <layout>default</layout>
+               <releases>
+                  <enabled>true</enabled>
+               </releases>
+               <snapshots>
+                  <enabled>true</enabled>
+               </snapshots>
+            </pluginRepository>
+         </pluginRepositories>
+      </profile>
+      <profile>
+         <id>jboss-public-repository</id>
+         <repositories>
+            <repository>
+               <id>jboss-public-repository</id>
+               <name>JBoss Repository</name>
+               <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+               <releases>
+                  <enabled>true</enabled>
+               </releases>
+               <snapshots>
+                  <enabled>false</enabled>
+               </snapshots>
+            </repository>
+            <repository>
+               <id>jboss-snapshots-repository</id>
+               <url>https://repository.jboss.org/nexus/content/repositories/snapshots/</url>
+               <layout>default</layout>
+               <releases>
+                  <enabled>false</enabled>
+               </releases>
+               <snapshots>
+                  <enabled>true</enabled>
+               </snapshots>
+            </repository>
+         </repositories>
+         <pluginRepositories>
+            <pluginRepository>
+               <id>jboss-public-repository</id>
+               <name>JBoss Public Maven Repository Group</name>
+               <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+               <layout>default</layout>
+               <releases>
+                  <enabled>true</enabled>
+               </releases>
+               <snapshots>
+                  <enabled>true</enabled>
+               </snapshots>
+            </pluginRepository>
+         </pluginRepositories>
+      </profile>
+   </profiles>
+   <activeProfiles> 
+   <activeProfile>gpg</activeProfile> 
+<!--
+   <activeProfile>cloudbees-public-repository</activeProfile>
+-->
+   </activeProfiles>
+</settings>

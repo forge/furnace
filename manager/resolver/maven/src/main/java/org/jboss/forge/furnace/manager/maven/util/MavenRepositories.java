@@ -9,8 +9,10 @@ package org.jboss.forge.furnace.manager.maven.util;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
+import org.apache.maven.settings.Mirror;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Settings;
 import org.eclipse.aether.repository.Authentication;
@@ -31,21 +33,23 @@ public class MavenRepositories
       Set<RemoteRepository> remoteRepos = new HashSet<>();
       remoteRepos.addAll(container.getEnabledRepositoriesFromProfile(settings));
       // If no remote repositories found or no mirrors to central found, add central
-      if (remoteRepos.isEmpty() || !hasCentralMirror(settings))
+      if (remoteRepos.isEmpty())
       {
+         String centralRepoURL = getCentralMirrorURL(settings).orElse(MAVEN_CENTRAL_REPO);
          // Add central
-         remoteRepos.add(convertToMavenRepo("central", MAVEN_CENTRAL_REPO, settings));
+         remoteRepos.add(convertToMavenRepo("central", centralRepoURL, settings));
       }
       return new ArrayList<>(remoteRepos);
    }
 
-   static boolean hasCentralMirror(Settings settings)
+   static Optional<String> getCentralMirrorURL(Settings settings)
    {
       return settings.getMirrors().stream()
-               .anyMatch(m -> 
-                  "central".equals(m.getMirrorOf()) || 
-                  "*".equals(m.getMirrorOf()) ||
-                  MAVEN_CENTRAL_REPO.equals(m.getMirrorOf()));
+               .filter(m -> "central".equals(m.getMirrorOf()) ||
+                        "*".equals(m.getMirrorOf()) ||
+                        MAVEN_CENTRAL_REPO.equals(m.getMirrorOf()))
+               .map(Mirror::getUrl)
+               .findFirst();
    }
 
    static RemoteRepository convertToMavenRepo(final String id, String url, final Settings settings)

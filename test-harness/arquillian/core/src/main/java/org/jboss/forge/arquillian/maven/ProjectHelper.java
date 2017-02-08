@@ -45,6 +45,7 @@ import org.eclipse.aether.util.repository.DefaultMirrorSelector;
 import org.eclipse.aether.util.repository.DefaultProxySelector;
 import org.jboss.forge.furnace.manager.maven.MavenContainer;
 import org.jboss.forge.furnace.manager.maven.addon.MavenAddonDependencyResolver;
+import org.jboss.forge.furnace.manager.maven.util.MavenRepositories;
 
 public class ProjectHelper
 {
@@ -69,8 +70,8 @@ public class ProjectHelper
       ModelBuildingResult result;
       try
       {
-         request.setModelResolver(new MavenModelResolver(system, session, mavenContainer
-                  .getEnabledRepositoriesFromProfile(settings)));
+         request.setModelResolver(new MavenModelResolver(system, session,
+                  MavenRepositories.getRemoteRepositories(mavenContainer, settings)));
          result = builder.build(request);
       }
       // wrap exception message
@@ -135,7 +136,7 @@ public class ProjectHelper
                               new File(settings.getLocalRepository()).toURI().toURL().toString(), null, true, true);
             request.setLocalRepository(localRepository);
 
-            List<org.apache.maven.artifact.repository.ArtifactRepository> settingsRepos = new ArrayList<org.apache.maven.artifact.repository.ArtifactRepository>(
+            List<org.apache.maven.artifact.repository.ArtifactRepository> settingsRepos = new ArrayList<>(
                      request.getRemoteRepositories());
             List<String> activeProfiles = settings.getActiveProfiles();
 
@@ -180,7 +181,7 @@ public class ProjectHelper
                }
             }
             repositorySession.setMirrorSelector(mirrorSelector);
-            
+
             LazyAuthenticationSelector authSelector = new LazyAuthenticationSelector(mirrorSelector);
             for (Server server : settings.getServers())
             {
@@ -216,7 +217,7 @@ public class ProjectHelper
       }
       return request;
    }
-   
+
    /**
     * Returns <code>true</code> if this model is a single-project addon
     */
@@ -233,10 +234,11 @@ public class ProjectHelper
                for (PluginExecution execution : plugin.getExecutions())
                {
                   Xpp3Dom config = (Xpp3Dom) execution.getConfiguration();
-                  if (config!= null)
+                  if (config != null)
                   {
                      Xpp3Dom classifierNode = config.getChild("classifier");
-                     if (classifierNode != null && MavenAddonDependencyResolver.FORGE_ADDON_CLASSIFIER.equals(classifierNode.getValue()))
+                     if (classifierNode != null
+                              && MavenAddonDependencyResolver.FORGE_ADDON_CLASSIFIER.equals(classifierNode.getValue()))
                      {
                         result = true;
                         break PLUGIN_LOOP;
@@ -248,5 +250,5 @@ public class ProjectHelper
       }
       return result;
    }
-   
+
 }
