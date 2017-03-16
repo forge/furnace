@@ -220,7 +220,7 @@ public final class AddonRepositoryStateStrategyImpl extends AbstractFileSystemAd
          @Override
          public List<AddonId> call() throws Exception
          {
-            List<AddonId> result = new ArrayList<AddonId>();
+            List<AddonId> result = new ArrayList<>();
             File registryFile = getRepositoryRegistryFile();
             try
             {
@@ -252,22 +252,18 @@ public final class AddonRepositoryStateStrategyImpl extends AbstractFileSystemAd
       });
    }
 
-   private Node getXmlRoot(File registryFile) throws FileNotFoundException, InterruptedException
+   static Node getXmlRoot(File registryFile) throws FileNotFoundException, InterruptedException
    {
       Node installed = null;
-
-      while (installed == null)
+      try
       {
-         try
-         {
-            installed = XMLParser.parse(registryFile);
-         }
-         catch (XMLParserException e)
-         {
-            logger.log(Level.WARNING, "Error occurred while parsing [" + registryFile + "]", e);
-         }
+         installed = XMLParser.parse(registryFile);
       }
-
+      catch (XMLParserException e)
+      {
+         logger.log(Level.WARNING, "Error occurred while parsing [" + registryFile + "]", e);
+         throw e;
+      }
       return installed;
    }
 
@@ -298,7 +294,8 @@ public final class AddonRepositoryStateStrategyImpl extends AbstractFileSystemAd
    }
 
    @Override
-   public DirtyChecker createDirtyChecker() {
+   public DirtyChecker createDirtyChecker()
+   {
       return new VersionDirtyChecker(this::getVersion);
    }
 }

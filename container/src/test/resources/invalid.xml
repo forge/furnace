@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<installed>
+
+  <addon api-version="" name="_DEFAULT_" version="628959b1-a19e-46aa-821a-ad7a5c4fd082"/>
+
+  <addon api-version="2.24.0.Final" name="org.jboss.forge.furnace.container:simple" version="2.24.0.Final"/>
+
+  <addon api-version="2.24.0.Final" name="org.jboss.forge.addon:facets" version="3.3.2.Final"/>
+
+  <addon api-version="2.24.0.Final" name="org.jboss.forge.addon:resources" version="3.3.2.Final"/>
+
+  <addon api-version="2.24.0.Final" name="org.jboss.forge.addon:dependencies" version="3.3.2.Final"/>
+
+  <addon api-version="2.24.3.Final" name="org.jboss.forge.furnace.container:simple" version="2.24.3.Final"/>
+
+  <addon api-version="2.24.0.Final" name="org.jboss.forge.furnace.container:cdi" version="2.24.0.Final"/>
+
+  <addon api-version="2.24.0.Final" name="org.jboss.forge.addon:configuration" version="3.3.2.Final"/>
+
+  <addon api-version="2.24.0.Final" name="org.jboss.forge.addon:parser-xml" version="3.3.2.Final"/>
+
+  <addon api-version="2.24.0.Final" name="org.jboss.forge.addon:environment" version="3.3.2.Final"/>
+
+  <addon api-version="" name="org.jboss.forge.addon:slf4j" version="1.7.13"/>
+
+  <addon api-version="2.24.0.Final" name="org.jboss.forge.addon:maven" version="3.3.2.Final"/>
+
+  <addon api-version="2.24.3.Final" name="org.jboss.forge.furnace.container:cdi" version="2.24.3.Final"/>
+
+  <addon api-version="2.24.3.Final" name="org.jboss.windup.graph:windup-graph" version="3.1.0-SNAPSHOT"/>
+
+  <addon api-version="2.24.3.Final" name="org.jboss.windup.config:windup-config" version="3.1.0-SNAPSHOT"/>
+
+  <addon api-version="2.24.3.Final" name="org.jboss.windup.exec:windup-exec" version="3.1.0-SNAPSHOT"/>
+
+  <addon api-version="2.24.3.Final" name="org.jboss.windup.config:windup-config-xml" version="3.1.0-SNAPSHOT"/>
+
+  <addon api-version="2.24.3.Final" name="org.jboss.windup.rules.apps:windup-rules-base" version="3.1.0-SNAPSHOT"/>
+
+  <addon api-version="2.24.3.Final" name="org.jboss.windup.config:windup-config-groovy" version="3.1.0-SNAPSHOT"/>
+
+  <addon api-version="2.24.3.Final" name="org.jboss.windup.rules.apps:windup-rules-java-archives" version="3.1.0-SNAPSHOT"/>
+
+  <addon api-version="2.24.3.Final" name="org.jboss.windup.decompiler:decompiler-api" version="3.1.0-SNAPSHOT"/>
+
+  <addon api-version="2.24.3.Final" name="org.jboss.windup.decompiler:decompiler-fernflower" version="3.1.0-SNAPSHOT"/>
+
+  <addon api-version="2.24.3.Final" name="org.jboss.windup.decompiler:decompiler-procyon" version="3.1.0-SNAPSHOT"/>
+
+  <addon api-version="2.24.3.Final" name="org.jboss.windup.ast:windup-java-ast" version="3.1.0-SNAPSHOT"/>
+
+  <addon api-version="2.24.3.Final" name="org.jboss.windup.rules.apps:windup-rules-java" version="3.1.0-SNAPSHOT"/>
+
+  <addon api-version="2.24.3.Final" name="org.jboss.windup.rules.apps:windup-rules-java-ee" version="3.1.0-SNAPSHOT"/>
+
+  <addon api-version="2.24.3.Final" name="org.jboss.windup.rules.apps:windup-rules-java-project" version="3.1.0-SNAPSHOT"/>
+
+  <addon api-version="2.24.3.Final" name="org.jboss.windup.rules.apps:windup-rules-xml" version="3.1.0-SNAPSHOT"/>
+
+  <addon api-version="2.24.3.Final" name="org.jboss.windup.reporting:windup-reporting" version="3.1.0-SNAPSHOT"/>
+
+  <addon api-version="2.24.3.Final" name="org.jboss.windup.utils:windup-utils" version="3.1.0-SNAPSHOT"/>
+
+</installed>
