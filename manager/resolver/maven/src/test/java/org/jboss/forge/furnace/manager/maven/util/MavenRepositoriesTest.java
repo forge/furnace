@@ -11,6 +11,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.io.File;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.building.DefaultSettingsBuilderFactory;
@@ -44,4 +45,21 @@ public class MavenRepositoriesTest
                equalTo("http://repo.cloudbees.com/content/repositories/central/"));
    }
 
+   @Test
+   public void testCentralWithProfiles() throws Exception
+   {
+      SettingsBuilder settingsBuilder = new DefaultSettingsBuilderFactory().newInstance();
+      SettingsBuildingRequest settingsRequest = new DefaultSettingsBuildingRequest();
+      settingsRequest.setUserSettingsFile(new File("src/test/resources/profiles/settings.xml"));
+      Settings settings = settingsBuilder.build(settingsRequest).getEffectiveSettings();
+      MavenContainer container = new MavenContainer();
+      List<RemoteRepository> remoteRepositories = MavenRepositories.getRemoteRepositories(container, settings);
+      Assert.assertEquals(2, remoteRepositories.size());
+      Assert.assertEquals("test-repository", remoteRepositories.get(1).getId());
+      
+      List<RemoteRepository> centralRepos = remoteRepositories.stream().filter(repo -> repo.getId().equals("central")).collect(Collectors.toList());
+      Assert.assertEquals(1, centralRepos.size());
+      Assert.assertEquals(MavenRepositories.MAVEN_CENTRAL_REPO, centralRepos.get(0).getUrl());
+   }
+   
 }
