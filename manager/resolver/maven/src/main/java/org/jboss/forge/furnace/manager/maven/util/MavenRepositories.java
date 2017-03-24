@@ -26,19 +26,17 @@ import org.jboss.forge.furnace.manager.maven.MavenContainer;
  */
 public class MavenRepositories
 {
-   private static final String MAVEN_CENTRAL_REPO = "http://repo1.maven.org/maven2";
+   static final String MAVEN_CENTRAL_REPO = "http://central.maven.org/maven2";
 
    public static List<RemoteRepository> getRemoteRepositories(MavenContainer container, Settings settings)
    {
       Set<RemoteRepository> remoteRepos = new HashSet<>();
       remoteRepos.addAll(container.getEnabledRepositoriesFromProfile(settings));
-      // If no remote repositories found or no mirrors to central found, add central
-      if (remoteRepos.isEmpty())
-      {
-         String centralRepoURL = getCentralMirrorURL(settings).orElse(MAVEN_CENTRAL_REPO);
-         // Add central
-         remoteRepos.add(convertToMavenRepo("central", centralRepoURL, settings));
-      }
+
+      // central repository is added if there is no central mirror
+      String centralRepoURL = getCentralMirrorURL(settings).orElse(MAVEN_CENTRAL_REPO);
+      remoteRepos.add(convertToMavenRepo("central", centralRepoURL, settings));
+     
       return new ArrayList<>(remoteRepos);
    }
 
