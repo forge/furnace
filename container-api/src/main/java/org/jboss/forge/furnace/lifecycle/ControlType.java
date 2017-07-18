@@ -25,13 +25,13 @@ public enum ControlType
 
    /**
     * Controls only the life-cycle of addons that depend on the {@link Addon} from which the
-    * {@link AddonLifecycleProvider} instance orginated.
+    * {@link AddonLifecycleProvider} instance originated.
     */
    DEPENDENTS,
 
    /**
     * Controls both the life-cycle of the {@link Addon}, and the life-cycle of addons that depend on the {@link Addon},
-    * from which the {@link AddonLifecycleProvider} instance orginated.
+    * from which the {@link AddonLifecycleProvider} instance originated.
     */
    ALL
 }
