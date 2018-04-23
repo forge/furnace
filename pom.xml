@@ -4,7 +4,7 @@
    <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>20</version>
+      <version>26</version>
    </parent>
 
    <groupId>org.jboss.forge.furnace</groupId>
@@ -34,10 +34,6 @@
          <email>gegastaldi@gmail.com</email>
       </developer>
    </developers>
-
-   <prerequisites>
-      <maven>3.0</maven>
-   </prerequisites>
 
    <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
