@@ -514,7 +514,7 @@ public final class Strings
       Byte bytes[] = new Byte[array.length];
       for (int i = 0; i < bytes.length; i++)
       {
-         bytes[i] = new Byte(array[i]);
+         bytes[i] = Byte.valueOf(array[i]);
       }
 
       return join(bytes, null);
