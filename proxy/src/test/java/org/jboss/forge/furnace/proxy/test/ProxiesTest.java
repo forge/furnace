@@ -17,9 +17,9 @@ import java.util.Set;
 import org.jboss.forge.furnace.proxy.ClassLoaderInterceptor;
 import org.jboss.forge.furnace.proxy.ForgeProxy;
 import org.jboss.forge.furnace.proxy.Proxies;
-import org.jboss.forge.furnace.proxy.javassist.util.proxy.MethodHandler;
-import org.jboss.forge.furnace.proxy.javassist.util.proxy.Proxy;
-import org.jboss.forge.furnace.proxy.javassist.util.proxy.ProxyObject;
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.Proxy;
+import javassist.util.proxy.ProxyObject;
 import org.junit.Assert;
 import org.junit.Test;
 

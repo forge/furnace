@@ -13,10 +13,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
-import org.jboss.forge.furnace.proxy.javassist.util.proxy.MethodFilter;
-import org.jboss.forge.furnace.proxy.javassist.util.proxy.Proxy;
-import org.jboss.forge.furnace.proxy.javassist.util.proxy.ProxyFactory;
-import org.jboss.forge.furnace.proxy.javassist.util.proxy.ProxyObject;
+import javassist.util.proxy.MethodFilter;
+import javassist.util.proxy.Proxy;
+import javassist.util.proxy.ProxyFactory;
+import javassist.util.proxy.ProxyObject;
 import org.jboss.forge.furnace.util.Assert;
 
 /**
@@ -31,7 +31,7 @@ public class Proxies
    private static final Pattern JAVA_NET_PACKAGE_REGEXP = Pattern.compile("^(java\\.net).*");
 
    private static final Pattern CGLIB_CLASSNAME_REGEXP = Pattern.compile("^(.*)\\$\\$EnhancerByCGLIB\\$\\$.*");
-   private static final Pattern JAVASSIST_CLASSNAME_REGEXP = Pattern.compile("^(.*)_\\$\\$_javassist_.*");
+   private static final Pattern JAVASSIST_CLASSNAME_REGEXP = Pattern.compile("^(.*)_\\$\\$_jvst.*");
 
    private static MethodFilter filter = new ForgeProxyMethodFilter();
 
@@ -230,7 +230,7 @@ public class Proxies
       if (type != null)
       {
          if (type.getName().contains("$$EnhancerByCGLIB$$")
-                  || type.getName().contains("_javassist_")
+                  || type.getName().contains("_jvst")
                   || type.getName().contains("$Proxy$_$$_WeldClientProxy")
                   || Proxy.class.isAssignableFrom(type)
                   || ProxyObject.class.isAssignableFrom(type))
@@ -356,7 +356,7 @@ public class Proxies
 
    /**
     * Unwraps the proxy type if javassist or CGLib is used
-    * 
+    *
     * @param type the class type
     * @return the unproxied class name
     */
@@ -369,7 +369,7 @@ public class Proxies
          {
             typeName = CGLIB_CLASSNAME_REGEXP.matcher(type.getName()).replaceAll("$1");
          }
-         else if (type.getName().contains("_javassist_"))
+         else if (type.getName().contains("_jvst"))
          {
             typeName = JAVASSIST_CLASSNAME_REGEXP.matcher(type.getName()).replaceAll("$1");
          }
@@ -383,9 +383,8 @@ public class Proxies
 
    /**
     * This method tests if two proxied objects are equivalent.
-    * 
+    *
     * It does so by comparing the class names and the hashCode, since they may be loaded from different classloaders.
-    * 
     */
    public static boolean areEquivalent(Object proxiedObj, Object anotherProxiedObj)
    {
