@@ -23,8 +23,8 @@
          <artifactId>furnace-api</artifactId>
       </dependency>
       <dependency>
-         <groupId>org.jboss.forge</groupId>
-         <artifactId>forge-javassist</artifactId>
+         <groupId>org.javassist</groupId>
+         <artifactId>javassist</artifactId>
       </dependency>
    </dependencies>
 

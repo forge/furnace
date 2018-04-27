@@ -8,7 +8,7 @@ package org.jboss.forge.furnace.proxy;
 
 import java.lang.reflect.Method;
 
-import org.jboss.forge.furnace.proxy.javassist.util.proxy.MethodFilter;
+import javassist.util.proxy.MethodFilter;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>

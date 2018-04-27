@@ -24,11 +24,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.exception.ContainerException;
-import org.jboss.forge.furnace.proxy.javassist.util.proxy.MethodFilter;
-import org.jboss.forge.furnace.proxy.javassist.util.proxy.MethodHandler;
-import org.jboss.forge.furnace.proxy.javassist.util.proxy.Proxy;
-import org.jboss.forge.furnace.proxy.javassist.util.proxy.ProxyFactory;
-import org.jboss.forge.furnace.proxy.javassist.util.proxy.ProxyObject;
+import javassist.util.proxy.MethodFilter;
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.Proxy;
+import javassist.util.proxy.ProxyFactory;
+import javassist.util.proxy.ProxyObject;
 import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.util.ClassLoaders;
 
