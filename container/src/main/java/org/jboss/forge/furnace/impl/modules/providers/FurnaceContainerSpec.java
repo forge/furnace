@@ -16,6 +16,8 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec.Builder;
 import org.jboss.modules.filter.PathFilters;
 
+import static org.jboss.forge.furnace.impl.FurnaceImpl.TEST_MODE_PROPERTY;
+
 public class FurnaceContainerSpec extends AbstractModuleSpecProvider
 {
    public static final ModuleIdentifier ID = ModuleIdentifier.create("org.jboss.forge.furnace.api");
@@ -24,6 +26,27 @@ public class FurnaceContainerSpec extends AbstractModuleSpecProvider
 
    static
    {
+      if (Boolean.getBoolean(TEST_MODE_PROPERTY))
+      {
+         paths.add("javassist");
+         paths.add("javassist/bytecode");
+         paths.add("javassist/bytecode/analysis");
+         paths.add("javassist/bytecode/annotation");
+         paths.add("javassist/bytecode/stackmap");
+         paths.add("javassist/compiler");
+         paths.add("javassist/compiler/ast");
+         paths.add("javassist/convert");
+         paths.add("javassist/expr");
+         paths.add("javassist/runtime");
+         paths.add("javassist/scopedpool");
+         paths.add("javassist/tools");
+         paths.add("javassist/tools/reflect");
+         paths.add("javassist/tools/rmi");
+         paths.add("javassist/tools/web");
+         paths.add("javassist/util");
+         paths.add("javassist/util/proxy");
+      }
+
       paths.add("org/jboss/forge/furnace/proxy/javassist");
       paths.add("org/jboss/forge/furnace/proxy/javassist/bytecode");
       paths.add("org/jboss/forge/furnace/proxy/javassist/bytecode/analysis");
@@ -83,7 +106,7 @@ public class FurnaceContainerSpec extends AbstractModuleSpecProvider
                                  PathFilters.is("org/jboss/forge/furnace/util"),
                                  PathFilters.is("org/jboss/forge/furnace/versions"),
                                  PathFilters.is("org/jboss/forge/furnace/proxy")
-                                 ))),
+                        ))),
                getPaths()));
    }
 
