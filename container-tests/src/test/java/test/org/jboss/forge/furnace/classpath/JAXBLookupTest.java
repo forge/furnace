@@ -19,6 +19,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assume.assumeThat;
+
 @RunWith(Arquillian.class)
 public class JAXBLookupTest
 {
@@ -35,6 +38,7 @@ public class JAXBLookupTest
    @Test
    public void testGetJDKProvidedJAXBImpl() throws Exception
    {
+      assumeThat(System.getProperty("java.version"), startsWith("1.8"));
       try
       {
          getClass().getClassLoader().loadClass("com.sun.xml.internal.bind.v2.ContextFactory");
@@ -48,6 +52,7 @@ public class JAXBLookupTest
    @Test
    public void testJAXBLookup() throws Exception
    {
+      assumeThat(System.getProperty("java.version"), startsWith("1.8"));
       Assert.assertNotNull(JAXBContext.newInstance(TestRoot.class).createUnmarshaller()
                .unmarshal(new ByteArrayInputStream("<testRoot/>".getBytes())));
    }

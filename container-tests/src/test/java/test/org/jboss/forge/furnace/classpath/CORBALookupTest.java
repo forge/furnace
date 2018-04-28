@@ -14,6 +14,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assume.assumeThat;
+
 @RunWith(Arquillian.class)
 public class CORBALookupTest
 {
@@ -27,8 +30,9 @@ public class CORBALookupTest
    }
 
    @Test
-   public void testGetJDKProvidedCORBA() throws Exception
+   public void testGetJDKProvidedCORBA()
    {
+      assumeThat(System.getProperty("java.version"), startsWith("1.8"));
       try
       {
          getClass().getClassLoader().loadClass("javax.rmi.CORBA.Tie");
