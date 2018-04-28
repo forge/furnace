@@ -28,6 +28,7 @@ import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleDependencySpec;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
@@ -145,7 +146,8 @@ public class AddonModuleLoader extends ModuleLoader
 
                if (mappedAddon != null && mappedAddon.getId().equals(found))
                {
-                  Builder builder = ModuleSpec.build(id);
+                  Builder builder = ModuleSpec.build(id)
+                           .addDependency(ModuleDependencySpec.JAVA_SE);
 
                   for (ModuleSpecProvider moduleSpec : getModuleProviders())
                   {
