@@ -18,11 +18,10 @@ import org.jboss.modules.ModuleIdentifier;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
- * 
  */
 class AddonModuleIdentifierCache
 {
-   private final Map<Addon, ModuleIdentifier> map = new HashMap<Addon, ModuleIdentifier>();
+   private final Map<Addon, ModuleIdentifier> map = new HashMap<>();
 
    public void clear(Addon addon)
    {
@@ -36,9 +35,8 @@ class AddonModuleIdentifierCache
 
    public ModuleIdentifier getModuleId(Addon addon)
    {
-      if (!map.containsKey(addon))
-         map.put(addon, ModuleIdentifier.fromString(toModuleId(addon.getId()) + "_" + UUID.randomUUID().toString()));
-      return map.get(addon);
+      return map.computeIfAbsent(addon,
+               a -> ModuleIdentifier.fromString(toModuleId(a.getId()) + "_" + UUID.randomUUID().toString()));
    }
 
    private String toModuleId(AddonId id)
