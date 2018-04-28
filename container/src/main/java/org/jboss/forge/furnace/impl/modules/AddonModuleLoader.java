@@ -101,14 +101,7 @@ public class AddonModuleLoader extends ModuleLoader
    }
 
    @Override
-   protected Module preloadModule(ModuleIdentifier identifier) throws ModuleLoadException
-   {
-      Module pluginModule = super.preloadModule(identifier);
-      return pluginModule;
-   }
-
-   @Override
-   protected ModuleSpec findModule(ModuleIdentifier id) throws ModuleLoadException
+   protected ModuleSpec findModule(ModuleIdentifier id)
    {
       ModuleSpec result = findRegularModule(id);
 
