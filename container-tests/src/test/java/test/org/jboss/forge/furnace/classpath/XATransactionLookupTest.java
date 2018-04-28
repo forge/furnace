@@ -14,6 +14,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assume.assumeThat;
+
 @RunWith(Arquillian.class)
 public class XATransactionLookupTest
 {
@@ -29,6 +32,7 @@ public class XATransactionLookupTest
    @Test
    public void testGetJDKProvidedXATypes() throws Exception
    {
+      assumeThat(System.getProperty("java.version"), startsWith("1.8"));
       try
       {
          getClass().getClassLoader().loadClass("javax.transaction.xa.XAResource");
@@ -43,6 +47,7 @@ public class XATransactionLookupTest
    @Test
    public void testXATypeInstantiations()
    {
+      assumeThat(System.getProperty("java.version"), startsWith("1.8"));
       Assert.assertNotNull(new javax.transaction.xa.XAException());
       Assert.assertNotNull(new javax.transaction.TransactionRequiredException());
    }
