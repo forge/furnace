@@ -7,6 +7,7 @@
 package org.jboss.forge.furnace.proxy;
 
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
@@ -103,7 +104,7 @@ public class Proxies
 
       try
       {
-         result = proxyType.newInstance();
+         result = proxyType.getDeclaredConstructor().newInstance();
       }
       catch (InstantiationException e)
       {
@@ -113,7 +114,15 @@ public class Proxies
                            "that this type is an interface, or a class with a default constructor.",
                   e);
       }
-      catch (IllegalAccessException e)
+      catch (NoSuchMethodException e)
+      {
+         throw new IllegalStateException(
+                  "Could not instantiate proxy for object [" + instance + "] of type [" + type
+                           + "] because there isn't a public default constructor. For optimal proxy compatibility, "
+                           + "ensure that this type is an interface, or a class with a default constructor.",
+                  e);
+      }
+      catch (IllegalAccessException | InvocationTargetException e)
       {
          throw new IllegalStateException(e);
       }
