@@ -57,7 +57,6 @@ import org.jboss.modules.log.StreamModuleLogger;
 public class FurnaceImpl implements Furnace
 {
    public static final String FURNACE_ADDON_COMPATIBILITY_PROPERTY = "furnace.addons.compatibility";
-   public static final String FURNACE_LOGGING_LEAK_CLASSLOADERS_PROPERTY = "furnace.logging.leak";
    public static final String FURNACE_DEBUG_PROPERTY = "furnace.debug";
    public static final String TEST_MODE_PROPERTY = "furnace.test.mode";
 
@@ -125,14 +124,6 @@ public class FurnaceImpl implements Furnace
          {
             setAddonCompatibilityStrategy(strategy);
          }
-      }
-
-      if (!Boolean.getBoolean(FURNACE_LOGGING_LEAK_CLASSLOADERS_PROPERTY))
-      {
-         /*
-          * If enabled, allows the JDK java.util.logging.Level to leak ClassLoaders (memory leak).
-          */
-         LoggingRepair.init();
       }
 
       if (Boolean.getBoolean(FURNACE_DEBUG_PROPERTY))
