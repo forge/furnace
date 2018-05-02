@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class LoggingRepair
+class LoggingRepair
 {
    public static Logger log = Logger.getLogger(LoggingRepair.class.getName());
 

@@ -51,7 +51,7 @@ import org.jboss.modules.log.StreamModuleLogger;
 
 /**
  * Implementation for the {@link Furnace} interface
- * 
+ *
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
 public class FurnaceImpl implements Furnace
@@ -110,8 +110,8 @@ public class FurnaceImpl implements Furnace
             }
             catch (Exception e)
             {
-               logger.log(Level.SEVERE, "Error loading [" + addonCompatibilityValue 
-                     + "] defined by system property `" + FURNACE_ADDON_COMPATIBILITY_PROPERTY + "` ", e);
+               logger.log(Level.SEVERE, "Error loading [" + addonCompatibilityValue
+                        + "] defined by system property `" + FURNACE_ADDON_COMPATIBILITY_PROPERTY + "` ", e);
             }
          }
          if (strategy == null)
@@ -127,7 +127,8 @@ public class FurnaceImpl implements Furnace
          }
       }
 
-      if (!Boolean.getBoolean(FURNACE_LOGGING_LEAK_CLASSLOADERS_PROPERTY))
+      if (!Boolean.getBoolean(FURNACE_LOGGING_LEAK_CLASSLOADERS_PROPERTY) && System.getProperty("java.version")
+               .startsWith("1.8"))
       {
          /*
           * If enabled, allows the JDK java.util.logging.Level to leak ClassLoaders (memory leak).
@@ -668,8 +669,10 @@ public class FurnaceImpl implements Furnace
       @Override
       public boolean equals(Object o)
       {
-         if (this == o) return true;
-         if (o == null || getClass() != o.getClass()) return false;
+         if (this == o)
+            return true;
+         if (o == null || getClass() != o.getClass())
+            return false;
 
          RepositoryEntry that = (RepositoryEntry) o;
 
