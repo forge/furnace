@@ -48,7 +48,7 @@
       <forge.release.codename>Fire it Up</forge.release.codename>
       <forge.release.version>${project.version}</forge.release.version>
       <version.javassist>3.22.0-GA</version.javassist>
-      <version.jboss.modules>1.8.2.Final</version.jboss.modules>
+      <version.jboss.modules>1.8.3.Final</version.jboss.modules>
       <version.junit>4.11</version.junit>
       <version.org.jboss.logmanager.jboss-logmanager>2.0.4.Final</version.org.jboss.logmanager.jboss-logmanager>
       <version.xmlparser>1.0.0.Final</version.xmlparser>
