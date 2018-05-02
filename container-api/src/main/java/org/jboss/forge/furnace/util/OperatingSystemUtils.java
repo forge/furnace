@@ -151,4 +151,12 @@ public final class OperatingSystemUtils
    {
       return new File(System.getProperty("java.io.tmpdir"));
    }
+
+   /**
+    * @return true if running in JDK 8
+    */
+   public static boolean isJava8()
+   {
+      return System.getProperty("java.version", "").startsWith("1.8");
+   }
 }

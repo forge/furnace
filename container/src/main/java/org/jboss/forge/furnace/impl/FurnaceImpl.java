@@ -44,6 +44,7 @@ import org.jboss.forge.furnace.spi.ContainerLifecycleListener;
 import org.jboss.forge.furnace.spi.ListenerRegistration;
 import org.jboss.forge.furnace.util.AddonCompatibilityStrategies;
 import org.jboss.forge.furnace.util.Assert;
+import org.jboss.forge.furnace.util.OperatingSystemUtils;
 import org.jboss.forge.furnace.util.Strings;
 import org.jboss.forge.furnace.versions.Version;
 import org.jboss.modules.Module;
@@ -127,8 +128,7 @@ public class FurnaceImpl implements Furnace
          }
       }
 
-      if (!Boolean.getBoolean(FURNACE_LOGGING_LEAK_CLASSLOADERS_PROPERTY) && System.getProperty("java.version")
-               .startsWith("1.8"))
+      if (!Boolean.getBoolean(FURNACE_LOGGING_LEAK_CLASSLOADERS_PROPERTY))
       {
          /*
           * If enabled, allows the JDK java.util.logging.Level to leak ClassLoaders (memory leak).

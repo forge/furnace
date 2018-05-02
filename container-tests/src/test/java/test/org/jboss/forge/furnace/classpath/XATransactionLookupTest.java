@@ -9,13 +9,13 @@ package test.org.jboss.forge.furnace.classpath;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.archive.AddonArchive;
+import org.jboss.forge.furnace.util.OperatingSystemUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assume.assumeThat;
+import static org.junit.Assume.assumeTrue;
 
 @RunWith(Arquillian.class)
 public class XATransactionLookupTest
@@ -30,9 +30,9 @@ public class XATransactionLookupTest
    }
 
    @Test
-   public void testGetJDKProvidedXATypes() throws Exception
+   public void testGetJDKProvidedXATypes()
    {
-      assumeThat(System.getProperty("java.version"), startsWith("1.8"));
+      assumeTrue(OperatingSystemUtils.isJava8());
       try
       {
          getClass().getClassLoader().loadClass("javax.transaction.xa.XAResource");
@@ -47,7 +47,7 @@ public class XATransactionLookupTest
    @Test
    public void testXATypeInstantiations()
    {
-      assumeThat(System.getProperty("java.version"), startsWith("1.8"));
+      assumeTrue(OperatingSystemUtils.isJava8());
       Assert.assertNotNull(new javax.transaction.xa.XAException());
       Assert.assertNotNull(new javax.transaction.TransactionRequiredException());
    }

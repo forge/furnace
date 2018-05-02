@@ -41,7 +41,7 @@ public final class SecurityActions
 
    /**
     * Gets context classloader.
-    * 
+    *
     * @return the current context classloader
     */
    public static ClassLoader getContextClassLoader()
@@ -65,7 +65,7 @@ public final class SecurityActions
 
    /**
     * Sets context classloader.
-    * 
+    *
     * @param classLoader the classloader
     */
    public static void setContextClassLoader(final ClassLoader classLoader)
@@ -90,11 +90,15 @@ public final class SecurityActions
 
    /**
     * Cleanup {@link ThreadLocal} instances of the given {@link Thread}.
-    * 
+    *
     * @param thread The {@link Thread} to clean up.
     */
    public static void cleanupThreadLocals(Thread thread)
    {
+      if (!OperatingSystemUtils.isJava8())
+      {
+         return;
+      }
       try
       {
          if (thread != null)

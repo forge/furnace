@@ -14,6 +14,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.archive.AddonArchive;
+import org.jboss.forge.furnace.util.OperatingSystemUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.junit.Assert;
 import org.junit.Test;
@@ -21,6 +22,7 @@ import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assume.assumeThat;
+import static org.junit.Assume.assumeTrue;
 
 @RunWith(Arquillian.class)
 public class JAXBLookupTest
@@ -36,9 +38,9 @@ public class JAXBLookupTest
    }
 
    @Test
-   public void testGetJDKProvidedJAXBImpl() throws Exception
+   public void testGetJDKProvidedJAXBImpl()
    {
-      assumeThat(System.getProperty("java.version"), startsWith("1.8"));
+      assumeTrue(OperatingSystemUtils.isJava8());
       try
       {
          getClass().getClassLoader().loadClass("com.sun.xml.internal.bind.v2.ContextFactory");
@@ -52,7 +54,7 @@ public class JAXBLookupTest
    @Test
    public void testJAXBLookup() throws Exception
    {
-      assumeThat(System.getProperty("java.version"), startsWith("1.8"));
+      assumeTrue(OperatingSystemUtils.isJava8());
       Assert.assertNotNull(JAXBContext.newInstance(TestRoot.class).createUnmarshaller()
                .unmarshal(new ByteArrayInputStream("<testRoot/>".getBytes())));
    }

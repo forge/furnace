@@ -6,14 +6,11 @@
  */
 package test.org.jboss.forge.furnace.classpath;
 
-import static org.hamcrest.CoreMatchers.startsWith;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -32,7 +29,6 @@ public class NashornTest
    @Test
    public void testGetJDKProvidedNashornImpl() throws Exception
    {
-      Assume.assumeThat(System.getProperty("java.version"), startsWith("1.8"));
       Assert.assertNotNull(
                getClass().getClassLoader().loadClass("jdk.nashorn.api.scripting.NashornScriptEngineFactory"));
    }

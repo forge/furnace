@@ -22,6 +22,8 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.jboss.forge.furnace.util.OperatingSystemUtils;
+
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
@@ -31,6 +33,11 @@ class LoggingRepair
 
    public static void init()
    {
+      if (!OperatingSystemUtils.isJava8())
+      {
+         return;
+      }
+
       AccessController.doPrivileged(new PrivilegedAction<Void>()
       {
          @Override
@@ -61,7 +68,7 @@ class LoggingRepair
                               Level.WARNING,
                               Level.SEVERE,
                               Level.OFF
-                              )));
+                     )));
                   }
                }
             }
@@ -77,41 +84,58 @@ class LoggingRepair
                {
                   Constructor<?> constructor = knownLevelClass.getDeclaredConstructor(Level.class);
                   constructor.setAccessible(true);
-                  
+
                   final Field knownNameField = knownLevelClass.getDeclaredField("nameToLevels");
                   knownNameField.setAccessible(true);
                   final Map oldNames = (Map) knownNameField.get(null);
                   if (!(oldNames instanceof ReadOnlyHashMap))
                   {
                      knownNameField.set(null, new ReadOnlyHashMap(
-                              Arrays.asList(new ReadOnlyMapEntry(Level.ALL.getName(), new ReadOnlyArrayList<>(Arrays.asList(constructor.newInstance(Level.ALL)))),
-                                       new ReadOnlyMapEntry(Level.FINEST.getName(), new ReadOnlyArrayList<>(Arrays.asList(constructor.newInstance(Level.FINEST)))),
-                                       new ReadOnlyMapEntry(Level.FINER.getName(), new ReadOnlyArrayList<>(Arrays.asList(constructor.newInstance(Level.FINER)))),
-                                       new ReadOnlyMapEntry(Level.FINE.getName(), new ReadOnlyArrayList<>(Arrays.asList(constructor.newInstance(Level.FINE)))),
-                                       new ReadOnlyMapEntry(Level.INFO.getName(), new ReadOnlyArrayList<>(Arrays.asList(constructor.newInstance(Level.INFO)))),
-                                       new ReadOnlyMapEntry(Level.CONFIG.getName(), new ReadOnlyArrayList<>(Arrays.asList(constructor.newInstance(Level.CONFIG)))),
-                                       new ReadOnlyMapEntry(Level.WARNING.getName(), new ReadOnlyArrayList<>(Arrays.asList(constructor.newInstance(Level.WARNING)))),
-                                       new ReadOnlyMapEntry(Level.SEVERE.getName(), new ReadOnlyArrayList<>(Arrays.asList(constructor.newInstance(Level.SEVERE)))),
-                                       new ReadOnlyMapEntry(Level.OFF.getName(), new ReadOnlyArrayList<>(Arrays.asList(constructor.newInstance(Level.OFF))))
+                              Arrays.asList(new ReadOnlyMapEntry(Level.ALL.getName(),
+                                                new ReadOnlyArrayList<>(Arrays.asList(constructor.newInstance(Level.ALL)))),
+                                       new ReadOnlyMapEntry(Level.FINEST.getName(), new ReadOnlyArrayList<>(
+                                                Arrays.asList(constructor.newInstance(Level.FINEST)))),
+                                       new ReadOnlyMapEntry(Level.FINER.getName(), new ReadOnlyArrayList<>(
+                                                Arrays.asList(constructor.newInstance(Level.FINER)))),
+                                       new ReadOnlyMapEntry(Level.FINE.getName(), new ReadOnlyArrayList<>(
+                                                Arrays.asList(constructor.newInstance(Level.FINE)))),
+                                       new ReadOnlyMapEntry(Level.INFO.getName(), new ReadOnlyArrayList<>(
+                                                Arrays.asList(constructor.newInstance(Level.INFO)))),
+                                       new ReadOnlyMapEntry(Level.CONFIG.getName(), new ReadOnlyArrayList<>(
+                                                Arrays.asList(constructor.newInstance(Level.CONFIG)))),
+                                       new ReadOnlyMapEntry(Level.WARNING.getName(), new ReadOnlyArrayList<>(
+                                                Arrays.asList(constructor.newInstance(Level.WARNING)))),
+                                       new ReadOnlyMapEntry(Level.SEVERE.getName(), new ReadOnlyArrayList<>(
+                                                Arrays.asList(constructor.newInstance(Level.SEVERE)))),
+                                       new ReadOnlyMapEntry(Level.OFF.getName(), new ReadOnlyArrayList<>(
+                                                Arrays.asList(constructor.newInstance(Level.OFF))))
                               )));
                   }
-                  
-                  
+
                   final Field knownIntField = knownLevelClass.getDeclaredField("intToLevels");
                   knownIntField.setAccessible(true);
                   final Map oldInts = (Map) knownIntField.get(null);
                   if (!(oldInts instanceof ReadOnlyHashMap))
                   {
                      knownIntField.set(null, new ReadOnlyHashMap(
-                              Arrays.asList(new ReadOnlyMapEntry(Level.ALL.intValue(), new ReadOnlyArrayList<>(Arrays.asList(constructor.newInstance(Level.ALL)))),
-                                       new ReadOnlyMapEntry(Level.FINEST.intValue(), new ReadOnlyArrayList(Arrays.asList(constructor.newInstance(Level.FINEST)))),
-                                       new ReadOnlyMapEntry(Level.FINER.intValue(), new ReadOnlyArrayList(Arrays.asList(constructor.newInstance(Level.FINER)))),
-                                       new ReadOnlyMapEntry(Level.FINE.intValue(), new ReadOnlyArrayList(Arrays.asList(constructor.newInstance(Level.FINE)))),
-                                       new ReadOnlyMapEntry(Level.INFO.intValue(), new ReadOnlyArrayList(Arrays.asList(constructor.newInstance(Level.INFO)))),
-                                       new ReadOnlyMapEntry(Level.CONFIG.intValue(), new ReadOnlyArrayList(Arrays.asList(constructor.newInstance(Level.CONFIG)))),
-                                       new ReadOnlyMapEntry(Level.WARNING.intValue(), new ReadOnlyArrayList(Arrays.asList(constructor.newInstance(Level.WARNING)))),
-                                       new ReadOnlyMapEntry(Level.SEVERE.intValue(), new ReadOnlyArrayList(Arrays.asList(constructor.newInstance(Level.SEVERE)))),
-                                       new ReadOnlyMapEntry(Level.OFF.intValue(), new ReadOnlyArrayList(Arrays.asList(constructor.newInstance(Level.OFF))))
+                              Arrays.asList(new ReadOnlyMapEntry(Level.ALL.intValue(),
+                                                new ReadOnlyArrayList<>(Arrays.asList(constructor.newInstance(Level.ALL)))),
+                                       new ReadOnlyMapEntry(Level.FINEST.intValue(), new ReadOnlyArrayList(
+                                                Arrays.asList(constructor.newInstance(Level.FINEST)))),
+                                       new ReadOnlyMapEntry(Level.FINER.intValue(), new ReadOnlyArrayList(
+                                                Arrays.asList(constructor.newInstance(Level.FINER)))),
+                                       new ReadOnlyMapEntry(Level.FINE.intValue(), new ReadOnlyArrayList(
+                                                Arrays.asList(constructor.newInstance(Level.FINE)))),
+                                       new ReadOnlyMapEntry(Level.INFO.intValue(), new ReadOnlyArrayList(
+                                                Arrays.asList(constructor.newInstance(Level.INFO)))),
+                                       new ReadOnlyMapEntry(Level.CONFIG.intValue(), new ReadOnlyArrayList(
+                                                Arrays.asList(constructor.newInstance(Level.CONFIG)))),
+                                       new ReadOnlyMapEntry(Level.WARNING.intValue(), new ReadOnlyArrayList(
+                                                Arrays.asList(constructor.newInstance(Level.WARNING)))),
+                                       new ReadOnlyMapEntry(Level.SEVERE.intValue(), new ReadOnlyArrayList(
+                                                Arrays.asList(constructor.newInstance(Level.SEVERE)))),
+                                       new ReadOnlyMapEntry(Level.OFF.intValue(), new ReadOnlyArrayList(
+                                                Arrays.asList(constructor.newInstance(Level.OFF))))
                               )));
                   }
                }
@@ -140,7 +164,7 @@ class LoggingRepair
       {
          // ignore
       }
-      
+
       @Override
       public boolean add(T e)
       {
@@ -154,14 +178,14 @@ class LoggingRepair
          // ignore
          return false;
       }
-      
+
       @Override
       public boolean addAll(int index, Collection<? extends T> c)
       {
          // ignore
          return false;
       }
-      
+
       @Override
       public T set(final int index, final T element)
       {
