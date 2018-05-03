@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Parent;
 import org.apache.maven.model.Repository;
 import org.apache.maven.model.building.FileModelSource;
@@ -42,8 +43,8 @@ public class MavenModelResolver implements ModelResolver
     * Creates a new Maven repository resolver. This resolver uses service available to Maven to create an artifact
     * resolution chain
     *
-    * @param system the Maven based implementation of the {@link RepositorySystem}
-    * @param session the current Maven execution session
+    * @param system             the Maven based implementation of the {@link RepositorySystem}
+    * @param session            the current Maven execution session
     * @param remoteRepositories the list of available Maven repositories
     */
    public MavenModelResolver(RepositorySystem system, RepositorySystemSession session,
@@ -139,6 +140,11 @@ public class MavenModelResolver implements ModelResolver
    {
       // FIXME: Support version range. See DefaultModelResolver
       return resolveModel(parent.getGroupId(), parent.getArtifactId(), parent.getVersion());
+   }
+
+   @Override public ModelSource resolveModel(Dependency dependency) throws UnresolvableModelException
+   {
+      return resolveModel(dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion());
    }
 
    @Override
