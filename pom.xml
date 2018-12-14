@@ -49,7 +49,7 @@
       <forge.release.version>${project.version}</forge.release.version>
       <version.javassist>3.23.1-GA</version.javassist>
       <version.jboss.modules>1.8.5.Final</version.jboss.modules>
-      <version.junit>4.11</version.junit>
+      <version.junit>4.12</version.junit>
       <version.org.jboss.logmanager.jboss-logmanager>2.0.4.Final</version.org.jboss.logmanager.jboss-logmanager>
       <version.xmlparser>1.0.0.Final</version.xmlparser>
    </properties>
