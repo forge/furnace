@@ -145,24 +145,10 @@ public class AddonId implements Comparable<AddonId>
     */
    public static AddonId from(String name, String version, String apiVersion)
    {
-      Assert.notNull(name, "Name cannot be null.");
-      if (name.trim().isEmpty())
-         throw new IllegalArgumentException("Name cannot be empty.");
-      Assert.notNull(version, "Version cannot be null.");
-      if (version.trim().isEmpty())
-         throw new IllegalArgumentException("Version cannot be empty.");
-
-      AddonId id = new AddonId();
-
-      id.name = name;
-      id.version = SingleVersion.valueOf(version);
-      if (apiVersion == null || apiVersion.trim().isEmpty())
-         id.apiVersion = EmptyVersion.getInstance();
-      else
-         id.apiVersion = SingleVersion.valueOf(apiVersion);
-
-      return id;
-
+      return AddonId.from(name, SingleVersion.valueOf(version),
+                          apiVersion == null || apiVersion.trim().isEmpty() ?
+                                  EmptyVersion.getInstance() :
+                                  SingleVersion.valueOf(apiVersion));
    }
 
    /**
@@ -170,8 +156,7 @@ public class AddonId implements Comparable<AddonId>
     */
    public String toCoordinates()
    {
-      StringBuilder coord = new StringBuilder(getName()).append(",").append(getVersion());
-      return coord.toString();
+      return getName() + "," + getVersion();
    }
 
    @Override
