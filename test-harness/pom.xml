@@ -33,10 +33,6 @@
       </developer>
    </developers>
 
-   <prerequisites>
-      <maven>3.0</maven>
-   </prerequisites>
-
    <properties>
       <version.arquillian>1.1.12.Final</version.arquillian>
    </properties>
