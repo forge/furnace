@@ -20,8 +20,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assume.assumeThat;
 import static org.junit.Assume.assumeTrue;
 
 @RunWith(Arquillian.class)

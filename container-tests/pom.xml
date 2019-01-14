@@ -32,6 +32,13 @@
          <artifactId>arquillian-furnace-classpath</artifactId>
          <scope>test</scope>
       </dependency>
+      <!-- Needed for JAXBLookupTest -->
+      <dependency>
+         <groupId>javax.xml.bind</groupId>
+         <artifactId>jaxb-api</artifactId>
+         <version>2.3.0</version>
+         <scope>test</scope>
+      </dependency>
    </dependencies>
 
    <build>
