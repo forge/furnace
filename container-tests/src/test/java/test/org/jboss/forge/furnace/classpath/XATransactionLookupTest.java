@@ -45,11 +45,11 @@ public class XATransactionLookupTest
    }
 
    @Test
-   public void testXATypeInstantiations()
+   public void testXATypeInstantiations() throws Exception
    {
       assumeTrue(OperatingSystemUtils.isJava8());
-      Assert.assertNotNull(new javax.transaction.xa.XAException());
-      Assert.assertNotNull(new javax.transaction.TransactionRequiredException());
+      getClass().getClassLoader().loadClass("javax.transaction.xa.XAException").newInstance();
+      getClass().getClassLoader().loadClass("javax.transaction.TransactionRequiredException").newInstance();
    }
 
 }
