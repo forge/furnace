@@ -8,7 +8,7 @@
    <artifactId>furnace-manager-resolver-maven</artifactId>
    <name>Furnace - Manager Maven Resolver</name>
    <properties>
-      <resolver.version>1.1.1</resolver.version>
+      <resolver.version>1.4.1</resolver.version>
       <maven.version>3.5.3</maven.version>
    </properties>
 
