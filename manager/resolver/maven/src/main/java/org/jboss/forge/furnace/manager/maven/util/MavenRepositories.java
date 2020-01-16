@@ -26,7 +26,7 @@ import org.jboss.forge.furnace.manager.maven.MavenContainer;
  */
 public class MavenRepositories
 {
-   static final String MAVEN_CENTRAL_REPO = "http://central.maven.org/maven2";
+   static final String MAVEN_CENTRAL_REPO = "https://repo1.maven.org/maven2";
 
    public static List<RemoteRepository> getRemoteRepositories(MavenContainer container, Settings settings)
    {
