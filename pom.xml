@@ -50,7 +50,7 @@
       <version.javassist>3.23.1-GA</version.javassist>
       <version.jboss.modules>1.9.1.Final</version.jboss.modules>
       <version.junit>4.12</version.junit>
-      <version.org.jboss.logmanager.jboss-logmanager>2.0.4.Final</version.org.jboss.logmanager.jboss-logmanager>
+      <version.org.jboss.logmanager.jboss-logmanager>2.1.15.Final</version.org.jboss.logmanager.jboss-logmanager>
       <version.xmlparser>1.0.0.Final</version.xmlparser>
    </properties>
 
