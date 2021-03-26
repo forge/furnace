@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.logging.Logger;
 
+import io.smallrye.common.io.jar.JarFiles;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonId;
@@ -212,16 +213,16 @@ public class AddonModuleLoader extends ModuleLoader
             {
                builder.addResourceRoot(
                         ResourceLoaderSpec.createResourceLoaderSpec(
-                                 ResourceLoaders.createFileResourceLoader(file.getName(), file),
+                                 ResourceLoaders.createPathResourceLoader(file.toPath()),
                                  PathFilters.acceptAll()));
             }
             else if (file.length() > 0)
             {
-               JarFile jarFile = new JarFile(file);
+               JarFile jarFile = JarFiles.create(file);
                moduleJarFileCache.addJarFileReference(id, jarFile);
                builder.addResourceRoot(
                         ResourceLoaderSpec.createResourceLoaderSpec(
-                                 ResourceLoaders.createJarResourceLoader(file.getName(), jarFile),
+                                 ResourceLoaders.createJarResourceLoader(jarFile),
                                  PathFilters.acceptAll()));
             }
          }

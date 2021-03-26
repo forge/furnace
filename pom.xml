@@ -135,7 +135,11 @@
             <artifactId>jgrapht</artifactId>
             <version>0.8.3</version>
          </dependency>
-
+         <dependency>
+            <groupId>io.smallrye.common</groupId>
+            <artifactId>smallrye-common-io</artifactId>
+            <version>1.6.0</version>
+         </dependency>
 
          <!-- Test Harneses Dependencies -->
          <dependency>
