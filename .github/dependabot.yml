@@ -1,0 +1,22 @@
+version: 2
+updates:
+- package-ecosystem: maven
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "07:00"
+    timezone: America/Sao_Paulo
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: org.apache.maven.wagon:wagon-http-lightweight
+    versions:
+    - 3.4.2
+  - dependency-name: org.apache.maven.wagon:wagon-file
+    versions:
+    - 3.4.2
+  - dependency-name: org.apache.maven:maven-plugin-api
+    versions:
+    - 3.6.3
+  - dependency-name: org.apache.maven.plugin-tools:maven-plugin-annotations
+    versions:
+    - 3.6.0
