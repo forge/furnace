@@ -52,6 +52,7 @@
       <version.junit>4.13.1</version.junit>
       <version.org.jboss.logmanager.jboss-logmanager>2.0.4.Final</version.org.jboss.logmanager.jboss-logmanager>
       <version.xmlparser>1.0.0.Final</version.xmlparser>
+      <version.bundle.plugin>5.1.1</version.bundle.plugin>
    </properties>
 
    <profiles>
