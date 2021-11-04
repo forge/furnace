@@ -159,4 +159,13 @@ public final class OperatingSystemUtils
    {
       return System.getProperty("java.version", "").startsWith("1.8");
    }
+
+   /**
+    * @return true if running in JDK 9
+    */
+   public static boolean isJava9()
+   {
+      return System.getProperty("java.version", "").startsWith("9");
+   }
+
 }
