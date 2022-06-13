@@ -6,6 +6,8 @@
  */
 package org.jboss.forge.furnace.manager.maven.util;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -22,7 +24,7 @@ import org.jboss.forge.furnace.manager.maven.MavenContainer;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
- * 
+ *
  */
 public class MavenRepositories
 {
@@ -36,7 +38,7 @@ public class MavenRepositories
       // central repository is added if there is no central mirror
       String centralRepoURL = getCentralMirrorURL(settings).orElse(MAVEN_CENTRAL_REPO);
       remoteRepos.add(convertToMavenRepo("central", centralRepoURL, settings));
-     
+
       return new ArrayList<>(remoteRepos);
    }
 
@@ -56,14 +58,31 @@ public class MavenRepositories
       Proxy activeProxy = settings.getActiveProxy();
       if (activeProxy != null)
       {
-         Authentication auth = new AuthenticationBuilder().addUsername(activeProxy.getUsername())
-                  .addPassword(activeProxy.getPassword()).build();
-         remoteRepositoryBuilder.setProxy(new org.eclipse.aether.repository.Proxy(activeProxy.getProtocol(),
-                  activeProxy
-                           .getHost(),
-                  activeProxy.getPort(), auth));
+         // If URL is in the non-proxy list, skip it
+         if (!isNonProxyHost(activeProxy.getNonProxyHosts(), url))
+         {
+            Authentication auth = new AuthenticationBuilder().addUsername(activeProxy.getUsername())
+                    .addPassword(activeProxy.getPassword()).build();
+            remoteRepositoryBuilder.setProxy(new org.eclipse.aether.repository.Proxy(activeProxy.getProtocol(),
+                    activeProxy.getHost(), activeProxy.getPort(), auth));
+         }
       }
       return remoteRepositoryBuilder.build();
+   }
+
+   private static boolean isNonProxyHost(String nonProxyHosts, String url)
+   {
+      if (nonProxyHosts == null || nonProxyHosts.isEmpty())
+      {
+         return false;
+      }
+      String host;
+      try {
+         host = new URI(url).getHost();
+      } catch (URISyntaxException e) {
+         return false;
+      }
+      return nonProxyHosts.contains(host);
    }
 
 }
