@@ -110,7 +110,11 @@ class BootstrapClassLoader extends URLClassLoader
                   try
                   {
                      byte[] buffer = new byte[2048];
-                     output = new FileOutputStream(new File(tempDir, entry.getName()));
+                     final File zipEntryFile = new File(tempDir, entry.getName());
+                     if (!zipEntryFile.toPath().normalize().startsWith(tempDir.toPath().normalize())) {
+                        throw new IOException("Bad zip entry");
+                     }
+                     output = new FileOutputStream(zipEntryFile);
                      int len = 0;
                      while ((len = stream.read(buffer)) > 0)
                      {
