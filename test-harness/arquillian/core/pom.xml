@@ -12,7 +12,7 @@
    <artifactId>arquillian-furnace-core</artifactId>
    <name>Furnace - Arquillian Container Adapter - Core</name>
    <properties>
-      <version.maven>3.5.3</version.maven>
+      <version.maven>3.8.6</version.maven>
    </properties>
    
 
