@@ -369,7 +369,7 @@ public final class Files
 
       // Cater for destination being directory within the source directory (see IO-141)
       List<String> exclusionList = null;
-      if (destDir.getCanonicalPath().startsWith(srcDir.getCanonicalPath()))
+      if (destDir.getCanonicalFile().toPath().startsWith(srcDir.getCanonicalFile().toPath()))
       {
          File[] srcFiles = filter == null ? srcDir.listFiles() : srcDir.listFiles(filter);
          if (srcFiles != null && srcFiles.length > 0)
