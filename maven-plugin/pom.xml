@@ -17,7 +17,7 @@
 
    <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <version.maven>3.5.0</version.maven>
+      <version.maven>3.9.0</version.maven>
    </properties>
 
    <dependencies>
